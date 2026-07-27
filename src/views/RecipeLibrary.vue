@@ -28,7 +28,10 @@ const filteredRecipes = computed(() => {
   <div class="view">
     <div class="toolbar">
       <h1>Recipe Library</h1>
-      <router-link class="primary" to="/library/new">+ New Recipe</router-link>
+      <div class="toolbar-actions">
+        <router-link class="secondary" to="/library/import">Import Recipes</router-link>
+        <router-link class="primary" to="/library/new">+ New Recipe</router-link>
+      </div>
     </div>
 
     <input
@@ -61,6 +64,11 @@ const filteredRecipes = computed(() => {
   margin-bottom: var(--space-md);
 }
 
+.toolbar-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
 .toolbar .primary {
   background: var(--accent-color);
   color: white;
@@ -68,6 +76,16 @@ const filteredRecipes = computed(() => {
   padding: var(--space-sm) var(--space-md);
   border-radius: 6px;
   font-weight: 600;
+}
+
+.toolbar .secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  text-decoration: none;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 6px;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
 }
 
 .search {
