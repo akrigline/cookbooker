@@ -1,0 +1,74 @@
+/* Print pagination: CSS Paged Media margin boxes (design.md Decision 3).
+   Page numbers are rendered entirely by the browser via counter(page) in the
+   @bottom-right margin box - no JS-rendered page-count element is used. */
+
+@page {
+  size: 8.5in 11in;
+  margin: 0.75in;
+
+  @bottom-right {
+    content: counter(page);
+    font-size: 10pt;
+    font-family: var(--font-main, serif);
+  }
+}
+
+/* Cover and Table of Contents are named pages with footers suppressed. */
+@page cover {
+  @bottom-right {
+    content: '';
+  }
+}
+
+@page toc {
+  @bottom-right {
+    content: '';
+  }
+}
+
+/* Used for standalone single-recipe exports, which never show page numbers. */
+@page single {
+  @bottom-right {
+    content: '';
+  }
+}
+
+.page--cover {
+  page: cover;
+}
+
+.page--toc {
+  page: toc;
+}
+
+.page--single {
+  page: single;
+}
+
+/* Applied to the first chapter divider so recipe-page numbering starts at 1,
+   per design.md Decision 3's constraint that numbering begins after the
+   Cover and Table of Contents. Browser support for mid-document page-counter
+   resets is best-effort. */
+.reset-page-counter {
+  counter-reset: page 1;
+}
+
+@media print {
+  body,
+  #app {
+    background: none;
+  }
+
+  .shell > aside,
+  .shell > .hamburger,
+  .no-print {
+    display: none !important;
+  }
+
+  .shell,
+  .shell .content {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}

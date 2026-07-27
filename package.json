@@ -6,17 +6,24 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@dailykit/food-units-converter": "^1.0.2",
+    "@magrinj/parse-ingredients": "^1.0.0",
     "dexie": "^4.4.4",
     "dexie-export-import": "^4.4.0",
+    "fraction.js": "^5.3.4",
     "pinia": "^3.0.4",
     "vue": "^3.5.39",
     "vue-router": "^5.1.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.7",
-    "vite": "^8.1.1"
+    "fake-indexeddb": "^6.2.5",
+    "happy-dom": "^20.10.6",
+    "vite": "^8.1.1",
+    "vitest": "^4.1.9"
   }
 }
