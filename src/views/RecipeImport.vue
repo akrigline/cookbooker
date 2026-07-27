@@ -11,9 +11,11 @@ const router = useRouter()
 const recipesStore = useRecipesStore()
 
 const fileInput = ref(null)
+const mode = ref('file') // 'file' | 'paste'
+const pastedHtml = ref('')
 const candidates = ref([]) // [{ key, recipe, included }]
 const failures = ref([]) // [{ key, label, reason }]
-const rejectedFiles = ref([]) // file names with no valid markers
+const rejectedSources = ref([]) // file names / "Pasted HTML" with no valid markers
 const error = ref(null)
 const importing = ref(false)
 const promptCopied = ref(false)
@@ -23,11 +25,39 @@ let nextKey = 0
 
 const includedCount = computed(() => candidates.value.filter((c) => c.included).length)
 const hasResults = computed(
-  () => candidates.value.length > 0 || failures.value.length > 0 || rejectedFiles.value.length > 0,
+  () => candidates.value.length > 0 || failures.value.length > 0 || rejectedSources.value.length > 0,
 )
 
 function handleImportClick() {
   fileInput.value?.click()
+}
+
+function resetResults() {
+  error.value = null
+  candidates.value = []
+  failures.value = []
+  rejectedSources.value = []
+}
+
+// Shared by the file and paste entry points: both funnel a raw HTML string
+// through this same parse/stage step so there is only one validation and
+// review code path.
+function processImportSource(text, sourceLabel) {
+  const result = parseRecipeImportHtml(text)
+  if (result.rejected) {
+    rejectedSources.value.push(sourceLabel)
+    return
+  }
+
+  for (const recipe of result.recipes) {
+    // markRaw: the parsed recipe (including its ingredients array) must
+    // reach Dexie's IndexedDB `add()` as plain objects - Vue's reactive
+    // Proxy wrapper fails IndexedDB's structured-clone check.
+    candidates.value.push({ key: nextKey++, recipe: markRaw(recipe), included: true })
+  }
+  for (const failure of result.failures) {
+    failures.value.push({ key: nextKey++, label: `${sourceLabel}: ${failure.label}`, reason: failure.reason })
+  }
 }
 
 async function handleFileChange(event) {
@@ -35,10 +65,7 @@ async function handleFileChange(event) {
   event.target.value = ''
   if (!files.length) return
 
-  error.value = null
-  candidates.value = []
-  failures.value = []
-  rejectedFiles.value = []
+  resetResults()
 
   for (const file of files) {
     let text
@@ -49,22 +76,19 @@ async function handleFileChange(event) {
       continue
     }
 
-    const result = parseRecipeImportHtml(text)
-    if (result.rejected) {
-      rejectedFiles.value.push(file.name)
-      continue
-    }
-
-    for (const recipe of result.recipes) {
-      // markRaw: the parsed recipe (including its ingredients array) must
-      // reach Dexie's IndexedDB `add()` as plain objects - Vue's reactive
-      // Proxy wrapper fails IndexedDB's structured-clone check.
-      candidates.value.push({ key: nextKey++, recipe: markRaw(recipe), included: true })
-    }
-    for (const failure of result.failures) {
-      failures.value.push({ key: nextKey++, label: `${file.name}: ${failure.label}`, reason: failure.reason })
-    }
+    processImportSource(text, file.name)
   }
+}
+
+function handlePasteImport() {
+  const text = pastedHtml.value.trim()
+  if (!text) {
+    error.value = 'Paste some HTML text first.'
+    return
+  }
+
+  resetResults()
+  processImportSource(text, 'Pasted HTML')
 }
 
 async function copyPrompt() {
@@ -110,8 +134,9 @@ async function confirmImport() {
       <div v-if="promptExpanded" class="prompt-block">
         <p class="hint">
           Paste this into an LLM chat (ChatGPT, Claude, Gemini, etc.), then attach or
-          paste your messy recipe source material. Save the model's HTML output as a
-          <code>.html</code> file and select it below.
+          paste your messy recipe source material. Then either save the model's HTML
+          output as a <code>.html</code> file and select it below, or paste the HTML
+          output directly.
         </p>
         <div class="prompt-actions">
           <button type="button" @click="copyPrompt">{{ promptCopied ? 'Copied!' : 'Copy prompt' }}</button>
@@ -120,7 +145,28 @@ async function confirmImport() {
       </div>
     </section>
 
-    <section class="upload">
+    <div class="mode-toggle" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        :aria-selected="mode === 'file'"
+        :class="['mode-toggle__btn', { active: mode === 'file' }]"
+        @click="mode = 'file'"
+      >
+        Upload file
+      </button>
+      <button
+        type="button"
+        role="tab"
+        :aria-selected="mode === 'paste'"
+        :class="['mode-toggle__btn', { active: mode === 'paste' }]"
+        @click="mode = 'paste'"
+      >
+        Paste HTML
+      </button>
+    </div>
+
+    <section v-if="mode === 'file'" class="upload">
       <button type="button" class="primary" @click="handleImportClick">Select Recipe File(s)</button>
       <input
         ref="fileInput"
@@ -130,14 +176,27 @@ async function confirmImport() {
         class="hidden-input"
         @change="handleFileChange"
       />
-      <p v-if="error" class="error">{{ error }}</p>
     </section>
 
-    <section v-if="rejectedFiles.length" class="rejected">
-      <h2>Files not recognized</h2>
+    <section v-else class="paste">
+      <textarea
+        v-model="pastedHtml"
+        class="paste-textarea"
+        rows="10"
+        placeholder="Paste the LLM's HTML output here…"
+      ></textarea>
+      <div class="paste-actions">
+        <button type="button" class="primary" @click="handlePasteImport">Parse Pasted HTML</button>
+      </div>
+    </section>
+
+    <p v-if="error" class="error">{{ error }}</p>
+
+    <section v-if="rejectedSources.length" class="rejected">
+      <h2>Not recognized</h2>
       <ul>
-        <li v-for="name in rejectedFiles" :key="name">
-          "{{ name }}" doesn't look like a cookbook-maker recipe file (missing the
+        <li v-for="name in rejectedSources" :key="name">
+          "{{ name }}" doesn't look like a cookbook-maker recipe import (missing the
           <code>data-cm-format="recipe"</code> marker). It was not imported.
         </li>
       </ul>
@@ -171,7 +230,9 @@ async function confirmImport() {
       </button>
     </div>
 
-    <p v-if="!hasResults" class="empty">Select one or more <code>.html</code> recipe files to get started.</p>
+    <p v-if="!hasResults" class="empty">
+      Select one or more <code>.html</code> recipe files, or paste HTML text, to get started.
+    </p>
   </div>
 </template>
 
@@ -228,8 +289,48 @@ async function confirmImport() {
   border-radius: 4px;
 }
 
-.upload {
+.mode-toggle {
+  display: flex;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.mode-toggle__btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.mode-toggle__btn.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+}
+
+.upload,
+.paste {
   margin-bottom: var(--space-lg);
+}
+
+.paste-textarea {
+  width: 100%;
+  font-family: monospace;
+  font-size: 0.85rem;
+  padding: var(--space-sm);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.paste-actions {
+  margin-top: var(--space-sm);
 }
 
 button.primary {

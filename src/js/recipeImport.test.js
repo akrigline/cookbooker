@@ -132,6 +132,49 @@ describe('parseRecipeImportHtml', () => {
     expect(recipes[0].instructions).toBe('Preheat the oven.\nBake for 20 minutes.')
   })
 
+  it('parses a bare HTML fragment with no surrounding <html>/<body> tags, as pasted text commonly looks', () => {
+    const fragment = `
+      <article class="cm-recipe" data-cm-format="recipe" data-cm-version="1">
+        <h1 class="cm-title">Pasted Pie</h1>
+        <section class="cm-ingredients"><ul><li>2 cups flour</li></ul></section>
+        <section class="cm-instructions"><ol><li>Mix and bake.</li></ol></section>
+      </article>
+    `
+    const { recipes, failures, rejected } = parseRecipeImportHtml(fragment)
+    expect(rejected).toBe(false)
+    expect(failures).toHaveLength(0)
+    expect(recipes).toHaveLength(1)
+    expect(recipes[0].title).toBe('Pasted Pie')
+  })
+
+  it('parses a batch of recipes pasted as a bare fragment identically to a batch file', () => {
+    const fragment = `
+      <article class="cm-recipe" data-cm-format="recipe" data-cm-version="1">
+        <h1 class="cm-title">Pancakes</h1>
+        <section class="cm-ingredients"><ul><li>2 cups flour</li></ul></section>
+        <section class="cm-instructions"><ol><li>Mix and cook.</li></ol></section>
+      </article>
+      <article class="cm-recipe" data-cm-format="recipe" data-cm-version="1">
+        <h1 class="cm-title">Waffles</h1>
+        <section class="cm-ingredients"><ul><li>2 cups flour</li></ul></section>
+        <section class="cm-instructions"><ol><li>Mix and cook in a waffle iron.</li></ol></section>
+      </article>
+    `
+    const { recipes, failures, rejected } = parseRecipeImportHtml(fragment)
+    expect(rejected).toBe(false)
+    expect(failures).toHaveLength(0)
+    expect(recipes).toHaveLength(2)
+    expect(recipes.map((r) => r.title)).toEqual(['Pancakes', 'Waffles'])
+  })
+
+  it('rejects pasted text with no data-cm-format marker the same way as a bad file', () => {
+    const pasted = '<p>Just some plain text a user pasted by mistake.</p>'
+    const { recipes, failures, rejected } = parseRecipeImportHtml(pasted)
+    expect(rejected).toBe(true)
+    expect(recipes).toHaveLength(0)
+    expect(failures).toHaveLength(0)
+  })
+
   it('treats an unrecognized data-cm-version as a per-recipe failure', () => {
     const html = wrapDocument(`
       <article class="cm-recipe" data-cm-format="recipe" data-cm-version="2">
