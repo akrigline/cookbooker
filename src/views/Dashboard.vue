@@ -6,6 +6,8 @@ import { useProjectsStore } from '../stores/projects'
 const projectsStore = useProjectsStore()
 const router = useRouter()
 const newProjectTitle = ref('')
+const creating = ref(false)
+const deletingId = ref(null)
 
 onMounted(() => {
   if (!projectsStore.loaded) projectsStore.load()
@@ -13,15 +15,26 @@ onMounted(() => {
 
 async function createProject() {
   const title = newProjectTitle.value.trim()
-  if (!title) return
-  const id = await projectsStore.createProject({ title })
-  newProjectTitle.value = ''
-  router.push(`/projects/${id}`)
+  if (!title || creating.value) return
+  creating.value = true
+  try {
+    const id = await projectsStore.createProject({ title })
+    newProjectTitle.value = ''
+    router.push(`/projects/${id}`)
+  } finally {
+    creating.value = false
+  }
 }
 
 async function deleteProject(project) {
+  if (deletingId.value) return
   if (!confirm(`Delete "${project.title}"? Recipes stay in the Global Recipe Library.`)) return
-  await projectsStore.removeProject(project.id)
+  deletingId.value = project.id
+  try {
+    await projectsStore.removeProject(project.id)
+  } finally {
+    deletingId.value = null
+  }
 }
 </script>
 
@@ -31,7 +44,7 @@ async function deleteProject(project) {
 
     <form class="new-project" @submit.prevent="createProject">
       <input v-model="newProjectTitle" type="text" placeholder="New cookbook title..." />
-      <button type="submit" class="primary">+ Create Cookbook</button>
+      <button type="submit" class="primary" :disabled="creating">+ Create Cookbook</button>
     </form>
 
     <p v-if="!projectsStore.projects.length" class="empty">
@@ -47,7 +60,14 @@ async function deleteProject(project) {
         </router-link>
         <div class="project-card__actions">
           <router-link :to="`/projects/${project.id}/print`">Print Preview</router-link>
-          <button type="button" class="danger" @click="deleteProject(project)">Delete</button>
+          <button
+            type="button"
+            class="danger"
+            :disabled="deletingId === project.id"
+            @click="deleteProject(project)"
+          >
+            Delete
+          </button>
         </div>
       </li>
     </ul>
@@ -139,11 +159,16 @@ async function deleteProject(project) {
 
 button.danger {
   background: none;
-  border: 1px solid #c0392b;
-  color: #c0392b;
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
   border-radius: 6px;
   padding: 2px var(--space-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

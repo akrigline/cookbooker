@@ -77,8 +77,8 @@ async function handleFileChange(event) {
     <section class="backup">
       <h2>Backup &amp; Restore</h2>
       <div class="actions">
-        <button type="button" @click="handleExport">Export Backup</button>
-        <button type="button" @click="handleImportClick">Import Backup</button>
+        <button type="button" class="primary" :disabled="!!progress" @click="handleExport">Export Backup</button>
+        <button type="button" class="primary" :disabled="!!progress" @click="handleImportClick">Import Backup</button>
         <input
           ref="fileInput"
           type="file"
@@ -104,7 +104,26 @@ async function handleFileChange(event) {
   gap: var(--space-sm);
 }
 
+button.primary {
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.primary:hover {
+  background: var(--accent-color-hover);
+}
+
+button.primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .error {
-  color: #c0392b;
+  color: var(--color-danger);
 }
 </style>

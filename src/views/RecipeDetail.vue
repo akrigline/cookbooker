@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
 import RecipeSheet from '../components/RecipeSheet.vue'
@@ -14,6 +14,7 @@ const props = defineProps({
 
 const router = useRouter()
 const recipesStore = useRecipesStore()
+const deleting = ref(false)
 
 onMounted(() => {
   if (!recipesStore.loaded) recipesStore.load()
@@ -24,10 +25,15 @@ const recipe = computed(() =>
 )
 
 async function handleDelete() {
-  if (!recipe.value) return
+  if (!recipe.value || deleting.value) return
   if (!confirm(`Permanently delete "${recipe.value.title}" from the Global Recipe Library?`)) return
-  await recipesStore.removeRecipe(recipe.value.id)
-  router.push('/library')
+  deleting.value = true
+  try {
+    await recipesStore.removeRecipe(recipe.value.id)
+    router.push('/library')
+  } finally {
+    deleting.value = false
+  }
 }
 </script>
 
@@ -37,7 +43,7 @@ async function handleDelete() {
       <h1>{{ recipe.title }}</h1>
       <div class="actions">
         <router-link :to="`/library/${recipe.id}/edit`">Edit</router-link>
-        <button type="button" class="danger" @click="handleDelete">Delete</button>
+        <button type="button" class="danger" :disabled="deleting" @click="handleDelete">Delete</button>
       </div>
     </div>
 
@@ -74,10 +80,15 @@ async function handleDelete() {
 
 button.danger {
   background: none;
-  border: 1px solid #c0392b;
-  color: #c0392b;
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
   border-radius: 6px;
   padding: var(--space-xs) var(--space-sm);
   cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

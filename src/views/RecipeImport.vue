@@ -252,7 +252,7 @@ button.primary:disabled {
 }
 
 .error {
-  color: #c0392b;
+  color: var(--color-danger);
 }
 
 .rejected,
@@ -263,7 +263,7 @@ button.primary:disabled {
 .rejected h2,
 .failures h2 {
   font-size: 1rem;
-  color: #c0392b;
+  color: var(--color-danger);
 }
 
 .review-card {

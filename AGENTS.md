@@ -49,6 +49,12 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   that failure path — but this only covers failures during `importInto` itself; a residual risk
   remains for failure modes `peakImportFile`'s validation doesn't catch. A full fix (staging the
   import in a temp DB and swapping) would need a larger redesign than this.
+- The shared `nextSequence()` helper (`src/js/sequence.js`) computes the next sequence value
+  from *all* rows passed in. Chapter sequences are computed over every chapter for a project,
+  including the default Miscellaneous chapter (sequence 0) — so the first custom chapter
+  created gets sequence 1, not 0. Custom-chapter reordering is unaffected since
+  `reorderChapter` filters siblings to non-default chapters before comparing, but don't assume
+  a fresh custom chapter starts at sequence 0 in tests or new code.
 
 ## Maintaining this file
 

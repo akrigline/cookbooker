@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import * as db from '../js/db'
+import { nextSequence } from '../js/sequence'
 
 export const useProjectsStore = defineStore('projects', {
   state: () => ({
@@ -68,9 +69,7 @@ export const useProjectsStore = defineStore('projects', {
     async createChapter(projectId, name) {
       const id = await db.addChapter(projectId, name)
       const existing = this.chaptersForProject(projectId)
-      const sequence = existing.length
-        ? Math.max(...existing.map((c) => c.sequence ?? 0)) + 1
-        : 0
+      const sequence = nextSequence(existing)
       this.chapters.push({ id, projectId, name, sequence, isDefault: false })
       return id
     },

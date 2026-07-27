@@ -1,4 +1,5 @@
 import Dexie from 'dexie'
+import { nextSequence } from './sequence'
 
 export const MISC_CHAPTER_NAME = 'Miscellaneous'
 
@@ -104,9 +105,7 @@ export const getMiscChapter = async (projectId) => {
 
 export const addChapter = async (projectId, name) => {
   const existing = await getChaptersForProject(projectId)
-  const sequence = existing.length
-    ? Math.max(...existing.map((c) => c.sequence ?? 0)) + 1
-    : 0
+  const sequence = nextSequence(existing)
   return db.chapters.add({ projectId, name, sequence, isDefault: false })
 }
 
@@ -132,14 +131,12 @@ export const deleteChapter = (id) =>
         .where('chapterId')
         .equals(misc.id)
         .toArray()
-      let nextSequence = existingMisc.length
-        ? Math.max(...existingMisc.map((pr) => pr.sequence ?? 0)) + 1
-        : 0
+      let sequence = nextSequence(existingMisc)
 
       for (const pr of orphaned) {
         await db.project_recipes.update(pr.id, {
           chapterId: misc.id,
-          sequence: nextSequence++,
+          sequence: sequence++,
         })
       }
     }
@@ -170,9 +167,7 @@ export const addRecipeToProject = (projectId, recipeId, chapterId = null) =>
       .where('chapterId')
       .equals(targetChapterId)
       .toArray()
-    const sequence = siblings.length
-      ? Math.max(...siblings.map((pr) => pr.sequence ?? 0)) + 1
-      : 0
+    const sequence = nextSequence(siblings)
 
     const id = await db.project_recipes.add({
       projectId,

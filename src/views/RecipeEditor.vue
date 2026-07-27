@@ -1,10 +1,11 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
 import { parseIngredientsText, formatIngredientLine } from '../js/conversions'
 import { renderChefNotes } from '../js/richtext'
 import { LAYOUT_TEMPLATES } from '../js/templates'
+import { useObjectUrl } from '../js/useObjectUrl'
 
 const props = defineProps({
   recipeId: {
@@ -25,14 +26,11 @@ const notes = ref('')
 const layoutTemplate = ref('standard')
 const imageFile = ref(null)
 const existingImage = ref(null)
-const imagePreviewUrl = ref(null)
 const notesTextarea = ref(null)
 const error = ref(null)
 
-function setPreviewFromBlob(blob) {
-  if (imagePreviewUrl.value) URL.revokeObjectURL(imagePreviewUrl.value)
-  imagePreviewUrl.value = blob ? URL.createObjectURL(blob) : null
-}
+const imagePreviewSource = computed(() => imageFile.value ?? existingImage.value)
+const imagePreviewUrl = useObjectUrl(imagePreviewSource)
 
 onMounted(async () => {
   if (!recipesStore.loaded) await recipesStore.load()
@@ -45,13 +43,8 @@ onMounted(async () => {
       notes.value = recipe.notes ?? ''
       layoutTemplate.value = recipe.layoutTemplate ?? 'standard'
       existingImage.value = recipe.image ?? null
-      setPreviewFromBlob(existingImage.value)
     }
   }
-})
-
-onBeforeUnmount(() => {
-  if (imagePreviewUrl.value) URL.revokeObjectURL(imagePreviewUrl.value)
 })
 
 const parsedIngredients = computed(() => parseIngredientsText(ingredientsText.value))
@@ -60,13 +53,11 @@ function handleImageChange(event) {
   const file = event.target.files?.[0]
   if (!file) return
   imageFile.value = file
-  setPreviewFromBlob(file)
 }
 
 function clearImage() {
   imageFile.value = null
   existingImage.value = null
-  setPreviewFromBlob(null)
 }
 
 function wrapNotesSelection(marker) {
@@ -303,7 +294,7 @@ button.primary:hover {
 }
 
 .error {
-  color: #c0392b;
+  color: var(--color-danger);
 }
 
 @media (max-width: 700px) {

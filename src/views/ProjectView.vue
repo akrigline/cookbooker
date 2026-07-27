@@ -4,6 +4,7 @@ import { useProjectsStore } from '../stores/projects'
 import { useRecipesStore } from '../stores/recipes'
 import RecipeThumbnail from '../components/RecipeThumbnail.vue'
 import { ACCENT_COLORS, COVER_TEMPLATES } from '../js/templates'
+import { nextSequence } from '../js/sequence'
 
 const props = defineProps({
   projectId: {
@@ -38,11 +39,17 @@ function recipesInChapter(chapterId) {
 }
 
 const newChapterName = ref('')
+const addingChapter = ref(false)
 async function addChapter() {
   const name = newChapterName.value.trim()
-  if (!name) return
-  await projectsStore.createChapter(projectIdNum.value, name)
-  newChapterName.value = ''
+  if (!name || addingChapter.value) return
+  addingChapter.value = true
+  try {
+    await projectsStore.createChapter(projectIdNum.value, name)
+    newChapterName.value = ''
+  } finally {
+    addingChapter.value = false
+  }
 }
 
 async function renameChapter(chapter, event) {
@@ -51,9 +58,16 @@ async function renameChapter(chapter, event) {
   await projectsStore.editChapter(chapter.id, { name })
 }
 
+const deletingChapterId = ref(null)
 async function deleteChapter(chapter) {
+  if (deletingChapterId.value) return
   if (!confirm(`Delete chapter "${chapter.name}"? Its recipes move to Miscellaneous.`)) return
-  await projectsStore.removeChapter(chapter.id)
+  deletingChapterId.value = chapter.id
+  try {
+    await projectsStore.removeChapter(chapter.id)
+  } finally {
+    deletingChapterId.value = null
+  }
 }
 
 function updateField(field, value) {
@@ -63,13 +77,20 @@ function updateField(field, value) {
 async function moveRecipeToChapter(pr, newChapterId) {
   if (Number(newChapterId) === pr.chapterId) return
   const siblings = projectsStore.projectRecipesForChapter(Number(newChapterId))
-  const sequence = siblings.length ? Math.max(...siblings.map((s) => s.sequence)) + 1 : 0
+  const sequence = nextSequence(siblings)
   await projectsStore.moveProjectRecipe(pr.id, { chapterId: Number(newChapterId), sequence })
 }
 
+const removingRecipeId = ref(null)
 async function removeFromProject(pr, title) {
+  if (removingRecipeId.value) return
   if (!confirm(`Remove "${title}" from this cookbook? It stays in the Global Recipe Library.`)) return
-  await projectsStore.removeProjectRecipe(pr.id)
+  removingRecipeId.value = pr.id
+  try {
+    await projectsStore.removeProjectRecipe(pr.id)
+  } finally {
+    removingRecipeId.value = null
+  }
 }
 
 const librarySearch = ref('')
@@ -85,8 +106,15 @@ const availableRecipes = computed(() => {
   })
 })
 
+const addingRecipeId = ref(null)
 async function addRecipeToProject(recipe) {
-  await projectsStore.addRecipeToProject(projectIdNum.value, recipe.id)
+  if (addingRecipeId.value) return
+  addingRecipeId.value = recipe.id
+  try {
+    await projectsStore.addRecipeToProject(projectIdNum.value, recipe.id)
+  } finally {
+    addingRecipeId.value = null
+  }
 }
 </script>
 
@@ -153,7 +181,7 @@ async function addRecipeToProject(recipe) {
 
       <form class="new-chapter" @submit.prevent="addChapter">
         <input v-model="newChapterName" type="text" placeholder="New chapter name..." />
-        <button type="submit">+ Add Chapter</button>
+        <button type="submit" :disabled="addingChapter">+ Add Chapter</button>
       </form>
 
       <div v-for="chapter in orderedChapters" :key="chapter.id" class="chapter">
@@ -167,7 +195,14 @@ async function addRecipeToProject(recipe) {
           <div class="chapter__actions" v-if="!chapter.isDefault">
             <button type="button" @click="projectsStore.reorderChapter(chapter.id, -1)">↑</button>
             <button type="button" @click="projectsStore.reorderChapter(chapter.id, 1)">↓</button>
-            <button type="button" class="danger" @click="deleteChapter(chapter)">Delete</button>
+            <button
+              type="button"
+              class="danger"
+              :disabled="deletingChapterId === chapter.id"
+              @click="deleteChapter(chapter)"
+            >
+              Delete
+            </button>
           </div>
           <span v-else class="chapter__badge">Default (always last, cannot be deleted)</span>
         </div>
@@ -188,7 +223,14 @@ async function addRecipeToProject(recipe) {
                 <option v-for="c in orderedChapters" :key="c.id" :value="c.id">{{ c.name }}</option>
               </select>
               <router-link :to="`/projects/${project.id}/recipes/${recipe.id}/print`">Print</router-link>
-              <button type="button" class="danger" @click="removeFromProject(pr, recipe.title)">Remove</button>
+              <button
+                type="button"
+                class="danger"
+                :disabled="removingRecipeId === pr.id"
+                @click="removeFromProject(pr, recipe.title)"
+              >
+                Remove
+              </button>
             </div>
           </li>
         </ul>
@@ -207,7 +249,13 @@ async function addRecipeToProject(recipe) {
             <RecipeThumbnail :image="recipe.image" />
           </div>
           <span class="recipe-row__title">{{ recipe.title }}</span>
-          <button type="button" @click="addRecipeToProject(recipe)">+ Add</button>
+          <button
+            type="button"
+            :disabled="addingRecipeId === recipe.id"
+            @click="addRecipeToProject(recipe)"
+          >
+            + Add
+          </button>
         </li>
       </ul>
     </section>
@@ -392,8 +440,8 @@ select {
 
 button.danger {
   background: none;
-  border: 1px solid #c0392b;
-  color: #c0392b;
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
   border-radius: 6px;
   padding: 2px var(--space-sm);
   cursor: pointer;
@@ -401,5 +449,10 @@ button.danger {
 
 button {
   font: inherit;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
