@@ -9,6 +9,10 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `openspec-propose`/`openspec-apply-change`/`openspec-archive-change` skills for the workflow.
 - `npm test` runs vitest (happy-dom + fake-indexeddb, see `vitest.config.js`); `npm run build` runs the
   Vite production build. Both must stay green before landing a change.
+- The router (`src/router/index.js`) uses `createWebHistory()`. A `spaFallback404` plugin in
+  `vite.config.js` copies `dist/index.html` to `dist/404.html` after build, so static hosts without a
+  rewrite rule (e.g. GitHub Pages) serve the app shell for deep links/hard refreshes instead of a bare
+  404. No GitHub Pages deploy config exists yet — this only prepares the app for that.
 - If `chrome-devtools-axi`/`chrome-devtools-mcp` fails to launch a browser here ("Protocol error
   (Target.setDiscoverTargets): Target closed"), the default Chrome resolution (`channel: stable`) can't
   find/launch a working browser in this environment. Fix: install a Chrome build
