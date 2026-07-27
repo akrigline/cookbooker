@@ -27,8 +27,11 @@ OUTPUT FORMAT — for EACH recipe, produce one block in this exact shape:
   <section class="cm-notes">
     <h2>Chef's Notes</h2>
     <p>Optional: prep/cook time, servings, tags, storage tips, or any other
-    context from the source that doesn't fit above. Use <strong>bold</strong> and
-    <em>italic</em> only — no other formatting.</p>
+    context from the source that doesn't fit above. For emphasis, use markdown
+    syntax written as literal text — **bold** (double asterisks) and *italic*
+    (single asterisks) only. Do NOT use HTML tags like &lt;strong&gt; or
+    &lt;em&gt; here; they will be stripped on import and the formatting will be
+    lost.</p>
   </section>
 
   <meta class="cm-layout" content="standard">

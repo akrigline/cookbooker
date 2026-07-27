@@ -31,6 +31,24 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   committing) will hand Dexie a reactive Proxy, which fails IndexedDB's structured-clone
   check with `DataCloneError: ... could not be cloned` — wrap the object with `markRaw()`
   when it's staged, not when it's written.
+- Pinia store actions in `src/stores/*.js` must never recompute or hardcode a value (like
+  `sequence`) that `src/js/db.js` already derived for the same write — read it back from the
+  `db.js` call's return value instead. This is an explicit invariant
+  (`openspec/changes/archive/2026-07-05-initial-project-tech-setup/design.md` Decision 3: store
+  actions must keep IndexedDB and in-memory state from drifting apart); `db.js`'s exports return
+  whatever the store needs for this (see `addRecipeToProject`'s `{ id, sequence, chapterId }`).
+- The AI recipe-import prompt (`src/js/recipeImportPrompt.js`) must ask the LLM for markdown
+  emphasis (`**bold**` / `*italic*`), matching what `src/js/richtext.js`'s `renderChefNotes`
+  renders. Don't change it back to HTML tags (`<strong>`/`<em>`) — `src/js/recipeImport.js`
+  extracts Chef's Notes via `.textContent`, which silently strips real HTML tags but leaves
+  markdown-style asterisks intact.
+- `backup.js`'s `restoreDatabase` uses `clearTablesBeforeImport: true`, so a failure partway
+  through an import can leave tables cleared with only partial data restored. It snapshots the
+  DB just before the destructive import and attaches it to the thrown error as
+  `err.preRestoreSnapshot` (a Blob), which `Settings.vue` auto-downloads as a recovery file on
+  that failure path — but this only covers failures during `importInto` itself; a residual risk
+  remains for failure modes `peakImportFile`'s validation doesn't catch. A full fix (staging the
+  import in a temp DB and swapping) would need a larger redesign than this.
 
 ## Maintaining this file
 

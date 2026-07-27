@@ -160,6 +160,11 @@ export const addRecipeToProject = (projectId, recipeId, chapterId = null) =>
       const misc = await getMiscChapter(projectId)
       targetChapterId = misc?.id
     }
+    if (!targetChapterId) {
+      throw new Error(
+        `Cannot add recipe to project ${projectId}: no chapter was given and the project has no Miscellaneous chapter.`,
+      )
+    }
 
     const siblings = await db.project_recipes
       .where('chapterId')
@@ -169,12 +174,13 @@ export const addRecipeToProject = (projectId, recipeId, chapterId = null) =>
       ? Math.max(...siblings.map((pr) => pr.sequence ?? 0)) + 1
       : 0
 
-    return db.project_recipes.add({
+    const id = await db.project_recipes.add({
       projectId,
       recipeId,
       chapterId: targetChapterId,
       sequence,
     })
+    return { id, sequence, chapterId: targetChapterId }
   })
 
 export const moveProjectRecipe = (id, changes) => db.project_recipes.update(id, changes)

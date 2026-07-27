@@ -50,7 +50,20 @@ async function handleFileChange(event) {
     await restoreDatabase(file, onProgress)
     await Promise.all([recipesStore.load(), projectsStore.load()])
   } catch (err) {
-    error.value = `Import failed: ${err.message}. Existing data was left untouched.`
+    if (err.preRestoreSnapshot) {
+      // The restore got far enough to clear existing tables before failing,
+      // so download the pre-restore snapshot as a safety net.
+      const url = URL.createObjectURL(err.preRestoreSnapshot)
+      const a = document.createElement('a')
+      const date = new Date().toISOString().slice(0, 10)
+      a.href = url
+      a.download = `cookbook-recovery-${date}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+      error.value = `Import failed: ${err.message}. The restore was interrupted partway through, so your previous data may have been partially cleared. A recovery backup from just before this restore was automatically downloaded (cookbook-recovery-${date}.json) - re-import it to get your previous data back.`
+    } else {
+      error.value = `Import failed: ${err.message}. The restore never started, so your existing data was left untouched.`
+    }
   } finally {
     progress.value = null
   }

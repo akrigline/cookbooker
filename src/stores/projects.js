@@ -87,20 +87,27 @@ export const useProjectsStore = defineStore('projects', {
           (c) => c.projectId === chapter.projectId && c.isDefault,
         )
         if (misc) {
+          const existingMisc = this.projectRecipes.filter((pr) => pr.chapterId === misc.id)
+          let nextSequence = existingMisc.length
+            ? Math.max(...existingMisc.map((pr) => pr.sequence ?? 0)) + 1
+            : 0
           this.projectRecipes
             .filter((pr) => pr.chapterId === id)
             .forEach((pr) => {
               pr.chapterId = misc.id
+              pr.sequence = nextSequence++
             })
         }
       }
       this.chapters = this.chapters.filter((c) => c.id !== id)
     },
     async addRecipeToProject(projectId, recipeId, chapterId = null) {
-      const id = await db.addRecipeToProject(projectId, recipeId, chapterId)
-      const targetChapterId =
-        chapterId ?? this.chapters.find((c) => c.projectId === projectId && c.isDefault)?.id
-      this.projectRecipes.push({ id, projectId, recipeId, chapterId: targetChapterId, sequence: 0 })
+      const { id, sequence, chapterId: targetChapterId } = await db.addRecipeToProject(
+        projectId,
+        recipeId,
+        chapterId,
+      )
+      this.projectRecipes.push({ id, projectId, recipeId, chapterId: targetChapterId, sequence })
       return id
     },
     async moveProjectRecipe(id, changes) {
