@@ -21,7 +21,16 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   and `--chrome-arg=--no-sandbox` (neither is exposed via a `CHROME_DEVTOOLS_AXI_*` env var, since the MCP
   child process only inherits a restricted env). Set `CHROME_DEVTOOLS_AXI_MCP_PATH` to a small `.mjs` shim
   that pushes those flags onto `process.argv` before importing the real
-  `chrome-devtools-mcp/build/src/bin/chrome-devtools-mcp.js` entry point.
+  `chrome-devtools-mcp/build/src/bin/chrome-devtools-mcp.js` entry point. If
+  `chrome-devtools-mcp` isn't installed globally, the shim can still target the copy `npx`
+  already cached under `~/.npm/_npx/<hash>/node_modules/chrome-devtools-mcp/` — `find
+  ~/.npm/_npx -maxdepth 4 -iname chrome-devtools-mcp` locates it without a fresh install.
+- Objects passed to any Dexie write (`db.addRecipe`, `db.updateRecipe`, etc.) must be plain
+  data, not Vue-reactive. A component that stages parsed/derived data in a `ref`/`reactive`
+  container before writing it (e.g. a review screen that lets the user toggle items before
+  committing) will hand Dexie a reactive Proxy, which fails IndexedDB's structured-clone
+  check with `DataCloneError: ... could not be cloned` — wrap the object with `markRaw()`
+  when it's staged, not when it's written.
 
 ## Maintaining this file
 
