@@ -38,6 +38,10 @@ const chapterPlan = computed(() =>
 )
 
 const showToc = computed(() => Boolean(project.value?.pageNumbersEnabled))
+// When page numbers are toggled off, recipe/divider pages must suppress the
+// footer counter too, not just omit the Table of Contents (see
+// print-and-export spec: "Page Number Configuration Toggle").
+const pageNumberName = computed(() => (showToc.value ? null : 'no-numbers'))
 
 function printPage() {
   window.print()
@@ -60,10 +64,10 @@ function printPage() {
     </PagePreview>
 
     <template v-for="(entry, index) in chapterPlan" :key="entry.chapter.id">
-      <PagePreview :class="{ 'reset-page-counter': index === 0 }">
+      <PagePreview :named="pageNumberName" :class="{ 'reset-page-counter': index === 0 }">
         <ChapterDividerPage :chapter-name="entry.chapter.name" :accent-color="project.accentColor" />
       </PagePreview>
-      <PagePreview v-for="recipe in entry.recipes" :key="recipe.id">
+      <PagePreview v-for="recipe in entry.recipes" :key="recipe.id" :named="pageNumberName">
         <RecipeSheet :recipe="recipe" :accent-color="project.accentColor" />
       </PagePreview>
     </template>

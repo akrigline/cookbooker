@@ -33,6 +33,14 @@
   }
 }
 
+/* Used for chapter dividers/recipe sheets when a project has page numbers
+   toggled off - suppresses the footer without affecting the default page. */
+@page no-numbers {
+  @bottom-right {
+    content: '';
+  }
+}
+
 .page--cover {
   page: cover;
 }
@@ -43,6 +51,10 @@
 
 .page--single {
   page: single;
+}
+
+.page--no-numbers {
+  page: no-numbers;
 }
 
 /* Applied to the first chapter divider so recipe-page numbering starts at 1,
