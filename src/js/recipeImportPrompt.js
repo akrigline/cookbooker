@@ -62,7 +62,10 @@ RULES:
    <meta class="cm-layout"> are optional — omit them if there's nothing to put there.
 7. Preserve the source's original units and wording (don't convert cups to grams,
    don't rephrase instructions into your own style beyond fixing obvious grammar).
-8. Output ONLY the HTML — no commentary before or after, no markdown code fences
-   around it unless I ask for them.
+8. Output ONLY the HTML, wrapped in a single markdown code block (\`\`\`html ... \`\`\`)
+   — no commentary before or after.
+9. Strip out any citation markers the source material or your own tooling may have
+   inserted, e.g. "[cite:1]", "[cite: 2, 5]", "[1]", or similar bracketed reference
+   tags — they must not appear anywhere in the output.
 
 After this message I will paste or attach the source material to transcribe.`
