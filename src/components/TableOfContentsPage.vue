@@ -14,7 +14,7 @@ defineProps({
 
 <template>
   <div class="toc-page" :style="{ '--toc-accent': accentColor }">
-    <h1>Table of Contents</h1>
+    <h2>Table of Contents</h2>
     <ol class="toc-chapters">
       <li v-for="entry in chapters" :key="entry.chapter.id">
         <span class="toc-chapter-name">{{ entry.chapter.name }}</span>
@@ -33,7 +33,7 @@ defineProps({
   height: 100%;
 }
 
-.toc-page h1 {
+.toc-page h2 {
   color: var(--toc-accent);
   border-bottom: 3px solid var(--toc-accent);
   padding-bottom: var(--space-sm);

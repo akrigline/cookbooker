@@ -14,7 +14,7 @@ defineProps({
     :style="{ '--cover-accent': project.accentColor || '#d97742' }"
   >
     <div class="cover-page__frame">
-      <h1 class="cover-page__title">{{ project.title }}</h1>
+      <h2 class="cover-page__title">{{ project.title }}</h2>
       <p v-if="project.subtitle" class="cover-page__subtitle">{{ project.subtitle }}</p>
       <p v-if="project.author" class="cover-page__author">{{ project.author }}</p>
     </div>

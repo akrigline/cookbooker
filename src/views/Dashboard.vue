@@ -63,6 +63,7 @@ async function deleteProject(project) {
           <button
             type="button"
             class="danger"
+            :aria-label="`Delete '${project.title || 'Untitled Cookbook'}'`"
             :disabled="deletingId === project.id"
             @click="deleteProject(project)"
           >

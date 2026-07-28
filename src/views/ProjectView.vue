@@ -164,6 +164,7 @@ async function addRecipeToProject(recipe) {
             :class="{ active: project.accentColor === color.value }"
             :style="{ background: color.value }"
             :title="color.label"
+            :aria-pressed="project.accentColor === color.value"
             @click="updateField('accentColor', color.value)"
           />
         </div>
@@ -193,11 +194,24 @@ async function addRecipeToProject(recipe) {
             @change="renameChapter(chapter, $event)"
           />
           <div class="chapter__actions" v-if="!chapter.isDefault">
-            <button type="button" @click="projectsStore.reorderChapter(chapter.id, -1)">↑</button>
-            <button type="button" @click="projectsStore.reorderChapter(chapter.id, 1)">↓</button>
+            <button
+              type="button"
+              :aria-label="`Move chapter '${chapter.name}' up`"
+              @click="projectsStore.reorderChapter(chapter.id, -1)"
+            >
+              ↑
+            </button>
+            <button
+              type="button"
+              :aria-label="`Move chapter '${chapter.name}' down`"
+              @click="projectsStore.reorderChapter(chapter.id, 1)"
+            >
+              ↓
+            </button>
             <button
               type="button"
               class="danger"
+              :aria-label="`Delete chapter '${chapter.name}'`"
               :disabled="deletingChapterId === chapter.id"
               @click="deleteChapter(chapter)"
             >
@@ -217,15 +231,32 @@ async function addRecipeToProject(recipe) {
               {{ recipe.title }}
             </router-link>
             <div class="recipe-row__actions">
-              <button type="button" @click="projectsStore.reorderProjectRecipe(pr.id, -1)">↑</button>
-              <button type="button" @click="projectsStore.reorderProjectRecipe(pr.id, 1)">↓</button>
-              <select :value="pr.chapterId" @change="moveRecipeToChapter(pr, $event.target.value)">
+              <button
+                type="button"
+                :aria-label="`Move '${recipe.title}' up`"
+                @click="projectsStore.reorderProjectRecipe(pr.id, -1)"
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                :aria-label="`Move '${recipe.title}' down`"
+                @click="projectsStore.reorderProjectRecipe(pr.id, 1)"
+              >
+                ↓
+              </button>
+              <select
+                :value="pr.chapterId"
+                :aria-label="`Move '${recipe.title}' to a different chapter`"
+                @change="moveRecipeToChapter(pr, $event.target.value)"
+              >
                 <option v-for="c in orderedChapters" :key="c.id" :value="c.id">{{ c.name }}</option>
               </select>
               <router-link :to="`/projects/${project.id}/recipes/${recipe.id}/print`">Print</router-link>
               <button
                 type="button"
                 class="danger"
+                :aria-label="`Remove '${recipe.title}' from this cookbook`"
                 :disabled="removingRecipeId === pr.id"
                 @click="removeFromProject(pr, recipe.title)"
               >
@@ -251,6 +282,7 @@ async function addRecipeToProject(recipe) {
           <span class="recipe-row__title">{{ recipe.title }}</span>
           <button
             type="button"
+            :aria-label="`Add '${recipe.title}' to this cookbook`"
             :disabled="addingRecipeId === recipe.id"
             @click="addRecipeToProject(recipe)"
           >

@@ -125,7 +125,7 @@ async function save() {
       />
     </label>
 
-    <div class="field">
+    <label class="field">
       <span>Ingredients</span>
       <div class="ingredients-grid">
         <textarea
@@ -133,7 +133,7 @@ async function save() {
           rows="10"
           placeholder="1 1/2 cups all-purpose flour&#10;1 cup butter&#10;2 tsp vanilla extract"
         />
-        <ul class="ingredients-preview">
+        <ul class="ingredients-preview" aria-live="polite">
           <li v-if="!parsedIngredients.length" class="hint">
             Parsed ingredients will appear here as you type.
           </li>
@@ -142,7 +142,7 @@ async function save() {
           </li>
         </ul>
       </div>
-    </div>
+    </label>
 
     <label class="field">
       <span>Layout Template</span>
@@ -154,25 +154,31 @@ async function save() {
     </label>
 
     <div class="field">
-      <span>Recipe Image (optional)</span>
+      <label for="recipe-image-input">Recipe Image (optional)</label>
       <div class="image-row">
         <div class="image-preview" :class="{ empty: !imagePreviewUrl }">
           <img v-if="imagePreviewUrl" :src="imagePreviewUrl" alt="" />
         </div>
         <div class="image-actions">
-          <input type="file" accept="image/*" @change="handleImageChange" />
+          <input id="recipe-image-input" type="file" accept="image/*" @change="handleImageChange" />
           <button v-if="imagePreviewUrl" type="button" @click="clearImage">Remove image</button>
         </div>
       </div>
     </div>
 
     <div class="field">
-      <span>Chef's Notes (optional)</span>
+      <label for="recipe-notes">Chef's Notes (optional)</label>
       <div class="notes-toolbar">
         <button type="button" title="Bold" @click="wrapNotesSelection('**')"><strong>B</strong></button>
         <button type="button" title="Italic" @click="wrapNotesSelection('*')"><em>I</em></button>
       </div>
-      <textarea ref="notesTextarea" v-model="notes" rows="4" placeholder="A little **tip** or *story* about this recipe" />
+      <textarea
+        id="recipe-notes"
+        ref="notesTextarea"
+        v-model="notes"
+        rows="4"
+        placeholder="A little **tip** or *story* about this recipe"
+      />
       <div class="notes-preview" v-html="renderChefNotes(notes)" />
     </div>
 
@@ -190,7 +196,8 @@ async function save() {
   margin-bottom: var(--space-lg);
 }
 
-.field > span {
+.field > span,
+.field > label {
   font-weight: 600;
   font-size: var(--font-size-sm);
   color: var(--text-secondary);

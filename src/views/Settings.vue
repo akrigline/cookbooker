@@ -9,6 +9,7 @@ const projectsStore = useProjectsStore()
 
 const progress = ref(null)
 const error = ref(null)
+const success = ref(null)
 const fileInput = ref(null)
 
 function onProgress(prog) {
@@ -18,6 +19,7 @@ function onProgress(prog) {
 
 async function handleExport() {
   error.value = null
+  success.value = null
   progress.value = { done: 0, total: 0 }
   try {
     const blob = await exportDatabase(onProgress)
@@ -28,6 +30,7 @@ async function handleExport() {
     a.download = `cookbook-backup-${date}.json`
     a.click()
     URL.revokeObjectURL(url)
+    success.value = 'Backup downloaded.'
   } catch (err) {
     error.value = `Export failed: ${err.message}`
   } finally {
@@ -45,10 +48,12 @@ async function handleFileChange(event) {
   if (!file) return
 
   error.value = null
+  success.value = null
   progress.value = { done: 0, total: 0 }
   try {
     await restoreDatabase(file, onProgress)
     await Promise.all([recipesStore.load(), projectsStore.load()])
+    success.value = 'Backup restored.'
   } catch (err) {
     if (err.preRestoreSnapshot) {
       // The restore got far enough to clear existing tables before failing,
@@ -88,8 +93,9 @@ async function handleFileChange(event) {
         />
       </div>
 
-      <p v-if="progress">Working... {{ progress.done }}/{{ progress.total || '?' }}</p>
-      <p v-if="error" class="error">{{ error }}</p>
+      <p v-if="progress" aria-live="polite">Working... {{ progress.done }}/{{ progress.total || '?' }}</p>
+      <p v-if="success" class="success" aria-live="polite">{{ success }}</p>
+      <p v-if="error" class="error" aria-live="assertive">{{ error }}</p>
     </section>
   </div>
 </template>
@@ -125,5 +131,10 @@ button.primary:disabled {
 
 .error {
   color: var(--color-danger);
+}
+
+.success {
+  color: var(--color-success);
+  font-weight: 600;
 }
 </style>

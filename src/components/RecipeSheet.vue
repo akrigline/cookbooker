@@ -37,7 +37,7 @@ const notesHtml = computed(() => renderChefNotes(props.recipe.notes))
     :style="{ '--recipe-accent': accentColor }"
   >
     <header class="recipe-sheet__header">
-      <h1>{{ recipe.title }}</h1>
+      <h2>{{ recipe.title }}</h2>
     </header>
 
     <div v-if="hasImageSlot" class="recipe-sheet__image" :class="{ 'is-empty': !imageUrl }">
@@ -109,7 +109,7 @@ const notesHtml = computed(() => renderChefNotes(props.recipe.notes))
   padding-bottom: var(--space-sm);
 }
 
-.recipe-sheet__header h1 {
+.recipe-sheet__header h2 {
   margin: 0;
   font-size: 1.75rem;
   color: var(--recipe-accent);

@@ -1,13 +1,11 @@
 <script setup>
 import { computed, markRaw, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
 import { parseRecipeImportHtml } from '../js/recipeImport'
 import { RECIPE_IMPORT_PROMPT } from '../js/recipeImportPrompt'
 import RecipeSheet from '../components/RecipeSheet.vue'
 import PagePreview from '../components/PagePreview.vue'
 
-const router = useRouter()
 const recipesStore = useRecipesStore()
 
 const fileInput = ref(null)
@@ -17,6 +15,7 @@ const candidates = ref([]) // [{ key, recipe, included }]
 const failures = ref([]) // [{ key, label, reason }]
 const rejectedSources = ref([]) // file names / "Pasted HTML" with no valid markers
 const error = ref(null)
+const success = ref(null)
 const importing = ref(false)
 const promptCopied = ref(false)
 const promptExpanded = ref(false)
@@ -34,6 +33,7 @@ function handleImportClick() {
 
 function resetResults() {
   error.value = null
+  success.value = null
   candidates.value = []
   failures.value = []
   rejectedSources.value = []
@@ -113,7 +113,10 @@ async function confirmImport() {
     for (const { recipe } of toImport) {
       await recipesStore.createRecipe(recipe)
     }
-    router.push('/library')
+    success.value = `Import complete - ${toImport.length} recipe${toImport.length === 1 ? '' : 's'} added to the Global Recipe Library.`
+    candidates.value = []
+    failures.value = []
+    rejectedSources.value = []
   } finally {
     importing.value = false
   }
@@ -127,8 +130,15 @@ async function confirmImport() {
       <router-link to="/library">Back to Library</router-link>
     </div>
 
+    <p v-if="success" class="success" aria-live="polite">{{ success }}</p>
+
     <section class="prompt-help">
-      <button type="button" class="link" @click="promptExpanded = !promptExpanded">
+      <button
+        type="button"
+        class="link"
+        :aria-expanded="promptExpanded"
+        @click="promptExpanded = !promptExpanded"
+      >
         {{ promptExpanded ? 'Hide' : 'Show' }} the LLM transcription prompt
       </button>
       <div v-if="promptExpanded" class="prompt-block">
@@ -147,18 +157,22 @@ async function confirmImport() {
 
     <div class="mode-toggle" role="tablist">
       <button
+        id="import-tab-file"
         type="button"
         role="tab"
         :aria-selected="mode === 'file'"
+        aria-controls="import-panel-file"
         :class="['mode-toggle__btn', { active: mode === 'file' }]"
         @click="mode = 'file'"
       >
         Upload file
       </button>
       <button
+        id="import-tab-paste"
         type="button"
         role="tab"
         :aria-selected="mode === 'paste'"
+        aria-controls="import-panel-paste"
         :class="['mode-toggle__btn', { active: mode === 'paste' }]"
         @click="mode = 'paste'"
       >
@@ -166,7 +180,13 @@ async function confirmImport() {
       </button>
     </div>
 
-    <section v-if="mode === 'file'" class="upload">
+    <section
+      v-if="mode === 'file'"
+      id="import-panel-file"
+      class="upload"
+      role="tabpanel"
+      aria-labelledby="import-tab-file"
+    >
       <button type="button" class="primary" @click="handleImportClick">Select Recipe File(s)</button>
       <input
         ref="fileInput"
@@ -178,7 +198,13 @@ async function confirmImport() {
       />
     </section>
 
-    <section v-else class="paste">
+    <section
+      v-else
+      id="import-panel-paste"
+      class="paste"
+      role="tabpanel"
+      aria-labelledby="import-tab-paste"
+    >
       <textarea
         v-model="pastedHtml"
         class="paste-textarea"
@@ -190,39 +216,41 @@ async function confirmImport() {
       </div>
     </section>
 
-    <p v-if="error" class="error">{{ error }}</p>
+    <p v-if="error" class="error" aria-live="assertive">{{ error }}</p>
 
-    <section v-if="rejectedSources.length" class="rejected">
-      <h2>Not recognized</h2>
-      <ul>
-        <li v-for="name in rejectedSources" :key="name">
-          "{{ name }}" doesn't look like a cookbook-maker recipe import (missing the
-          <code>data-cm-format="recipe"</code> marker). It was not imported.
-        </li>
-      </ul>
-    </section>
+    <div aria-live="polite">
+      <section v-if="rejectedSources.length" class="rejected">
+        <h2>Not recognized</h2>
+        <ul>
+          <li v-for="name in rejectedSources" :key="name">
+            "{{ name }}" doesn't look like a cookbook-maker recipe import (missing the
+            <code>data-cm-format="recipe"</code> marker). It was not imported.
+          </li>
+        </ul>
+      </section>
 
-    <section v-if="failures.length" class="failures">
-      <h2>Recipes that couldn't be imported</h2>
-      <ul>
-        <li v-for="f in failures" :key="f.key">
-          <strong>{{ f.label }}</strong>: {{ f.reason }}
-        </li>
-      </ul>
-    </section>
+      <section v-if="failures.length" class="failures">
+        <h2>Recipes that couldn't be imported</h2>
+        <ul>
+          <li v-for="f in failures" :key="f.key">
+            <strong>{{ f.label }}</strong>: {{ f.reason }}
+          </li>
+        </ul>
+      </section>
 
-    <section v-if="candidates.length" class="review">
-      <h2>Review recipes to import ({{ includedCount }} of {{ candidates.length }} selected)</h2>
-      <div v-for="c in candidates" :key="c.key" class="review-card">
-        <label class="review-card__toggle">
-          <input v-model="c.included" type="checkbox" />
-          <span>Include "{{ c.recipe.title }}"</span>
-        </label>
-        <PagePreview>
-          <RecipeSheet :recipe="c.recipe" />
-        </PagePreview>
-      </div>
-    </section>
+      <section v-if="candidates.length" class="review">
+        <h2>Review recipes to import ({{ includedCount }} of {{ candidates.length }} selected)</h2>
+        <div v-for="c in candidates" :key="c.key" class="review-card">
+          <label class="review-card__toggle">
+            <input v-model="c.included" type="checkbox" />
+            <span>Include "{{ c.recipe.title }}"</span>
+          </label>
+          <PagePreview>
+            <RecipeSheet :recipe="c.recipe" />
+          </PagePreview>
+        </div>
+      </section>
+    </div>
 
     <div v-if="candidates.length" class="actions">
       <button type="button" class="primary" :disabled="!includedCount || importing" @click="confirmImport">
@@ -354,6 +382,11 @@ button.primary:disabled {
 
 .error {
   color: var(--color-danger);
+}
+
+.success {
+  color: var(--color-success);
+  font-weight: 600;
 }
 
 .rejected,

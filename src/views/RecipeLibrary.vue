@@ -41,18 +41,20 @@ const filteredRecipes = computed(() => {
       placeholder="Search by title or ingredient..."
     />
 
-    <p v-if="!filteredRecipes.length" class="empty">No recipes match your search.</p>
+    <div aria-live="polite">
+      <p v-if="!filteredRecipes.length" class="empty">No recipes match your search.</p>
 
-    <ul class="recipe-grid">
-      <li v-for="recipe in filteredRecipes" :key="recipe.id">
-        <router-link :to="`/library/${recipe.id}`" class="recipe-card">
-          <div class="recipe-card__thumb">
-            <RecipeThumbnail :image="recipe.image" />
-          </div>
-          <span class="recipe-card__title">{{ recipe.title }}</span>
-        </router-link>
-      </li>
-    </ul>
+      <ul class="recipe-grid">
+        <li v-for="recipe in filteredRecipes" :key="recipe.id">
+          <router-link :to="`/library/${recipe.id}`" class="recipe-card">
+            <div class="recipe-card__thumb">
+              <RecipeThumbnail :image="recipe.image" />
+            </div>
+            <span class="recipe-card__title">{{ recipe.title }}</span>
+          </router-link>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 

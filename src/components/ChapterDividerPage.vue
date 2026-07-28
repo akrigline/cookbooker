@@ -13,7 +13,7 @@ defineProps({
 
 <template>
   <div class="chapter-divider" :style="{ '--divider-accent': accentColor }">
-    <h1>{{ chapterName }}</h1>
+    <h2>{{ chapterName }}</h2>
   </div>
 </template>
 
@@ -28,7 +28,7 @@ defineProps({
   text-align: center;
 }
 
-.chapter-divider h1 {
+.chapter-divider h2 {
   font-size: 2.5rem;
   color: var(--divider-accent);
   border-top: 4px solid var(--divider-accent);
