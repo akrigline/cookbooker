@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    ::selection { background: oklch(85% 0.05 250); }
+    .cm-skip-link:focus { transform: translateY(0) !important; }
+    a { color: oklch(45% 0.14 250); }
+    a:hover { color: oklch(38% 0.15 250); }
+    @keyframes cm-stripes { from { background-position: 0 0; } to { background-position: 28px 0; } }
+  </style>
+</helmet>
+
+<div style="min-height:100vh; background:oklch(97.5% 0.006 75); font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif; color:oklch(18% 0.01 75);">
+
+  <a href="#cm-main" class="cm-skip-link" style="position:absolute; left:12px; top:-60px; transform:translateY(-100px); background:oklch(20% 0.015 75); color:white; padding:10px 16px; border-radius:6px; z-index:100; text-decoration:none; font-size:14px; font-weight:600; transition:transform 0.15s;">Skip to main content</a>
+
+  <div role="status" aria-live="polite" style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;">{{ toastMessage }}</div>
+
+  <header style="border-bottom:1px solid oklch(88% 0.008 75); background:oklch(99% 0.003 75);">
+    <div style="max-width:1160px; margin:0 auto; padding:16px 32px; display:flex; align-items:center; gap:28px; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span aria-hidden="true" style="width:28px; height:28px; border-radius:7px; background:oklch(20% 0.015 75); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="oklch(97% 0.006 75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </span>
+        <span style="font-family:'Newsreader',Georgia,serif; font-size:20px; font-weight:600; letter-spacing:-0.01em;">Cookbook Studio</span>
+      </div>
+      <nav aria-label="Primary" style="display:flex; gap:4px;">
+        <a href="Cookbook Management.dc.html" style="text-decoration:none; font-size:14px; font-weight:600; padding:8px 12px; border-radius:7px; color:oklch(40% 0.01 75);" style-hover="background:oklch(94% 0.006 75);">Cookbooks</a>
+        <a href="Global Recipe Library.dc.html" aria-current="page" style="text-decoration:none; font-size:14px; font-weight:600; padding:8px 12px; border-radius:7px; background:oklch(93% 0.02 250); color:oklch(30% 0.1 250);">Recipe Library</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="cm-main" style="max-width:1160px; margin:0 auto; padding:40px 32px 80px;">
+    <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:28px; flex-wrap:wrap;">
+      <div>
+        <h1 style="font-family:'Newsreader',Georgia,serif; font-size:34px; font-weight:600; margin:0 0 6px; letter-spacing:-0.01em;">Recipe Library</h1>
+        <p style="margin:0; font-size:15px; color:oklch(45% 0.01 75);">{{ resultCountLabel }}</p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button type="button" onClick="{{ handleImportClick }}" style="display:flex; align-items:center; gap:8px; background:none; color:oklch(20% 0.015 75); border:1px solid oklch(82% 0.008 75); border-radius:8px; padding:12px 18px; font-size:15px; font-weight:600; cursor:pointer;" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          Import Recipes
+        </button>
+        <button type="button" onClick="{{ handleNewRecipeClick }}" style="display:flex; align-items:center; gap:8px; background:oklch(20% 0.015 75); color:oklch(98% 0.004 75); border:none; border-radius:8px; padding:12px 20px; font-size:15px; font-weight:600; cursor:pointer;" style-hover="background:oklch(28% 0.02 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          New Recipe
+        </button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:28px;">
+      <label for="cm-search" style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);">Search recipes by title or ingredient</label>
+      <div style="position:relative; max-width:420px;">
+        <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="oklch(50% 0.01 75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:13px; top:50%; transform:translateY(-50%);"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="cm-search" type="text" placeholder="Search by title or ingredient…" value="{{ searchQuery }}" onChange="{{ handleSearchChange }}" style="width:100%; box-sizing:border-box; padding:11px 14px 11px 38px; font-size:15px; border:1px solid oklch(82% 0.008 75); border-radius:8px; font-family:inherit; background:oklch(99.3% 0.002 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px; border-color:oklch(52% 0.16 250);" />
+      </div>
+    </div>
+
+    <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+      <div role="list" aria-label="Recipes" style="background:oklch(99.2% 0.002 75); border:1px solid oklch(88% 0.008 75); border-radius:14px; overflow:hidden;">
+        <sc-for list="{{ recipes }}" as="recipe" hint-placeholder-count="6">
+          <article role="listitem" aria-labelledby="cm-rtitle-{{ recipe.id }}" style="display:flex; align-items:flex-start; gap:16px; padding:16px 20px; border-bottom:1px solid oklch(90% 0.008 75);">
+            <sc-if value="{{ recipe.hasImage }}" hint-placeholder-val="{{ false }}">
+              <div aria-hidden="true" style="width:52px; height:52px; flex-shrink:0; border-radius:8px; background-image:repeating-linear-gradient(45deg, oklch(90% 0.02 250) 0 6px, oklch(94% 0.015 250) 6px 12px); border:1px solid oklch(85% 0.02 250);"></div>
+            </sc-if>
+            <sc-if value="{{ recipe.hasNoImage }}" hint-placeholder-val="{{ false }}">
+              <div aria-hidden="true" style="width:52px; height:52px; flex-shrink:0; border-radius:8px; background:oklch(95% 0.004 75); border:1px dashed oklch(83% 0.008 75); display:flex; align-items:center; justify-content:center; font-family:ui-monospace,monospace; font-size:8px; color:oklch(58% 0.01 75); text-align:center; line-height:1.3; padding:2px;">no photo</div>
+            </sc-if>
+
+            <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;">
+              <h2 id="cm-rtitle-{{ recipe.id }}" title="{{ recipe.title }}" style="font-family:'Newsreader',Georgia,serif; font-size:17px; font-weight:600; margin:0; letter-spacing:-0.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">{{ recipe.title }}</h2>
+              <p title="{{ recipe.ingredientSummary }}" style="margin:0; font-size:13px; color:oklch(45% 0.01 75); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">{{ recipe.ingredientPreview }}</p>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:2px;">
+                <span style="font-size:12px; font-weight:600; color:oklch(45% 0.01 75); background:oklch(94% 0.006 75); border-radius:5px; padding:3px 8px;">{{ recipe.layoutTemplate }}</span>
+                <sc-if value="{{ recipe.hasNotes }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:12px; font-weight:600; color:oklch(40% 0.1 145); background:oklch(94% 0.03 145); border-radius:5px; padding:3px 8px;">Chef's notes</span>
+                </sc-if>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:8px; flex-shrink:0; align-self:center;">
+              <button type="button" onClick="{{ recipe.openHandler }}" style="background:oklch(94% 0.006 75); border:1px solid oklch(85% 0.008 75); border-radius:7px; padding:8px 14px; font-size:13px; font-weight:600; cursor:pointer; color:oklch(18% 0.01 75); white-space:nowrap;" style-hover="background:oklch(90% 0.008 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">
+                Open recipe
+              </button>
+              <button type="button" aria-label="Delete {{ recipe.title }}" onClick="{{ recipe.deleteHandler }}" style="width:36px; height:36px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:none; border:1px solid oklch(85% 0.008 75); border-radius:7px; cursor:pointer; color:oklch(45% 0.05 25);" style-hover="background:oklch(94% 0.04 25); border-color:oklch(80% 0.06 25);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+              </button>
+            </div>
+          </article>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasNoResults }}" hint-placeholder-val="{{ false }}">
+      <div style="border:1px dashed oklch(80% 0.01 75); border-radius:14px; padding:64px 32px; text-align:center; background:oklch(99% 0.003 75);">
+        <p style="font-family:'Newsreader',Georgia,serif; font-size:22px; font-weight:600; margin:0 0 8px;">{{ emptyStateHeading }}</p>
+        <p style="margin:0 0 20px; font-size:15px; color:oklch(45% 0.01 75);">{{ emptyStateBody }}</p>
+        <sc-if value="{{ showEmptyStateCta }}" hint-placeholder-val="{{ false }}">
+          <button type="button" onClick="{{ handleNewRecipeClick }}" style="background:oklch(20% 0.015 75); color:oklch(98% 0.004 75); border:none; border-radius:8px; padding:12px 22px; font-size:15px; font-weight:600; cursor:pointer;" style-hover="background:oklch(28% 0.02 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">
+            New Recipe
+          </button>
+        </sc-if>
+      </div>
+    </sc-if>
+  </main>
+
+  <sc-if value="{{ showDeleteModal }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ handleBackdropClick }}" onKeyDown="{{ handleModalKeyDown }}" style="position:fixed; inset:0; background:oklch(20% 0.01 75 / 0.45); display:flex; align-items:center; justify-content:center; padding:24px; z-index:200;">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="cm-delete-heading" aria-describedby="cm-delete-desc" onClick="{{ stopPropagation }}" style="background:oklch(99.3% 0.002 75); border-radius:14px; width:100%; max-width:420px; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(20% 0.02 75 / 0.25);">
+        <h2 id="cm-delete-heading" style="font-family:'Newsreader',Georgia,serif; font-size:20px; font-weight:600; margin:0 0 10px;">Delete "{{ deleteTargetTitle }}"?</h2>
+        <p id="cm-delete-desc" style="margin:0 0 22px; font-size:14px; color:oklch(40% 0.01 75); line-height:1.5;">This permanently removes the recipe from the Global Recipe Library and withdraws it from every cookbook that includes it. This can't be undone.</p>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button ref="{{ firstFieldRef }}" type="button" onClick="{{ closeModal }}" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Cancel</button>
+          <button type="button" onClick="{{ confirmDelete }}" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:oklch(45% 0.14 25); color:white; cursor:pointer;" style-hover="background:oklch(38% 0.14 25);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Delete permanently</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    recipes: [
+      { id: 1, title: "Spaghetti Carbonara", ingredients: ["spaghetti", "eggs", "pecorino cheese", "guanciale", "black pepper"], hasNotes: true, hasImage: true, layoutTemplate: "Classic Text" },
+      { id: 2, title: "Grandma's Apple Pie", ingredients: ["apples", "flour", "butter", "sugar", "cinnamon"], hasNotes: true, hasImage: true, layoutTemplate: "Image Top Layout" },
+      { id: 3, title: "Pancakes", ingredients: ["flour", "milk", "eggs", "baking powder", "butter"], hasNotes: false, hasImage: false, layoutTemplate: "Classic Text" },
+      { id: 4, title: "Weeknight Stir-Fry", ingredients: ["chicken breast", "broccoli", "soy sauce", "garlic", "ginger"], hasNotes: false, hasImage: true, layoutTemplate: "Image Top Layout" },
+      { id: 5, title: "Classic Caesar Salad", ingredients: ["romaine lettuce", "parmesan", "croutons", "anchovy", "garlic"], hasNotes: true, hasImage: false, layoutTemplate: "Classic Text" },
+      { id: 6, title: "Banana Bread", ingredients: ["bananas", "flour", "sugar", "butter", "walnuts"], hasNotes: false, hasImage: true, layoutTemplate: "Image Top Layout" },
+      { id: 7, title: "Tomato Basil Soup", ingredients: ["tomatoes", "basil", "cream", "onion", "garlic"], hasNotes: true, hasImage: false, layoutTemplate: "Classic Text" },
+      { id: 8, title: "Grandma Dolores's Everything-But-The-Kitchen-Sink Holiday Kitchen Sink Casserole", ingredients: ["potatoes", "carrots", "celery", "onion", "garlic", "butter", "flour", "chicken stock", "heavy cream", "thyme", "rosemary", "sage", "bay leaf", "black pepper", "salt", "nutmeg", "parmesan", "gruyere", "breadcrumbs", "panko", "olive oil", "leeks", "mushrooms", "peas", "corn", "green beans", "roasted chicken", "ham", "hard-boiled eggs", "paprika"], hasNotes: true, hasImage: true, layoutTemplate: "Image Top Layout" },
+    ],
+    searchQuery: '',
+    modal: null, // {type:'delete', id}
+    toastMessage: '',
+  };
+
+  lastTrigger = null;
+  toastTimer = null;
+
+  announce(msg) {
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.setState({ toastMessage: msg });
+    this.toastTimer = setTimeout(() => this.setState({ toastMessage: '' }), 4000);
+  }
+
+  handleSearchChange = (e) => this.setState({ searchQuery: e.target.value });
+
+  handleNewRecipeClick = () => this.announce('Opening new recipe editor (not yet built).');
+  handleImportClick = () => { window.location.href = 'Import Recipes.dc.html'; };
+
+  openDelete = (recipe, e) => {
+    this.lastTrigger = e && e.currentTarget;
+    this.setState({ modal: { type: 'delete', id: recipe.id } });
+  };
+
+  closeModal = () => {
+    this.setState({ modal: null });
+    if (this.lastTrigger && this.lastTrigger.focus) this.lastTrigger.focus();
+    this.lastTrigger = null;
+  };
+
+  handleBackdropClick = () => this.closeModal();
+  stopPropagation = (e) => e.stopPropagation();
+
+  handleModalKeyDown = (e) => {
+    if (e.key === 'Escape') { e.stopPropagation(); this.closeModal(); return; }
+    if (e.key === 'Tab') {
+      const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+      const nodes = Array.prototype.slice.call(e.currentTarget.querySelectorAll(FOCUSABLE));
+      if (!nodes.length) return;
+      const first = nodes[0], last = nodes[nodes.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  };
+
+  firstFieldRef = (el) => { if (el) el.focus(); };
+
+  confirmDelete = () => {
+    const { modal, recipes } = this.state;
+    const target = recipes.find(r => r.id === modal.id);
+    this.setState(s => ({ recipes: s.recipes.filter(r => r.id !== modal.id) }));
+    if (target) this.announce(`Recipe "${target.title}" permanently deleted from the library.`);
+    this.closeModal();
+  };
+
+  renderVals() {
+    const { recipes, searchQuery, modal, toastMessage } = this.state;
+    const q = searchQuery.trim().toLowerCase();
+    const filtered = q
+      ? recipes.filter(r => r.title.toLowerCase().includes(q) || r.ingredients.some(i => i.toLowerCase().includes(q)))
+      : recipes;
+
+    const recipesView = filtered.map(r => ({
+      id: r.id,
+      title: r.title,
+      ingredientSummary: r.ingredients.join(', '),
+      ingredientPreview: r.ingredients.length > 6
+        ? `${r.ingredients.slice(0, 6).join(', ')} +${r.ingredients.length - 6} more`
+        : r.ingredients.join(', '),
+      hasNotes: r.hasNotes,
+      hasImage: r.hasImage,
+      hasNoImage: !r.hasImage,
+      layoutTemplate: r.layoutTemplate,
+      openHandler: () => { window.location.href = 'Recipe Detail.dc.html'; },
+      deleteHandler: (e) => this.openDelete(r, e),
+    }));
+
+    const deleteTargetTitle = modal && modal.type === 'delete' ? (recipes.find(r => r.id === modal.id) || {}).title : '';
+
+    let emptyStateHeading = 'No recipes yet';
+    let emptyStateBody = 'Add your first recipe or import recipes to start building your library.';
+    let showEmptyStateCta = true;
+    if (recipes.length > 0 && filtered.length === 0) {
+      emptyStateHeading = 'No matching recipes';
+      emptyStateBody = `Nothing matches "${searchQuery.trim()}". Try a different title or ingredient.`;
+      showEmptyStateCta = false;
+    }
+
+    return {
+      recipes: recipesView,
+      hasResults: filtered.length > 0,
+      hasNoResults: filtered.length === 0,
+      resultCountLabel: q ? `${filtered.length} of ${recipes.length} recipes` : `${recipes.length} recipe${recipes.length === 1 ? '' : 's'}`,
+      searchQuery,
+      handleSearchChange: this.handleSearchChange,
+      handleNewRecipeClick: this.handleNewRecipeClick,
+      handleImportClick: this.handleImportClick,
+      emptyStateHeading,
+      emptyStateBody,
+      showEmptyStateCta,
+      showDeleteModal: !!modal && modal.type === 'delete',
+      deleteTargetTitle,
+      closeModal: this.closeModal,
+      handleBackdropClick: this.handleBackdropClick,
+      handleModalKeyDown: this.handleModalKeyDown,
+      stopPropagation: this.stopPropagation,
+      firstFieldRef: this.firstFieldRef,
+      confirmDelete: this.confirmDelete,
+      toastMessage,
+    };
+  }
+}
+</script>
+</body>
+</html>
