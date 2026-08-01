@@ -2,10 +2,11 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
-import { parseIngredientsText, formatIngredientLine } from '../js/conversions'
-import { renderChefNotes } from '../js/richtext'
+import { parseIngredientsText } from '../js/conversions'
 import { LAYOUT_TEMPLATES } from '../js/templates'
-import { useObjectUrl } from '../js/useObjectUrl'
+import RecipeSheet from '../components/RecipeSheet.vue'
+import PagePreview from '../components/PagePreview.vue'
+import QRCodeShare from '../components/QRCodeShare.vue'
 
 const props = defineProps({
   recipeId: {
@@ -19,7 +20,7 @@ const recipesStore = useRecipesStore()
 
 const isEditing = computed(() => props.recipeId != null)
 
-const title = ref('')
+const title = ref('Untitled Recipe')
 const instructionsText = ref('')
 const ingredientsText = ref('')
 const notes = ref('')
@@ -28,9 +29,9 @@ const imageFile = ref(null)
 const existingImage = ref(null)
 const notesTextarea = ref(null)
 const error = ref(null)
-
-const imagePreviewSource = computed(() => imageFile.value ?? existingImage.value)
-const imagePreviewUrl = useObjectUrl(imagePreviewSource)
+const showDeleteModal = ref(false)
+const showQRModal = ref(false)
+const deleting = ref(false)
 
 onMounted(async () => {
   if (!recipesStore.loaded) await recipesStore.load()
@@ -44,20 +45,27 @@ onMounted(async () => {
       layoutTemplate.value = recipe.layoutTemplate ?? 'standard'
       existingImage.value = recipe.image ?? null
     }
+  } else {
+    title.value = ''
   }
 })
 
 const parsedIngredients = computed(() => parseIngredientsText(ingredientsText.value))
 
+const previewRecipe = computed(() => ({
+  id: isEditing.value ? Number(props.recipeId) : Date.now(),
+  title: title.value.trim() || 'Untitled Recipe',
+  instructions: instructionsText.value,
+  ingredients: parsedIngredients.value,
+  notes: notes.value,
+  layoutTemplate: layoutTemplate.value,
+  image: imageFile.value ?? existingImage.value ?? null,
+}))
+
 function handleImageChange(event) {
   const file = event.target.files?.[0]
   if (!file) return
   imageFile.value = file
-}
-
-function clearImage() {
-  imageFile.value = null
-  existingImage.value = null
 }
 
 function wrapNotesSelection(marker) {
@@ -85,228 +93,147 @@ async function save() {
     return
   }
 
-  const recipe = {
-    title: title.value.trim(),
-    instructions: instructionsText.value,
-    ingredients: parsedIngredients.value,
-    notes: notes.value,
-    layoutTemplate: layoutTemplate.value,
-    image: imageFile.value ?? existingImage.value ?? null,
-  }
-
   let id = props.recipeId ? Number(props.recipeId) : null
   if (isEditing.value) {
-    await recipesStore.editRecipe(id, recipe)
+    await recipesStore.editRecipe(id, previewRecipe.value)
   } else {
-    id = await recipesStore.createRecipe(recipe)
+    id = await recipesStore.createRecipe(previewRecipe.value)
   }
-  router.push(`/library/${id}`)
+  router.push('/library')
+}
+
+async function confirmDelete() {
+  if (!isEditing.value || deleting.value) return
+  deleting.value = true
+  try {
+    await recipesStore.removeRecipe(Number(props.recipeId))
+    router.push('/library')
+  } finally {
+    deleting.value = false
+    showDeleteModal.value = false
+  }
+}
+
+function handlePrint() {
+  window.print()
+}
+
+function handleCancel() {
+  router.push('/library')
 }
 </script>
 
 <template>
-  <div class="view recipe-editor">
-    <h1>{{ isEditing ? 'Edit Recipe' : 'New Recipe' }}</h1>
+  <main id="cm-main" style="max-width:1280px; margin:0 auto; padding:32px 32px 100px;">
+    <router-link to="/library" class="cm-back-link" style="display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:600; text-decoration:none; margin-bottom:20px;">
+      <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+      Back to Recipe Library
+    </router-link>
 
-    <p v-if="error" class="error">{{ error }}</p>
+    <div class="cm-grid" style="display:grid; grid-template-columns:minmax(360px, 440px) 1fr; gap:32px; align-items:start;">
+      <div class="cm-edit-column" style="display:flex; flex-direction:column; gap:22px;">
+        <p v-if="error" style="color:oklch(45% 0.14 25); font-weight:600; margin:0;">{{ error }}</p>
 
-    <label class="field">
-      <span>Title</span>
-      <input v-model="title" type="text" placeholder="Grandma's Apple Pie" />
-    </label>
-
-    <label class="field">
-      <span>Instructions</span>
-      <span class="hint">One step per line - steps are numbered automatically.</span>
-      <textarea
-        v-model="instructionsText"
-        rows="8"
-        placeholder="Preheat oven to 375F&#10;Mix dry ingredients..."
-      />
-    </label>
-
-    <label class="field">
-      <span>Ingredients</span>
-      <div class="ingredients-grid">
-        <textarea
-          v-model="ingredientsText"
-          rows="10"
-          placeholder="1 1/2 cups all-purpose flour&#10;1 cup butter&#10;2 tsp vanilla extract"
-        />
-        <ul class="ingredients-preview" aria-live="polite">
-          <li v-if="!parsedIngredients.length" class="hint">
-            Parsed ingredients will appear here as you type.
-          </li>
-          <li v-for="(ing, idx) in parsedIngredients" :key="idx">
-            {{ formatIngredientLine(ing) }}
-          </li>
-        </ul>
-      </div>
-    </label>
-
-    <label class="field">
-      <span>Layout Template</span>
-      <select v-model="layoutTemplate">
-        <option v-for="tpl in LAYOUT_TEMPLATES" :key="tpl.id" :value="tpl.id">
-          {{ tpl.label }}
-        </option>
-      </select>
-    </label>
-
-    <div class="field">
-      <label for="recipe-image-input">Recipe Image (optional)</label>
-      <div class="image-row">
-        <div class="image-preview" :class="{ empty: !imagePreviewUrl }">
-          <img v-if="imagePreviewUrl" :src="imagePreviewUrl" alt="" />
+        <div>
+          <label for="cm-title" style="display:block; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin-bottom:6px;">Title <span aria-hidden="true" style="color:oklch(45% 0.05 25);">*</span></label>
+          <input id="cm-title" v-model="title" type="text" required style="width:100%; box-sizing:border-box; font-family:'Newsreader',Georgia,serif; font-size:26px; font-weight:600; padding:10px 12px; border:1px solid oklch(85% 0.008 75); border-radius:8px; background:oklch(99.3% 0.002 75);" />
         </div>
-        <div class="image-actions">
-          <input id="recipe-image-input" type="file" accept="image/*" @change="handleImageChange" />
-          <button v-if="imagePreviewUrl" type="button" @click="clearImage">Remove image</button>
+
+        <div role="group" aria-label="Layout template">
+          <p style="font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin:0 0 8px;">Layout template</p>
+          <div style="display:flex; gap:8px;">
+            <button v-for="tpl in LAYOUT_TEMPLATES" :key="tpl.id" type="button" :aria-pressed="layoutTemplate === tpl.id" @click="layoutTemplate = tpl.id" :style="layoutTemplate === tpl.id ? 'background:oklch(93% 0.02 250); border:1.5px solid oklch(52% 0.16 250); color:oklch(20% 0.01 75);' : 'background:oklch(97% 0.004 75); border:1.5px solid oklch(85% 0.008 75); color:oklch(20% 0.01 75);'" style="flex:1; text-align:left; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+              {{ tpl.label }}
+              <span style="display:block; font-weight:400; font-size:12px; color:oklch(45% 0.01 75); margin-top:2px;">{{ tpl.description || tpl.label }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label for="cm-ingredients" style="display:block; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin-bottom:6px;">Ingredients <span aria-hidden="true" style="color:oklch(45% 0.05 25);">*</span></label>
+          <p style="margin:0 0 8px; font-size:12px; color:oklch(55% 0.01 75);">One ingredient per line. Parsed and converted automatically.</p>
+          <textarea id="cm-ingredients" v-model="ingredientsText" rows="8" style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:14px; font-family:ui-monospace,monospace; border:1px solid oklch(85% 0.008 75); border-radius:8px; resize:vertical; background:oklch(99.3% 0.002 75);"></textarea>
+        </div>
+
+        <div>
+          <label for="cm-instructions" style="display:block; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin-bottom:6px;">Instructions <span aria-hidden="true" style="color:oklch(45% 0.05 25);">*</span></label>
+          <p style="margin:0 0 8px; font-size:12px; color:oklch(55% 0.01 75);">One step per line.</p>
+          <textarea id="cm-instructions" v-model="instructionsText" rows="8" style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:14px; font-family:inherit; border:1px solid oklch(85% 0.008 75); border-radius:8px; resize:vertical; background:oklch(99.3% 0.002 75);"></textarea>
+        </div>
+
+        <div>
+          <label for="cm-notes" style="display:block; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin-bottom:6px;">Chef's Notes (optional)</label>
+          <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <button type="button" aria-label="Bold selected text" @click="wrapNotesSelection('**')" style="width:32px; height:32px; font-weight:700; font-family:Georgia,serif; border:1px solid oklch(85% 0.008 75); border-radius:6px; background:oklch(99.3% 0.002 75); cursor:pointer;">B</button>
+            <button type="button" aria-label="Italicize selected text" @click="wrapNotesSelection('*')" style="width:32px; height:32px; font-weight:600; font-style:italic; font-family:Georgia,serif; border:1px solid oklch(85% 0.008 75); border-radius:6px; background:oklch(99.3% 0.002 75); cursor:pointer;">I</button>
+          </div>
+          <textarea id="cm-notes" ref="notesTextarea" v-model="notes" rows="3" placeholder="Add optional notes… use the B/I buttons to add emphasis." style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:14px; font-family:inherit; border:1px solid oklch(85% 0.008 75); border-radius:8px; resize:vertical; background:oklch(99.3% 0.002 75);"></textarea>
+        </div>
+
+        <div>
+          <label style="display:block; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin-bottom:6px;">Recipe Image (optional)</label>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <input type="file" accept="image/*" @change="handleImageChange" style="font-size:14px;" />
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="field">
-      <label for="recipe-notes">Chef's Notes (optional)</label>
-      <div class="notes-toolbar">
-        <button type="button" title="Bold" @click="wrapNotesSelection('**')"><strong>B</strong></button>
-        <button type="button" title="Italic" @click="wrapNotesSelection('*')"><em>I</em></button>
+      <div style="position:sticky; top:24px;">
+        <p class="cm-preview-label" style="margin:0 0 10px; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); text-transform:uppercase; letter-spacing:0.04em;">Live preview</p>
+        <PagePreview>
+          <RecipeSheet :recipe="previewRecipe" />
+        </PagePreview>
       </div>
-      <textarea
-        id="recipe-notes"
-        ref="notesTextarea"
-        v-model="notes"
-        rows="4"
-        placeholder="A little **tip** or *story* about this recipe"
-      />
-      <div class="notes-preview" v-html="renderChefNotes(notes)" />
     </div>
 
-    <div class="actions">
-      <button type="button" class="primary" @click="save">Save Recipe</button>
+    <div class="cm-action-bar" style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:32px; padding-top:20px; border-top:1px solid oklch(88% 0.008 75); flex-wrap:wrap;">
+      <div>
+        <button v-if="isEditing" type="button" @click="showDeleteModal = true" style="padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(85% 0.06 25); background:none; color:oklch(45% 0.12 25); cursor:pointer;">Delete recipe</button>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button v-if="isEditing" type="button" @click="showQRModal = true" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;">
+          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3z"/><path d="M14 21v-3.5"/><path d="M21 14v3.5"/><path d="M17.5 21H21"/></svg>
+          Share via QR
+        </button>
+        <button v-if="isEditing" type="button" @click="handlePrint" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;">
+          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+          Print recipe
+        </button>
+        <button type="button" @click="handleCancel" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;">Cancel</button>
+        <button type="button" @click="save" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:oklch(20% 0.015 75); color:oklch(98% 0.004 75); cursor:pointer;">Save</button>
+      </div>
     </div>
-  </div>
+
+    <div v-if="showDeleteModal" @click="showDeleteModal = false" style="position:fixed; inset:0; background:oklch(20% 0.01 75 / 0.45); display:flex; align-items:center; justify-content:center; padding:24px; z-index:200;">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="cm-del-heading" aria-describedby="cm-del-desc" @click.stop style="background:oklch(99.3% 0.002 75); border-radius:14px; width:100%; max-width:420px; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(20% 0.02 75 / 0.25);">
+        <h2 id="cm-del-heading" style="font-family:'Newsreader',Georgia,serif; font-size:20px; font-weight:600; margin:0 0 10px;">Delete "{{ previewRecipe.title }}"?</h2>
+        <p id="cm-del-desc" style="margin:0 0 22px; font-size:14px; color:oklch(40% 0.01 75); line-height:1.5;">This permanently removes the recipe from the Global Recipe Library and withdraws it from every cookbook that includes it. This can't be undone.</p>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" @click="showDeleteModal = false" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;">Cancel</button>
+          <button type="button" @click="confirmDelete" :disabled="deleting" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:oklch(45% 0.14 25); color:white; cursor:pointer;">Delete permanently</button>
+        </div>
+      </div>
+    </div>
+
+    <QRCodeShare v-if="showQRModal" :recipe="previewRecipe" @close="showQRModal = false" />
+  </main>
 </template>
 
 <style scoped>
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-lg);
+input:focus, textarea:focus, button:focus-visible, a:focus-visible {
+  outline: 2px solid oklch(52% 0.16 250);
+  outline-offset: 1px;
+  border-color: oklch(52% 0.16 250);
 }
-
-.field > span,
-.field > label {
-  font-weight: 600;
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+button:hover, a:hover {
+  filter: brightness(0.95);
 }
-
-.field > span.hint {
-  font-weight: 400;
-  font-style: italic;
-}
-
-input[type='text'],
-textarea,
-select {
-  font: inherit;
-  padding: var(--space-sm);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-.ingredients-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-md);
-}
-
-.ingredients-preview {
-  list-style: none;
-  margin: 0;
-  padding: var(--space-sm);
-  border: 1px dashed var(--border-color);
-  border-radius: 6px;
-  min-height: 4rem;
-}
-
-.ingredients-preview .hint {
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-.image-row {
-  display: flex;
-  gap: var(--space-md);
-  align-items: flex-start;
-}
-
-.image-preview {
-  width: 140px;
-  height: 140px;
-  flex-shrink: 0;
-  border-radius: 6px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  overflow: hidden;
-}
-
-.image-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.notes-toolbar {
-  display: flex;
-  gap: var(--space-xs);
-}
-
-.notes-toolbar button {
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  background: var(--bg-secondary);
-}
-
-.notes-preview {
-  padding: var(--space-sm);
-  border: 1px dashed var(--border-color);
-  border-radius: 6px;
-  min-height: 2rem;
-}
-
-.actions {
-  display: flex;
-  gap: var(--space-sm);
-}
-
-button.primary {
-  background: var(--accent-color);
-  color: white;
-  border: none;
-  padding: var(--space-sm) var(--space-lg);
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-button.primary:hover {
-  background: var(--accent-color-hover);
-}
-
-.error {
-  color: var(--color-danger);
-}
-
-@media (max-width: 700px) {
-  .ingredients-grid {
-    grid-template-columns: 1fr;
-  }
+@media print {
+  .cm-app-chrome, .cm-edit-column, .cm-preview-label, .cm-action-bar, .cm-back-link { display: none !important; }
+  main { max-width: none !important; padding: 0 !important; margin: 0 !important; }
+  .cm-grid { display: block !important; }
+  /* When the QR share modal is open, printing should produce only the QR
+     code, not the recipe sheet underneath it. */
+  main:has(.cm-qr-overlay) .cm-grid { display: none !important; }
 }
 </style>

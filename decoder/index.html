@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Recipe QR Decoder</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f7f5f2;
+    color: #201d18;
+    line-height: 1.5;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: #1c1a17; color: #f2efe9; }
+  }
+  main {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #6b655a;
+    margin: 0 0 24px;
+  }
+  #state-empty, #state-error {
+    border: 1px dashed #b8b0a0;
+    border-radius: 10px;
+    padding: 28px 20px;
+    text-align: center;
+    color: #55503f;
+  }
+  @media (prefers-color-scheme: dark) {
+    #state-empty, #state-error { border-color: #4a4438; color: #d8d2c4; }
+  }
+  #state-error {
+    border-style: solid;
+    border-color: #c96a4a;
+    color: #8a3d24;
+    background: #fbe9e2;
+  }
+  @media (prefers-color-scheme: dark) {
+    #state-error { background: #3a231a; color: #f0b9a3; border-color: #c96a4a; }
+  }
+  #state-result {
+    background: #fffefb;
+    border: 1px solid #ded6c4;
+    border-radius: 10px;
+    padding: 20px;
+  }
+  @media (prefers-color-scheme: dark) {
+    #state-result { background: #26231d; border-color: #443f33; }
+  }
+  #recipe-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 14px;
+    word-break: break-word;
+  }
+  #ingredient-list {
+    margin: 0 0 18px;
+    padding-left: 20px;
+  }
+  #ingredient-list li {
+    margin-bottom: 6px;
+    word-break: break-word;
+  }
+  #ingredient-empty {
+    color: #6b655a;
+    font-size: 14px;
+    margin: 0 0 18px;
+  }
+  button {
+    font: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid #c9c1ae;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+  }
+  button:hover { background: rgba(0,0,0,0.04); }
+  @media (prefers-color-scheme: dark) {
+    button { border-color: #524c3d; }
+    button:hover { background: rgba(255,255,255,0.06); }
+  }
+  button:focus-visible { outline: 2px solid #4a7fd1; outline-offset: 1px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Recipe QR Decoder</h1>
+  <p class="subtitle">Decodes a recipe shared from Cookbook Studio — everything happens on this device; nothing is uploaded anywhere.</p>
+
+  <div id="state-empty" hidden>
+    <p>No recipe code found.</p>
+    <p>Scan a recipe QR code with your phone's camera to get started.</p>
+  </div>
+
+  <div id="state-error" hidden>
+    <p id="error-message">Invalid or corrupted recipe code.</p>
+  </div>
+
+  <div id="state-result" hidden>
+    <h2 id="recipe-title"></h2>
+    <ul id="ingredient-list"></ul>
+    <p id="ingredient-empty" hidden>No ingredients were included in this code.</p>
+    <button type="button" id="copy-button">Copy to clipboard</button>
+  </div>
+</main>
+
+<script>
+// lz-string v1.5.0 (MIT License, https://github.com/pieroxy/lz-string) — vendored
+// so this page has zero external dependencies and works fully offline once loaded.
+var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",e={};function t(r,o){if(!e[r]){e[r]={};for(var n=0;n<r.length;n++)e[r][r.charAt(n)]=n}return e[r][o]}var i={compressToBase64:function(r){if(null==r)return"";var n=i._compress(r,6,function(r){return o.charAt(r)});switch(n.length%4){default:case 0:return n;case 1:return n+"===";case 2:return n+"==";case 3:return n+"="}},decompressFromBase64:function(r){return null==r?"":""==r?null:i._decompress(r.length,32,function(n){return t(o,r.charAt(n))})},compressToUTF16:function(o){return null==o?"":i._compress(o,15,function(o){return r(o+32)})+" "},decompressFromUTF16:function(r){return null==r?"":""==r?null:i._decompress(r.length,16384,function(o){return r.charCodeAt(o)-32})},compressToUint8Array:function(r){for(var o=i.compress(r),n=new Uint8Array(2*o.length),e=0,t=o.length;e<t;e++){var s=o.charCodeAt(e);n[2*e]=s>>>8,n[2*e+1]=s%256}return n},decompressFromUint8Array:function(o){if(null==o)return i.decompress(o);for(var n=new Array(o.length/2),e=0,t=n.length;e<t;e++)n[e]=256*o[2*e]+o[2*e+1];var s=[];return n.forEach(function(o){s.push(r(o))}),i.decompress(s.join(""))},compressToEncodedURIComponent:function(r){return null==r?"":i._compress(r,6,function(r){return n.charAt(r)})},decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(o){return t(n,r.charAt(o))}))},compress:function(o){return i._compress(o,16,function(o){return r(o)})},_compress:function(r,o,n){if(null==r)return"";var e,t,i,s={},u={},a="",p="",c="",l=2,f=3,h=2,d=[],m=0,v=0;for(i=0;i<r.length;i+=1)if(a=r.charAt(i),Object.prototype.hasOwnProperty.call(s,a)||(s[a]=f++,u[a]=!0),p=c+a,Object.prototype.hasOwnProperty.call(s,p))c=p;else{if(Object.prototype.hasOwnProperty.call(u,c)){if(c.charCodeAt(0)<256){for(e=0;e<h;e++)m<<=1,v==o-1?(v=0,d.push(n(m)),m=0):v++;for(t=c.charCodeAt(0),e=0;e<8;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;e<h;e++)m=m<<1|t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=c.charCodeAt(0),e=0;e<16;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}0==--l&&(l=Math.pow(2,h),h++),delete u[c]}else for(t=s[c],e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;0==--l&&(l=Math.pow(2,h),h++),s[p]=f++,c=String(a)}if(""!==c){if(Object.prototype.hasOwnProperty.call(u,c)){if(c.charCodeAt(0)<256){for(e=0;e<h;e++)m<<=1,v==o-1?(v=0,d.push(n(m)),m=0):v++;for(t=c.charCodeAt(0),e=0;e<8;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;e<h;e++)m=m<<1|t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=c.charCodeAt(0),e=0;e<16;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}0==--l&&(l=Math.pow(2,h),h++),delete u[c]}else for(t=s[c],e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;0==--l&&(l=Math.pow(2,h),h++)}for(t=2,e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;for(;;){if(m<<=1,v==o-1){d.push(n(m));break}v++}return d.join("")},decompress:function(r){return null==r?"":""==r?null:i._decompress(r.length,32768,function(o){return r.charCodeAt(o)})},_decompress:function(o,n,e){var t,i,s,u,a,p,c,l=[],f=4,h=4,d=3,m="",v=[],g={val:e(0),position:n,index:1};for(t=0;t<3;t+=1)l[t]=t;for(s=0,a=Math.pow(2,2),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 2:return""}for(l[3]=c,i=c,v.push(c);;){if(g.index>o)return"";for(s=0,a=Math.pow(2,d),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(c=s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 2:return v.join("")}if(0==f&&(f=Math.pow(2,d),d++),l[c])m=l[c];else{if(c!==h)return null;m=i+i.charAt(0)}v.push(m),l[h++]=i+m.charAt(0),i=m,0==--f&&(f=Math.pow(2,d),d++)}}};return i}();
+</script>
+<script>
+(function () {
+  "use strict";
+
+  function show(id) {
+    ["state-empty", "state-error", "state-result"].forEach(function (other) {
+      document.getElementById(other).hidden = other !== id;
+    });
+  }
+
+  function renderResult(text) {
+    var lines = text.split("\n");
+    var title = lines[0] || "Untitled recipe";
+    var ingredients = lines.slice(1).filter(function (line) {
+      return line.length > 0;
+    });
+
+    // Rendered strictly via textContent (never innerHTML) so a maliciously
+    // crafted payload containing markup or script tags is displayed as
+    // inert text, not parsed as HTML.
+    document.getElementById("recipe-title").textContent = title;
+
+    var list = document.getElementById("ingredient-list");
+    list.textContent = "";
+    ingredients.forEach(function (line) {
+      var li = document.createElement("li");
+      li.textContent = line;
+      list.appendChild(li);
+    });
+
+    document.getElementById("ingredient-empty").hidden = ingredients.length > 0;
+    list.hidden = ingredients.length === 0;
+
+    var copyButton = document.getElementById("copy-button");
+    copyButton.onclick = function () {
+      var plainText = [title].concat(ingredients).join("\n");
+      var restoreLabel = "Copy to clipboard";
+      navigator.clipboard.writeText(plainText).then(
+        function () {
+          copyButton.textContent = "Copied!";
+          setTimeout(function () {
+            copyButton.textContent = restoreLabel;
+          }, 2000);
+        },
+        function () {
+          copyButton.textContent = "Couldn't copy — select the text manually";
+          setTimeout(function () {
+            copyButton.textContent = restoreLabel;
+          }, 2500);
+        }
+      );
+    };
+
+    show("state-result");
+  }
+
+  function main() {
+    var fragment = window.location.hash.slice(1);
+
+    if (!fragment) {
+      show("state-empty");
+      return;
+    }
+
+    var decoded;
+    try {
+      decoded = LZString.decompressFromEncodedURIComponent(fragment);
+    } catch (err) {
+      decoded = null;
+    }
+
+    if (decoded === null || decoded === "") {
+      document.getElementById("error-message").textContent = "Invalid or corrupted recipe code.";
+      show("state-error");
+      return;
+    }
+
+    renderResult(decoded);
+  }
+
+  main();
+  window.addEventListener("hashchange", main);
+})();
+</script>
+</body>
+</html>

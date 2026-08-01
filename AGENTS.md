@@ -56,6 +56,14 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `reorderChapter` filters siblings to non-default chapters before comparing, but don't assume
   a fresh custom chapter starts at sequence 0 in tests or new code.
 
+- `decoder/index.html` (the QR-sharing decoder, see `decoder/README.md`) is a deliberately
+  separate, dependency-free static page — not part of the Vite app or its module graph. It
+  vendors lz-string inline rather than importing the npm package, so if `lz-string` is ever
+  upgraded in `package.json`, re-vendor the matching version into `decoder/index.html` by hand
+  (comment above the vendored block names the version). `DECODER_BASE_URL` in
+  `src/js/qrShare.js` is a placeholder domain — design.md's Open Question 1 (which real domain
+  to deploy the decoder to) is still unresolved.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.

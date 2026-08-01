@@ -27,6 +27,9 @@ const hasResults = computed(
   () => candidates.value.length > 0 || failures.value.length > 0 || rejectedSources.value.length > 0,
 )
 
+const isInputStage = computed(() => candidates.value.length === 0 && failures.value.length === 0 && rejectedSources.value.length === 0)
+const isReviewStage = computed(() => !isInputStage.value)
+
 function handleImportClick() {
   fileInput.value?.click()
 }
@@ -39,9 +42,6 @@ function resetResults() {
   rejectedSources.value = []
 }
 
-// Shared by the file and paste entry points: both funnel a raw HTML string
-// through this same parse/stage step so there is only one validation and
-// review code path.
 function processImportSource(text, sourceLabel) {
   const result = parseRecipeImportHtml(text)
   if (result.rejected) {
@@ -50,9 +50,6 @@ function processImportSource(text, sourceLabel) {
   }
 
   for (const recipe of result.recipes) {
-    // markRaw: the parsed recipe (including its ingredients array) must
-    // reach Dexie's IndexedDB `add()` as plain objects - Vue's reactive
-    // Proxy wrapper fails IndexedDB's structured-clone check.
     candidates.value.push({ key: nextKey++, recipe: markRaw(recipe), included: true })
   }
   for (const failure of result.failures) {
@@ -99,8 +96,6 @@ async function copyPrompt() {
       promptCopied.value = false
     }, 2000)
   } catch {
-    // Clipboard access can be denied by the browser; the prompt text is
-    // still visible on screen for manual copy.
   }
 }
 
@@ -121,302 +116,127 @@ async function confirmImport() {
     importing.value = false
   }
 }
+
+function handleCancelReview() {
+  resetResults()
+  pastedHtml.value = ''
+}
 </script>
 
 <template>
-  <div class="view recipe-import">
-    <div class="toolbar">
-      <h1>Import Recipes</h1>
-      <router-link to="/library">Back to Library</router-link>
+  <main id="cm-main" style="max-width:840px; margin:0 auto; padding:40px 32px 100px;">
+    <router-link to="/library" style="display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:600; text-decoration:none; margin-bottom:18px;">
+      <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+      Back to Recipe Library
+    </router-link>
+
+    <div v-if="success" style="margin-bottom:20px; padding:12px; background:oklch(96% 0.05 140); color:oklch(35% 0.05 140); border:1px solid oklch(85% 0.1 140); border-radius:8px;">
+      {{ success }}
     </div>
 
-    <p v-if="success" class="success" aria-live="polite">{{ success }}</p>
+    <template v-if="isInputStage">
+      <h1 style="font-family:'Newsreader',Georgia,serif; font-size:32px; font-weight:600; margin:0 0 8px; letter-spacing:-0.01em;">Import Recipes</h1>
+      <p style="margin:0 0 32px; font-size:15px; color:oklch(45% 0.01 75); line-height:1.5;">Bring in recipes transcribed elsewhere (Drive docs, PDFs, bookmarked pages, screenshots) using the structured recipe/1 HTML format. Nothing is added to your library until you review and confirm.</p>
 
-    <section class="prompt-help">
-      <button
-        type="button"
-        class="link"
-        :aria-expanded="promptExpanded"
-        @click="promptExpanded = !promptExpanded"
-      >
-        {{ promptExpanded ? 'Hide' : 'Show' }} the LLM transcription prompt
-      </button>
-      <div v-if="promptExpanded" class="prompt-block">
-        <p class="hint">
-          Paste this into an LLM chat (ChatGPT, Claude, Gemini, etc.), then attach or
-          paste your messy recipe source material. Then either save the model's HTML
-          output as a <code>.html</code> file and select it below, or paste the HTML
-          output directly.
-        </p>
-        <div class="prompt-actions">
-          <button type="button" @click="copyPrompt">{{ promptCopied ? 'Copied!' : 'Copy prompt' }}</button>
-        </div>
-        <pre class="prompt-text">{{ RECIPE_IMPORT_PROMPT }}</pre>
-      </div>
-    </section>
-
-    <div class="mode-toggle" role="tablist">
-      <button
-        id="import-tab-file"
-        type="button"
-        role="tab"
-        :aria-selected="mode === 'file'"
-        aria-controls="import-panel-file"
-        :class="['mode-toggle__btn', { active: mode === 'file' }]"
-        @click="mode = 'file'"
-      >
-        Upload file
-      </button>
-      <button
-        id="import-tab-paste"
-        type="button"
-        role="tab"
-        :aria-selected="mode === 'paste'"
-        aria-controls="import-panel-paste"
-        :class="['mode-toggle__btn', { active: mode === 'paste' }]"
-        @click="mode = 'paste'"
-      >
-        Paste HTML
-      </button>
-    </div>
-
-    <section
-      v-if="mode === 'file'"
-      id="import-panel-file"
-      class="upload"
-      role="tabpanel"
-      aria-labelledby="import-tab-file"
-    >
-      <button type="button" class="primary" @click="handleImportClick">Select Recipe File(s)</button>
-      <input
-        ref="fileInput"
-        type="file"
-        accept=".html,text/html"
-        multiple
-        class="hidden-input"
-        @change="handleFileChange"
-      />
-    </section>
-
-    <section
-      v-else
-      id="import-panel-paste"
-      class="paste"
-      role="tabpanel"
-      aria-labelledby="import-tab-paste"
-    >
-      <textarea
-        v-model="pastedHtml"
-        class="paste-textarea"
-        rows="10"
-        placeholder="Paste the LLM's HTML output here…"
-      ></textarea>
-      <div class="paste-actions">
-        <button type="button" class="primary" @click="handlePasteImport">Parse Pasted HTML</button>
-      </div>
-    </section>
-
-    <p v-if="error" class="error" aria-live="assertive">{{ error }}</p>
-
-    <div aria-live="polite">
-      <section v-if="rejectedSources.length" class="rejected">
-        <h2>Not recognized</h2>
-        <ul>
-          <li v-for="name in rejectedSources" :key="name">
-            "{{ name }}" doesn't look like a cookbook-maker recipe import (missing the
-            <code>data-cm-format="recipe"</code> marker). It was not imported.
-          </li>
-        </ul>
+      <section aria-labelledby="cm-file-heading" style="background:oklch(99.2% 0.002 75); border:1px solid oklch(88% 0.008 75); border-radius:14px; padding:24px; margin-bottom:20px;">
+        <h2 id="cm-file-heading" style="font-family:'Newsreader',Georgia,serif; font-size:19px; font-weight:600; margin:0 0 6px;">Select a file</h2>
+        <p style="margin:0 0 16px; font-size:14px; color:oklch(45% 0.01 75);">Choose an .html file containing one or more recipe/1 elements.</p>
+        <label for="cm-file-input" style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);">Select recipe HTML file or files</label>
+        <input id="cm-file-input" ref="fileInput" type="file" accept=".html,.htm,text/html" multiple @change="handleFileChange" style="font-size:14px;" />
+        <p style="margin:10px 0 0; font-size:12px; color:oklch(50% 0.01 75);">You can select multiple files at once — each may contain one or more recipes.</p>
       </section>
 
-      <section v-if="failures.length" class="failures">
-        <h2>Recipes that couldn't be imported</h2>
-        <ul>
-          <li v-for="f in failures" :key="f.key">
-            <strong>{{ f.label }}</strong>: {{ f.reason }}
-          </li>
-        </ul>
-      </section>
-
-      <section v-if="candidates.length" class="review">
-        <h2>Review recipes to import ({{ includedCount }} of {{ candidates.length }} selected)</h2>
-        <div v-for="c in candidates" :key="c.key" class="review-card">
-          <label class="review-card__toggle">
-            <input v-model="c.included" type="checkbox" />
-            <span>Include "{{ c.recipe.title }}"</span>
-          </label>
-          <PagePreview>
-            <RecipeSheet :recipe="c.recipe" />
-          </PagePreview>
+      <section aria-labelledby="cm-prompt-heading" style="background:oklch(99.2% 0.002 75); border:1px solid oklch(88% 0.008 75); border-radius:14px; padding:24px; margin-bottom:20px;">
+        <h2 id="cm-prompt-heading" style="font-family:'Newsreader',Georgia,serif; font-size:19px; font-weight:600; margin:0 0 6px;">Need to transcribe a recipe first?</h2>
+        <p style="margin:0 0 14px; font-size:14px; color:oklch(45% 0.01 75); line-height:1.5;">Copy this prompt and give it to an LLM along with a recipe (text, a photo, a screenshot) to get back HTML in the recipe/1 format this importer expects.</p>
+        <textarea id="cm-prompt-text" readonly :value="RECIPE_IMPORT_PROMPT" rows="6" style="width:100%; box-sizing:border-box; padding:12px 14px; font-size:12px; font-family:ui-monospace,monospace; color:oklch(35% 0.01 75); border:1px solid oklch(85% 0.008 75); border-radius:8px; background:oklch(96% 0.004 75); resize:vertical;"></textarea>
+        <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+          <button type="button" @click="copyPrompt" class="btn-secondary">
+            <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>
+            {{ promptCopied ? 'Copied!' : 'Copy prompt' }}
+          </button>
         </div>
       </section>
-    </div>
 
-    <div v-if="candidates.length" class="actions">
-      <button type="button" class="primary" :disabled="!includedCount || importing" @click="confirmImport">
-        {{ importing ? 'Importing…' : `Import ${includedCount} recipe${includedCount === 1 ? '' : 's'}` }}
-      </button>
-    </div>
+      <section aria-labelledby="cm-paste-heading" style="background:oklch(99.2% 0.002 75); border:1px solid oklch(88% 0.008 75); border-radius:14px; padding:24px;">
+        <h2 id="cm-paste-heading" style="font-family:'Newsreader',Georgia,serif; font-size:19px; font-weight:600; margin:0 0 6px;">Or paste HTML</h2>
+        <p style="margin:0 0 12px; font-size:14px; color:oklch(45% 0.01 75);">Paste recipe/1 HTML text directly.</p>
+        <textarea id="cm-paste-area" v-model="pastedHtml" rows="8" placeholder="<div data-cm-format=&quot;recipe&quot; data-cm-version=&quot;1&quot;>…</div>" style="width:100%; box-sizing:border-box; padding:12px 14px; font-size:13px; font-family:ui-monospace,monospace; border:1px solid oklch(80% 0.01 75); border-radius:8px; resize:vertical;"></textarea>
+        <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+          <button type="button" @click="handlePasteImport" class="btn-primary">
+            Parse pasted text
+          </button>
+        </div>
+      </section>
 
-    <p v-if="!hasResults" class="empty">
-      Select one or more <code>.html</code> recipe files, or paste HTML text, to get started.
-    </p>
-  </div>
+      <p v-if="error" role="alert" style="margin:18px 0 0; font-size:14px; color:oklch(45% 0.14 25); background:oklch(96% 0.03 25); border:1px solid oklch(85% 0.06 25); border-radius:8px; padding:12px 16px;">{{ error }}</p>
+    </template>
+
+    <template v-if="isReviewStage">
+      <h1 tabindex="-1" style="font-family:'Newsreader',Georgia,serif; font-size:32px; font-weight:600; margin:0 0 8px; letter-spacing:-0.01em; outline:none;">Review Import</h1>
+      <p style="margin:0 0 28px; font-size:15px; color:oklch(45% 0.01 75);">
+        {{ candidates.length }} recipe{{ candidates.length === 1 ? '' : 's' }} parsed successfully. Review below and confirm to add them to your library.
+      </p>
+
+      <section v-if="candidates.length">
+        <h2 style="font-family:'Newsreader',Georgia,serif; font-size:18px; font-weight:600; margin:0 0 12px;">Ready to import</h2>
+        <div style="display:flex; flex-direction:column; gap:20px; margin-bottom:32px;">
+          <div v-for="c in candidates" :key="c.key" style="background:oklch(99.5% 0.002 75); border:1px solid oklch(88% 0.008 75); border-radius:12px; overflow:hidden; box-shadow:0 1px 3px oklch(20% 0.02 75 / 0.06);">
+            <div style="display:flex; align-items:center; gap:10px; padding:14px 20px; background:oklch(97% 0.005 75); border-bottom:1px solid oklch(90% 0.008 75);">
+              <input type="checkbox" :id="`cm-inc-${c.key}`" v-model="c.included" style="width:19px; height:19px; flex-shrink:0; accent-color:oklch(45% 0.14 250);" />
+              <label :for="`cm-inc-${c.key}`" style="font-size:13px; font-weight:600; cursor:pointer;">Include "{{ c.recipe.title }}"</label>
+            </div>
+            <div style="padding: 20px;">
+              <PagePreview>
+                <RecipeSheet :recipe="c.recipe" />
+              </PagePreview>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section v-if="failures.length || rejectedSources.length">
+        <h2 style="font-family:'Newsreader',Georgia,serif; font-size:18px; font-weight:600; margin:0 0 12px;">Couldn't be imported</h2>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:32px;">
+          <div v-for="f in failures" :key="f.key" style="background:oklch(97% 0.02 25); border:1px solid oklch(88% 0.05 25); border-radius:10px; padding:14px 18px;">
+            <p style="margin:0 0 4px; font-size:14px; font-weight:600;">{{ f.label }}</p>
+            <p style="margin:0; font-size:13px; color:oklch(40% 0.08 25);">{{ f.reason }}</p>
+          </div>
+          <div v-for="source in rejectedSources" :key="source" style="background:oklch(97% 0.02 25); border:1px solid oklch(88% 0.05 25); border-radius:10px; padding:14px 18px;">
+            <p style="margin:0 0 4px; font-size:14px; font-weight:600;">{{ source }}</p>
+            <p style="margin:0; font-size:13px; color:oklch(40% 0.08 25);">Missing the data-cm-format="recipe" marker.</p>
+          </div>
+        </div>
+      </section>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; padding-top:8px; border-top:1px solid oklch(88% 0.008 75); flex-wrap:wrap;">
+        <button type="button" @click="handleCancelReview" class="btn-cancel">Cancel</button>
+        <button type="button" @click="confirmImport" :disabled="!includedCount || importing" class="btn-primary" :style="{ opacity: !includedCount ? 0.5 : 1, cursor: !includedCount ? 'not-allowed' : 'pointer' }">
+          {{ importing ? 'Importing…' : `Import ${includedCount} recipe${includedCount === 1 ? '' : 's'}` }}
+        </button>
+      </div>
+    </template>
+  </main>
 </template>
 
 <style scoped>
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-md);
+.btn-secondary {
+  display:flex; align-items:center; gap:8px; background:none; color:oklch(20% 0.015 75); border:1px solid oklch(82% 0.008 75); border-radius:8px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer;
 }
+.btn-secondary:hover { background:oklch(94% 0.006 75); }
+.btn-secondary:focus-visible { outline:2px solid oklch(52% 0.16 250); outline-offset:2px; }
 
-.hidden-input {
-  display: none;
+.btn-primary {
+  background:oklch(20% 0.015 75); color:oklch(98% 0.004 75); border:none; border-radius:8px; padding:11px 20px; font-size:14px; font-weight:600; cursor:pointer;
 }
+.btn-primary:hover { background:oklch(28% 0.02 75); }
+.btn-primary:focus-visible { outline:2px solid oklch(52% 0.16 250); outline-offset:2px; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.prompt-help {
-  margin-bottom: var(--space-lg);
+.btn-cancel {
+  padding:11px 20px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;
 }
-
-.link {
-  background: none;
-  border: none;
-  color: var(--accent-color);
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 0;
-  font: inherit;
-}
-
-.prompt-block {
-  margin-top: var(--space-sm);
-  padding: var(--space-md);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: var(--bg-secondary);
-}
-
-.hint {
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-.prompt-actions {
-  margin-bottom: var(--space-sm);
-}
-
-.prompt-text {
-  white-space: pre-wrap;
-  font-size: 0.85rem;
-  max-height: 20rem;
-  overflow-y: auto;
-  padding: var(--space-sm);
-  background: var(--bg-primary);
-  border-radius: 4px;
-}
-
-.mode-toggle {
-  display: flex;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-md);
-}
-
-.mode-toggle__btn {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  padding: var(--space-xs) var(--space-md);
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.mode-toggle__btn.active {
-  background: var(--accent-color);
-  border-color: var(--accent-color);
-  color: white;
-}
-
-.upload,
-.paste {
-  margin-bottom: var(--space-lg);
-}
-
-.paste-textarea {
-  width: 100%;
-  font-family: monospace;
-  font-size: 0.85rem;
-  padding: var(--space-sm);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: var(--bg-primary);
-  color: inherit;
-  resize: vertical;
-  box-sizing: border-box;
-}
-
-.paste-actions {
-  margin-top: var(--space-sm);
-}
-
-button.primary {
-  background: var(--accent-color);
-  color: white;
-  border: none;
-  padding: var(--space-sm) var(--space-lg);
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-button.primary:hover {
-  background: var(--accent-color-hover);
-}
-
-button.primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.error {
-  color: var(--color-danger);
-}
-
-.success {
-  color: var(--color-success);
-  font-weight: 600;
-}
-
-.rejected,
-.failures {
-  margin-bottom: var(--space-lg);
-}
-
-.rejected h2,
-.failures h2 {
-  font-size: 1rem;
-  color: var(--color-danger);
-}
-
-.review-card {
-  margin-bottom: var(--space-lg);
-}
-
-.review-card__toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  font-weight: 600;
-  margin-bottom: var(--space-sm);
-}
-
-.actions {
-  margin-top: var(--space-md);
-}
-
-.empty {
-  color: var(--text-secondary);
-}
+.btn-cancel:hover { background:oklch(94% 0.006 75); }
+.btn-cancel:focus-visible { outline:2px solid oklch(52% 0.16 250); outline-offset:2px; }
 </style>
+
