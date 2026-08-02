@@ -1,8 +1,10 @@
 <script setup>
-import { computed, toRef } from 'vue'
-import { formatIngredientLine } from '../js/conversions'
-import { renderChefNotes } from '../js/richtext'
-import { useObjectUrl } from '../js/useObjectUrl'
+import { computed } from 'vue'
+import RecipeTitle from './RecipeTitle.vue'
+import RecipeImage from './RecipeImage.vue'
+import RecipeIngredients from './RecipeIngredients.vue'
+import RecipeInstructions from './RecipeInstructions.vue'
+import RecipeNotes from './RecipeNotes.vue'
 
 const props = defineProps({
   recipe: {
@@ -15,19 +17,10 @@ const props = defineProps({
   },
 })
 
-const imageUrl = useObjectUrl(toRef(() => props.recipe.image))
-
 const template = computed(() => props.recipe.layoutTemplate || 'standard')
 const hasImageSlot = computed(() => template.value !== 'text-only')
-
-const instructionSteps = computed(() =>
-  (props.recipe.instructions ?? '')
-    .split('\n')
-    .map((s) => s.trim())
-    .filter(Boolean),
-)
-
-const notesHtml = computed(() => renderChefNotes(props.recipe.notes))
+const ingredientColumns = computed(() => props.recipe.ingredientColumns ?? 1)
+const imageAspectRatio = computed(() => props.recipe.imageAspectRatio ?? 'auto')
 </script>
 
 <template>
@@ -36,31 +29,24 @@ const notesHtml = computed(() => renderChefNotes(props.recipe.notes))
     :class="`recipe-sheet--${template}`"
     :style="{ '--recipe-accent': accentColor }"
   >
-    <header class="recipe-sheet__header">
-      <h2>{{ recipe.title }}</h2>
-    </header>
+    <RecipeTitle class="recipe-sheet__header" :title="recipe.title" />
 
-    <div v-if="hasImageSlot" class="recipe-sheet__image" :class="{ 'is-empty': !imageUrl }">
-      <img v-if="imageUrl" :src="imageUrl" alt="" />
-    </div>
+    <RecipeImage
+      v-if="hasImageSlot"
+      class="recipe-sheet__image"
+      :image="recipe.image"
+      :aspect-ratio="imageAspectRatio"
+    />
 
-    <section class="recipe-sheet__ingredients">
-      <h2>Ingredients</h2>
-      <ul>
-        <li v-for="(ing, idx) in recipe.ingredients" :key="idx">
-          {{ formatIngredientLine(ing) }}
-        </li>
-      </ul>
-    </section>
+    <RecipeIngredients
+      class="recipe-sheet__ingredients"
+      :ingredients="recipe.ingredients"
+      :columns="ingredientColumns"
+    />
 
-    <section class="recipe-sheet__instructions">
-      <h2>Instructions</h2>
-      <ol>
-        <li v-for="(step, idx) in instructionSteps" :key="idx">{{ step }}</li>
-      </ol>
-    </section>
+    <RecipeInstructions class="recipe-sheet__instructions" :instructions="recipe.instructions" />
 
-    <footer v-if="recipe.notes" class="recipe-sheet__notes" v-html="notesHtml" />
+    <RecipeNotes v-if="recipe.notes" class="recipe-sheet__notes" :notes="recipe.notes" />
   </article>
 </template>
 
@@ -105,36 +91,11 @@ const notesHtml = computed(() => renderChefNotes(props.recipe.notes))
 
 .recipe-sheet__header {
   grid-area: header;
-  border-bottom: 3px solid var(--recipe-accent);
-  padding-bottom: var(--space-sm);
-}
-
-.recipe-sheet__header h2 {
-  margin: 0;
-  font-size: 1.75rem;
-  color: var(--recipe-accent);
 }
 
 .recipe-sheet__image {
   grid-area: image;
-  width: 100%;
-  height: 100%;
   min-height: 8rem;
-  border-radius: 4px;
-  background: var(--bg-secondary, #f7f4ef);
-  overflow: hidden;
-}
-
-.recipe-sheet__image.is-empty {
-  border: 1px dashed var(--border-color, #e0ddd6);
-}
-
-.recipe-sheet__image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
 }
 
 .recipe-sheet--image-heavy .recipe-sheet__image {
@@ -149,33 +110,7 @@ const notesHtml = computed(() => renderChefNotes(props.recipe.notes))
   grid-area: instructions;
 }
 
-.recipe-sheet__ingredients h2,
-.recipe-sheet__instructions h2 {
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--recipe-accent);
-  margin: 0 0 var(--space-sm);
-}
-
-.recipe-sheet__ingredients ul,
-.recipe-sheet__instructions ol {
-  margin: 0;
-  padding-left: 1.25rem;
-}
-
-.recipe-sheet__ingredients li,
-.recipe-sheet__instructions li {
-  margin-bottom: var(--space-xs);
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
 .recipe-sheet__notes {
   grid-area: notes;
-  font-size: 0.9rem;
-  font-style: italic;
-  border-top: 1px solid var(--border-color, #e0ddd6);
-  padding-top: var(--space-sm);
 }
 </style>

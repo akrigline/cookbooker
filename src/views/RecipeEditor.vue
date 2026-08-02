@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
 import { parseIngredientsText } from '../js/conversions'
-import { LAYOUT_TEMPLATES } from '../js/templates'
+import { LAYOUT_TEMPLATES, INGREDIENT_COLUMN_OPTIONS, IMAGE_ASPECT_RATIOS } from '../js/templates'
 import RecipeSheet from '../components/RecipeSheet.vue'
 import PagePreview from '../components/PagePreview.vue'
 import QRCodeShare from '../components/QRCodeShare.vue'
@@ -25,6 +25,8 @@ const instructionsText = ref('')
 const ingredientsText = ref('')
 const notes = ref('')
 const layoutTemplate = ref('standard')
+const ingredientColumns = ref(1)
+const imageAspectRatio = ref('auto')
 const imageFile = ref(null)
 const existingImage = ref(null)
 const notesTextarea = ref(null)
@@ -43,6 +45,8 @@ onMounted(async () => {
       ingredientsText.value = (recipe.ingredients ?? []).map((i) => i.raw).join('\n')
       notes.value = recipe.notes ?? ''
       layoutTemplate.value = recipe.layoutTemplate ?? 'standard'
+      ingredientColumns.value = recipe.ingredientColumns ?? 1
+      imageAspectRatio.value = recipe.imageAspectRatio ?? 'auto'
       existingImage.value = recipe.image ?? null
     }
   } else {
@@ -51,6 +55,7 @@ onMounted(async () => {
 })
 
 const parsedIngredients = computed(() => parseIngredientsText(ingredientsText.value))
+const showImageAspectControl = computed(() => layoutTemplate.value !== 'text-only')
 
 const previewRecipe = computed(() => ({
   id: isEditing.value ? Number(props.recipeId) : Date.now(),
@@ -59,6 +64,8 @@ const previewRecipe = computed(() => ({
   ingredients: parsedIngredients.value,
   notes: notes.value,
   layoutTemplate: layoutTemplate.value,
+  ingredientColumns: ingredientColumns.value,
+  imageAspectRatio: imageAspectRatio.value,
   image: imageFile.value ?? existingImage.value ?? null,
 }))
 
@@ -145,6 +152,24 @@ function handleCancel() {
             <button v-for="tpl in LAYOUT_TEMPLATES" :key="tpl.id" type="button" :aria-pressed="layoutTemplate === tpl.id" @click="layoutTemplate = tpl.id" :style="layoutTemplate === tpl.id ? 'background:oklch(93% 0.02 250); border:1.5px solid oklch(52% 0.16 250); color:oklch(20% 0.01 75);' : 'background:oklch(97% 0.004 75); border:1.5px solid oklch(85% 0.008 75); color:oklch(20% 0.01 75);'" style="flex:1; text-align:left; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
               {{ tpl.label }}
               <span style="display:block; font-weight:400; font-size:12px; color:oklch(45% 0.01 75); margin-top:2px;">{{ tpl.description || tpl.label }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div role="group" aria-label="Ingredient columns">
+          <p style="font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin:0 0 8px;">Ingredient columns</p>
+          <div style="display:flex; gap:8px;">
+            <button v-for="n in INGREDIENT_COLUMN_OPTIONS" :key="n" type="button" :aria-pressed="ingredientColumns === n" @click="ingredientColumns = n" :style="ingredientColumns === n ? 'background:oklch(93% 0.02 250); border:1.5px solid oklch(52% 0.16 250); color:oklch(20% 0.01 75);' : 'background:oklch(97% 0.004 75); border:1.5px solid oklch(85% 0.008 75); color:oklch(20% 0.01 75);'" style="flex:1; text-align:center; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+              {{ n }}
+            </button>
+          </div>
+        </div>
+
+        <div v-if="showImageAspectControl" role="group" aria-label="Image aspect ratio">
+          <p style="font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin:0 0 8px;">Image aspect ratio</p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button v-for="ratio in IMAGE_ASPECT_RATIOS" :key="ratio.id" type="button" :aria-pressed="imageAspectRatio === ratio.id" @click="imageAspectRatio = ratio.id" :style="imageAspectRatio === ratio.id ? 'background:oklch(93% 0.02 250); border:1.5px solid oklch(52% 0.16 250); color:oklch(20% 0.01 75);' : 'background:oklch(97% 0.004 75); border:1.5px solid oklch(85% 0.008 75); color:oklch(20% 0.01 75);'" style="padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+              {{ ratio.label }}
             </button>
           </div>
         </div>
