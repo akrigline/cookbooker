@@ -1,0 +1,239 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Recipe Collection - Archive Press</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&amp;family=EB+Garamond:ital,wght@0,400;0,600;1,400&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@100..900&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#1b1b1b",
+                        "on-tertiary-container": "#848484",
+                        "primary-fixed": "#e2e2e2",
+                        "on-primary-fixed-variant": "#474747",
+                        "secondary-fixed": "#e2e2e2",
+                        "tertiary-container": "#1b1b1b",
+                        "primary-fixed-dim": "#c6c6c6",
+                        "on-secondary-container": "#5f6161",
+                        "outline": "#7e7576",
+                        "on-secondary-fixed-variant": "#454747",
+                        "secondary-container": "#dcdddd",
+                        "surface-dim": "#dbdad9",
+                        "surface-container-high": "#e9e8e7",
+                        "surface-bright": "#fbf9f9",
+                        "primary": "#000000",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#c6c6c6",
+                        "on-surface": "#1b1c1c",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#4c4546",
+                        "surface-container-highest": "#e3e2e2",
+                        "on-background": "#1b1c1c",
+                        "tertiary": "#000000",
+                        "inverse-on-surface": "#f2f0f0",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#efeded",
+                        "surface-container-lowest": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#e2e2e2",
+                        "background": "#fbf9f9",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#303031",
+                        "on-primary-fixed": "#1b1b1b",
+                        "on-primary-container": "#848484",
+                        "outline-variant": "#cfc4c5",
+                        "on-tertiary-fixed": "#1b1b1b",
+                        "surface-variant": "#e3e2e2",
+                        "surface": "#fbf9f9",
+                        "surface-container-low": "#f5f3f3",
+                        "secondary": "#5d5f5f",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "tertiary-fixed-dim": "#c6c6c6",
+                        "surface-tint": "#5e5e5e",
+                        "on-tertiary-fixed-variant": "#474747"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "page-margin": "0.5in",
+                        "column-gap": "2rem",
+                        "element-stack": "0.5rem",
+                        "section-stack": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "section-header": ["Atkinson Hyperlegible Next"],
+                        "meta-label": ["Atkinson Hyperlegible Next"],
+                        "instruction-step": ["Atkinson Hyperlegible Next"],
+                        "recipe-title": ["EB Garamond"],
+                        "chef-note": ["EB Garamond"],
+                        "body-main": ["Atkinson Hyperlegible Next"],
+                        "meta-value": ["Atkinson Hyperlegible Next"],
+                        "ingredient-list": ["Atkinson Hyperlegible Next"]
+                    },
+                    "fontSize": {
+                        "section-header": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "meta-label": ["9px", {"lineHeight": "12px", "fontWeight": "700"}],
+                        "instruction-step": ["11px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "recipe-title": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "chef-note": ["10px", {"lineHeight": "14px", "fontWeight": "400"}],
+                        "body-main": ["11px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "meta-value": ["11px", {"lineHeight": "14px", "fontWeight": "400"}],
+                        "ingredient-list": ["11px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        @media print {
+            .no-print { display: none; }
+            body { background: white !important; }
+            .print-container { width: 8.5in; height: 11in; padding: 0.5in; margin: 0; }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom print optimization for images */
+        .grayscale-print {
+            filter: grayscale(100%) contrast(1.1);
+        }
+    </style>
+</head>
+<body class="bg-surface-dim font-body-main text-on-surface antialiased">
+<!-- TopAppBar from JSON -->
+
+<!-- Main Content Canvas (Letter Page) -->
+<main class="print-container bg-background shadow-sm mx-auto my-8 w-full max-w-[8.5in] min-h-[11in] px-[0.5in] py-[0.5in] flex flex-col gap-section-stack overflow-hidden">
+<div class="flex flex-row gap-column-gap h-full">
+<!-- Left 1/3: Title, Image, Chef's Notes -->
+<aside class="w-1/3 flex flex-col gap-element-stack">
+<div class="mb-4">
+<h2 class="font-recipe-title text-recipe-title leading-tight mb-1">Miso-Glazed Black Cod</h2>
+
+</div>
+<div class="relative w-full aspect-[4/3] border border-outline-variant grayscale-print overflow-hidden mb-4">
+<img class="w-full h-full object-cover" data-alt="A professional top-down food photography shot of a perfectly seared miso-glazed black cod fillet resting on a minimalist white ceramic plate. The lighting is soft and diffused, highlighting the delicate, flaky texture and the deep caramelization of the glaze. The overall aesthetic is clean, high-contrast, and editorial, suitable for a monochrome high-density recipe archive. Minimal garnish of microgreens provides a subtle textural detail." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtp9sD2HGJpW76KeY6_IcYRcJvALAFwRrEk9Z6fc2ATjf0RjufBE77i_2v3CYnbnGbrv5H4g3eY3vEH9q4hjckyrwnzioxY60uVy7yRPnIh8LJg6SarWOXeFpHl0A_sRUegbUEpf1VD3l4S8cPhMhTwlu9VB1fuYLXBu3i9HHCcYa1ysgdGeK4nSez8Kw7gJbrz2t__9HaQFL5ECXccKaPYxsgF6hWkMmDb-nTl7Zb7yJ4_nV5M55Z">
+</div>
+<div class="bg-surface-container-low p-4 border border-outline-variant">
+<h3 class="font-section-header text-section-header mb-2 border-b border-outline-variant pb-1">Chef's Notes</h3>
+<p class="font-chef-note text-chef-note text-on-surface-variant italic leading-relaxed">
+                        The secret to the buttery texture is the long marination time. Do not rush the 48-hour window. If using frozen cod, ensure it is completely thawed and patted dry before adding the marinade. The sugar in the miso will burn quickly under a broiler; watch closely for a deep mahogany color without charring. Pair with a crisp, dry sake or a light ginger-infused rice.
+                    </p>
+</div>
+
+</aside>
+<!-- Right 2/3: Ingredients & Instructions -->
+<section class="w-2/3 flex flex-col gap-section-stack">
+<!-- Tabular Ingredients -->
+<div class="w-full">
+<h3 class="font-section-header text-section-header mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">shopping_basket</span>
+                        Ingredients
+                    </h3>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-primary">
+<th class="font-meta-label text-meta-label py-1 uppercase w-1/4">Quantity</th>
+<th class="font-meta-label text-meta-label py-1 uppercase">Ingredient</th>
+</tr>
+</thead>
+<tbody class="font-ingredient-list text-ingredient-list">
+<tr class="border-b border-outline-variant" style="cursor: pointer;">
+<td class="py-1.5 font-bold">1/4 cup</td>
+<td class="py-1.5 flex items-center gap-2">
+<div class="w-2.5 h-2.5 border border-primary shrink-0"></div> Sake
+                                </td>
+</tr>
+<tr class="border-b border-outline-variant" style="cursor: pointer;">
+<td class="py-1.5 font-bold">1/4 cup</td>
+<td class="py-1.5 flex items-center gap-2">
+<div class="w-2.5 h-2.5 border border-primary shrink-0"></div> Mirin
+                                </td>
+</tr>
+<tr class="border-b border-outline-variant" style="cursor: pointer;">
+<td class="py-1.5 font-bold">4 tbsp</td>
+<td class="py-1.5 flex items-center gap-2">
+<div class="w-2.5 h-2.5 border border-primary shrink-0"></div> White Miso Paste
+                                </td>
+</tr>
+<tr class="border-b border-outline-variant" style="cursor: pointer;">
+<td class="py-1.5 font-bold">3 tbsp</td>
+<td class="py-1.5 flex items-center gap-2">
+<div class="w-2.5 h-2.5 border border-primary shrink-0"></div> Granulated Sugar
+                                </td>
+</tr>
+<tr class="border-b border-outline-variant" style="cursor: pointer;">
+<td class="py-1.5 font-bold">4 (6oz)</td>
+<td class="py-1.5 flex items-center gap-2">
+<div class="w-2.5 h-2.5 border border-primary shrink-0"></div> Black Cod Fillets
+                                </td>
+</tr>
+<tr class="border-b border-outline-variant" style="cursor: pointer;">
+<td class="py-1.5 font-bold">to taste</td>
+<td class="py-1.5 flex items-center gap-2">
+<div class="w-2.5 h-2.5 border border-primary shrink-0"></div> Sea Salt &amp; Toasted Sesame
+                                </td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Full Width Instructions -->
+<div class="w-full">
+<h3 class="font-section-header text-section-header mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">menu_book</span>
+                        Method of Preparation
+                    </h3>
+<div class="space-y-6">
+<div class="flex gap-4">
+<span class="font-instruction-step text-section-header text-primary border-r border-outline-variant pr-4 h-fit">01</span>
+<p class="font-instruction-step text-instruction-step">In a small saucepan, bring the sake and mirin to a boil over high heat. Boil for 20 seconds to evaporate the alcohol. Turn heat down to low, add the miso paste, and whisk until dissolved. Increase heat to medium and add sugar, whisking constantly until the sugar has completely dissolved. Remove from heat and let cool to room temperature.</p>
+</div>
+<div class="flex gap-4">
+<span class="font-instruction-step text-section-header text-primary border-r border-outline-variant pr-4 h-fit">02</span>
+<p class="font-instruction-step text-instruction-step">Pat the cod fillets thoroughly dry with paper towels. Place the fillets in a non-reactive glass dish or a large resealable plastic bag. Pour the cooled miso marinade over the fish, ensuring each piece is completely coated. Cover or seal and refrigerate for at least 24 hours, but ideally 48 hours.</p>
+</div>
+<div class="flex gap-4">
+<span class="font-instruction-step text-section-header text-primary border-r border-outline-variant pr-4 h-fit">03</span>
+<p class="font-instruction-step text-instruction-step">Preheat your oven to 400°F (200°C). Lightly wipe off excess marinade from the fillets with your fingers (do not rinse). Heat a lightly oiled oven-proof skillet over medium-high heat. Sear the fish skin-side up for 2 minutes until the marinade begins to caramelize.</p>
+</div>
+<div class="flex gap-4">
+<span class="font-instruction-step text-section-header text-primary border-r border-outline-variant pr-4 h-fit">04</span>
+<p class="font-instruction-step text-instruction-step">Flip the fillets over and transfer the skillet to the oven. Bake for 10 to 12 minutes, or until the fish is opaque and flakes easily. For a deeper glaze, turn on the broiler for the last 1-2 minutes, watching carefully to prevent burning. Serve immediately with steamed rice and pickled ginger.</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Print Footer Signature -->
+
+</main>
+<!-- Footer from JSON -->
+
+<script>
+        // Micro-interaction for checkboxes
+        document.querySelectorAll('.font-ingredient-list tr').forEach(row => {
+            row.addEventListener('click', () => {
+                const box = row.querySelector('.w-2\\.5');
+                if (box) {
+                    box.classList.toggle('bg-primary');
+                    row.classList.toggle('opacity-40');
+                }
+            });
+            row.style.cursor = 'pointer';
+        });
+    </script>
+
+
+</body></html>
