@@ -20,15 +20,18 @@ arrangement is active), so:
   template
 
 This document scopes the componentization + the two new knobs. It does not
-scope the new templates themselves.
+scope the new templates themselves, and it explicitly does not solve how
+`RecipeSheet.vue`'s own composition markup will need to adapt for template
+shapes we haven't seen yet (see Open Questions) — that problem is bigger
+than this pass and gets solved when the actual template designs land.
 
 ## Decisions
 
 ### 1. Composer stays, content moves into sub-components
 
-`RecipeSheet.vue` remains the composer: it still switches a
-`recipe-sheet--${template}` CSS class per template and owns
-`grid-template-areas` geometry in scoped CSS (unchanged pattern). Content
+`RecipeSheet.vue` remains the composer for the three templates that exist
+today, unchanged: it switches a `recipe-sheet--${template}` CSS class per
+template and owns `grid-template-areas` geometry in scoped CSS. Content
 markup moves into five new flat components under `src/components/`
 (matching the existing flat convention — `ChapterDividerPage.vue`,
 `CoverPage.vue`, etc. are not nested):
@@ -125,13 +128,37 @@ ranges.
 
 **Separate `.vue` file per template** (each template composes the shared
 sub-components in its own file/DOM structure, rather than one
-`RecipeSheet.vue` switching a CSS class). Not chosen for this pass — the
-current single-composer-with-CSS-class pattern already handles the
-divergent arrangements discussed (including area overlap for things like a
-title-over-image treatment, via CSS Grid area stacking) without needing
-per-template DOM structure. Revisit only if a future template genuinely
-can't be expressed as a grid-area rearrangement of the same five
-components.
+`RecipeSheet.vue` switching a CSS class). Not decided either way — see Open
+Questions. It's already known that at least one template concept in
+discussion (independent per-column flow, e.g. Chef's Notes and Ingredients
+stacking in a left column, sized independently of Image/Instructions in a
+right column) cannot be expressed as a flat `grid-template-areas`
+rearrangement of five grid-item siblings, because CSS Grid aligns row
+tracks across all columns — a shorter left item doesn't let the item below
+it "slide up" past a taller sibling in the next column. That needs nested
+flex-column wrappers (a different DOM shape) instead. Deliberately not
+resolving this now; see Open Questions.
+
+## Open Questions
+
+**How does `RecipeSheet.vue`'s composition markup adapt to future template
+DOM shapes it doesn't support today (e.g. independent per-column flow)?**
+Left for whoever picks up the next template(s) to answer once the actual
+designs are in hand, rather than guessed at here. What's already known,
+captured so that work doesn't re-derive it:
+
+- The five sub-components from this change (`RecipeTitle`, `RecipeImage`,
+  `RecipeIngredients`, `RecipeInstructions`, `RecipeNotes`) are designed to
+  be layout-agnostic — they don't assume they're flat grid-item siblings,
+  so they should be reusable regardless of how that future work answers
+  this question (nesting them in wrapper `<div>`s, giving `RecipeSheet.vue`
+  a couple of DOM "shapes" selected per template, splitting into per-template
+  files, etc. are all still open).
+- CSS Grid's `grid-template-areas` cannot give one column's content
+  independent vertical flow from a sibling column's — that requires actual
+  nested flow containers (flex or block) rather than a shared grid, so any
+  template wanting that effect will need `RecipeSheet.vue` to render some
+  amount of template-specific wrapper markup, not a CSS-only difference.
 
 ## Out of Scope
 
@@ -140,3 +167,5 @@ components.
   them)
 - Any UI for making `ingredientColumns`/`imageAspectRatio` constrained or
   template-aware (explicitly rejected above)
+- Resolving the Open Question above — deferred to the change that adds the
+  next template(s)
