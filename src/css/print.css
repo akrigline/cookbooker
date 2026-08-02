@@ -82,6 +82,8 @@
   body,
   #app {
     background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   /* Ink Conservation: Force transparent backgrounds and solid black text */
@@ -90,15 +92,17 @@
     color: #000 !important;
   }
 
-  .shell > aside,
-  .shell > .hamburger,
+  header,
+  .cm-skip-link,
+  .cm-back-link,
+  .cm-action-bar,
+  .cm-preview-label,
   .no-print {
     display: none !important;
   }
 
-  .shell,
-  .shell .content {
-    display: block !important;
+  #cm-main {
+    max-width: none !important;
     padding: 0 !important;
     margin: 0 !important;
   }

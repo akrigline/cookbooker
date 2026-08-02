@@ -119,10 +119,16 @@ async function addRecipeToProject(recipe) {
 </script>
 
 <template>
-  <div class="view" v-if="project">
+  <main id="cm-main" style="max-width:1280px; margin:0 auto; padding:40px 32px 80px;" v-if="project">
     <div class="toolbar">
-      <h1>{{ project.title || 'Untitled Cookbook' }}</h1>
-      <router-link class="primary" :to="`/projects/${project.id}/print`">Print Preview</router-link>
+      <div>
+        <h1 style="font-family:'Newsreader',Georgia,serif; font-size:34px; font-weight:600; margin:0 0 6px; letter-spacing:-0.01em;">{{ project.title || 'Untitled Cookbook' }}</h1>
+        <p v-if="project.subtitle" style="margin:0; font-size:15px; color:oklch(45% 0.01 75);">{{ project.subtitle }}</p>
+      </div>
+      <router-link class="primary" :to="`/projects/${project.id}/print`">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+        Print Preview
+      </router-link>
     </div>
 
     <section class="panel">
@@ -169,7 +175,7 @@ async function addRecipeToProject(recipe) {
           />
         </div>
       </div>
-      <label class="field">
+      <label class="field" style="margin-top: 16px;">
         <span>Cover Layout</span>
         <select :value="project.coverTemplate" @change="updateField('coverTemplate', $event.target.value)">
           <option v-for="tpl in COVER_TEMPLATES" :key="tpl.id" :value="tpl.id">{{ tpl.label }}</option>
@@ -291,132 +297,223 @@ async function addRecipeToProject(recipe) {
         </li>
       </ul>
     </section>
-  </div>
-  <div v-else class="view">
+  </main>
+  <main id="cm-main" style="max-width:1280px; margin:0 auto; padding:40px 32px 80px;" v-else>
     <p>Project not found.</p>
-  </div>
+  </main>
 </template>
 
 <style scoped>
 .toolbar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-lg);
+  align-items: flex-end;
+  margin-bottom: 28px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .toolbar .primary {
-  background: var(--accent-color);
-  color: white;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: oklch(20% 0.015 75);
+  color: oklch(98% 0.004 75);
   text-decoration: none;
-  padding: var(--space-sm) var(--space-md);
-  border-radius: 6px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 15px;
   font-weight: 600;
+  transition: background 0.15s;
+}
+
+.toolbar .primary:hover {
+  background: oklch(28% 0.02 75);
+}
+
+.toolbar .primary:focus-visible {
+  outline: 2px solid oklch(52% 0.16 250);
+  outline-offset: 2px;
 }
 
 .panel {
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: var(--space-md);
-  margin-bottom: var(--space-lg);
+  background: oklch(99.2% 0.002 75);
+  border: 1px solid oklch(88% 0.008 75);
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 24px;
 }
 
 .panel h2 {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 22px;
+  font-weight: 600;
   margin-top: 0;
-  font-size: 1.1rem;
+  margin-bottom: 16px;
+  color: oklch(20% 0.015 75);
 }
 
 .settings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-md);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-sm);
+  gap: 6px;
 }
 
 .field.checkbox {
   flex-direction: row;
   align-items: center;
+  gap: 10px;
+  align-self: center;
+  margin-top: 18px;
 }
 
 .field > span {
   font-weight: 600;
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  font-size: 13px;
+  color: oklch(50% 0.01 75);
 }
 
 input[type='text'],
 input[type='search'],
 select {
   font: inherit;
-  padding: var(--space-sm);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid oklch(85% 0.008 75);
+  border-radius: 8px;
+  background: oklch(99.3% 0.002 75);
+  color: oklch(18% 0.01 75);
+}
+
+input[type='text']:focus-visible,
+input[type='search']:focus-visible,
+select:focus-visible {
+  outline: 2px solid oklch(52% 0.16 250);
+  outline-offset: 1px;
+  border-color: oklch(52% 0.16 250);
 }
 
 .swatches {
   display: flex;
-  gap: var(--space-sm);
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .swatch {
-  width: 2rem;
-  height: 2rem;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
+  box-shadow: 0 0 0 2px oklch(99% 0 0);
+  transition: transform 0.15s;
 }
 
 .swatch.active {
-  border-color: var(--text-primary);
+  border-color: oklch(20% 0.015 75);
+  transform: scale(1.1);
+}
+
+.swatch:focus-visible {
+  outline: 2px solid oklch(52% 0.16 250);
+  outline-offset: 2px;
 }
 
 .new-chapter {
   display: flex;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-md);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.new-chapter input {
+  flex: 1;
+  max-width: 320px;
+}
+
+.new-chapter button {
+  background: oklch(20% 0.015 75);
+  color: oklch(98% 0.004 75);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.new-chapter button:hover {
+  background: oklch(28% 0.02 75);
 }
 
 .chapter {
-  border-top: 1px solid var(--border-color);
-  padding-top: var(--space-sm);
-  margin-top: var(--space-sm);
+  border-top: 1px solid oklch(90% 0.008 75);
+  padding-top: 16px;
+  margin-top: 16px;
 }
 
 .chapter__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-sm);
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .chapter__name {
   font-weight: 700;
-  border: none;
+  font-size: 16px;
+  border: 1px solid transparent;
   background: transparent;
   flex: 1;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.chapter__name:hover:not(:disabled),
+.chapter__name:focus-visible {
+  background: oklch(96% 0.006 75);
+  border-color: oklch(85% 0.008 75);
 }
 
 .chapter__name:disabled {
-  color: var(--text-secondary);
+  color: oklch(45% 0.01 75);
 }
 
 .chapter__actions {
   display: flex;
-  gap: var(--space-xs);
+  gap: 6px;
+}
+
+.chapter__actions button {
+  background: oklch(94% 0.006 75);
+  border: 1px solid oklch(85% 0.008 75);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: oklch(18% 0.01 75);
+}
+
+.chapter__actions button.danger {
+  background: none;
+  border: 1px solid oklch(85% 0.06 25);
+  color: oklch(45% 0.12 25);
+}
+
+.chapter__actions button.danger:hover {
+  background: oklch(94% 0.04 25);
 }
 
 .chapter__badge {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  font-size: 13px;
+  color: oklch(45% 0.01 75);
   font-style: italic;
 }
 
@@ -431,52 +528,76 @@ select {
 .library-list li {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-xs) 0;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid oklch(94% 0.006 75);
+}
+
+.chapter-recipes li:last-child,
+.library-list li:last-child {
+  border-bottom: none;
 }
 
 .recipe-row__thumb {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 4px;
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
   overflow: hidden;
+  border: 1px solid oklch(85% 0.02 250);
   flex-shrink: 0;
 }
 
 .recipe-row__title {
   flex: 1;
-  color: var(--text-primary);
+  color: oklch(18% 0.01 75);
+  font-size: 15px;
+  font-weight: 600;
   text-decoration: none;
+}
+
+.recipe-row__title:hover {
+  text-decoration: underline;
 }
 
 .recipe-row__actions {
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
+  gap: 8px;
 }
 
+.recipe-row__actions button,
 .recipe-row__actions a {
-  color: var(--accent-color);
-  font-size: var(--font-size-sm);
+  background: oklch(94% 0.006 75);
+  border: 1px solid oklch(85% 0.008 75);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: oklch(18% 0.01 75);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.recipe-row__actions button.danger {
+  background: none;
+  border: 1px solid oklch(85% 0.06 25);
+  color: oklch(45% 0.12 25);
+}
+
+.recipe-row__actions button.danger:hover {
+  background: oklch(94% 0.04 25);
 }
 
 .empty {
-  color: var(--text-secondary);
+  color: oklch(45% 0.01 75);
   font-style: italic;
+  font-size: 14px;
 }
 
 .library-search {
-  margin-bottom: var(--space-sm);
-  max-width: 20rem;
-}
-
-button.danger {
-  background: none;
-  border: 1px solid var(--color-danger);
-  color: var(--color-danger);
-  border-radius: 6px;
-  padding: 2px var(--space-sm);
-  cursor: pointer;
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: 320px;
 }
 
 button {

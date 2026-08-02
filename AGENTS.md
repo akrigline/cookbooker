@@ -13,18 +13,17 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `vite.config.js` copies `dist/index.html` to `dist/404.html` after build, so static hosts without a
   rewrite rule (e.g. GitHub Pages) serve the app shell for deep links/hard refreshes instead of a bare
   404. No GitHub Pages deploy config exists yet — this only prepares the app for that.
-- If `chrome-devtools-axi`/`chrome-devtools-mcp` fails to launch a browser here ("Protocol error
-  (Target.setDiscoverTargets): Target closed"), the default Chrome resolution (`channel: stable`) can't
-  find/launch a working browser in this environment. Fix: install a Chrome build
-  (`npx puppeteer@<version-matching-chrome-devtools-mcp> browsers install chrome`, cached under
-  `~/.cache/puppeteer`), then point `chrome-devtools-mcp` at it explicitly with `--executablePath=<path>`
-  and `--chrome-arg=--no-sandbox` (neither is exposed via a `CHROME_DEVTOOLS_AXI_*` env var, since the MCP
-  child process only inherits a restricted env). Set `CHROME_DEVTOOLS_AXI_MCP_PATH` to a small `.mjs` shim
-  that pushes those flags onto `process.argv` before importing the real
-  `chrome-devtools-mcp/build/src/bin/chrome-devtools-mcp.js` entry point. If
-  `chrome-devtools-mcp` isn't installed globally, the shim can still target the copy `npx`
-  already cached under `~/.npm/_npx/<hash>/node_modules/chrome-devtools-mcp/` — `find
-  ~/.npm/_npx -maxdepth 4 -iname chrome-devtools-mcp` locates it without a fresh install.
+- `chrome-devtools-mcp` is configured and ready. Setup (resolved 2026-08-02):
+  - MCP config: `~/.gemini/config/mcp_config.json` (server name: `chrome-devtools`)
+  - Shim: `~/.gemini/antigravity-cli/mcp/chrome-devtools-shim.mjs` — injects `--executablePath` and
+    `--chromeArg=--no-sandbox` onto `process.argv` before importing the real entry point
+  - Chrome binary: `~/.cache/puppeteer/chrome/linux-150.0.7871.24/chrome-linux64/chrome`
+  - MCP binary: `~/.npm/_npx/15c61037b1978c83/node_modules/chrome-devtools-mcp/` (v1.6.0, matches
+    puppeteer 25.3.0)
+  - If Chrome is re-installed/updated, update the `CHROME_PATH` constant in the shim and re-run
+    `find ~/.cache/puppeteer/chrome -name "chrome" -type f` to get the new path.
+  - If the MCP cache hash changes (e.g. after a fresh npx invocation), update `MCP_ENTRY` in the shim
+    using `find ~/.npm/_npx -maxdepth 4 -iname chrome-devtools-mcp`.
 - Objects passed to any Dexie write (`db.addRecipe`, `db.updateRecipe`, etc.) must be plain
   data, not Vue-reactive. A component that stages parsed/derived data in a `ref`/`reactive`
   container before writing it (e.g. a review screen that lets the user toggle items before

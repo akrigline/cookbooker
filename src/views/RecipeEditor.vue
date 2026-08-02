@@ -140,8 +140,8 @@ function handleCancel() {
       Back to Recipe Library
     </router-link>
 
-    <div class="cm-grid" style="display:grid; grid-template-columns:minmax(360px, 440px) 1fr; gap:32px; align-items:start;">
-      <div class="cm-edit-column" style="display:flex; flex-direction:column; gap:22px;">
+    <div class="cm-grid" style="display:grid; grid-template-columns:minmax(320px, 360px) minmax(0, 1fr); gap:32px; align-items:start;">
+      <div class="cm-edit-column" style="display:flex; flex-direction:column; gap:22px; min-width:0;">
         <p v-if="error" style="color:oklch(45% 0.14 25); font-weight:600; margin:0;">{{ error }}</p>
 
         <div>
@@ -151,8 +151,8 @@ function handleCancel() {
 
         <div role="group" aria-label="Layout template">
           <p style="font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin:0 0 8px;">Layout template</p>
-          <div style="display:flex; gap:8px;">
-            <button v-for="tpl in LAYOUT_TEMPLATES" :key="tpl.id" type="button" :aria-pressed="layoutTemplate === tpl.id" @click="layoutTemplate = tpl.id" :style="layoutTemplate === tpl.id ? 'background:oklch(93% 0.02 250); border:1.5px solid oklch(52% 0.16 250); color:oklch(20% 0.01 75);' : 'background:oklch(97% 0.004 75); border:1.5px solid oklch(85% 0.008 75); color:oklch(20% 0.01 75);'" style="flex:1; text-align:left; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:8px;">
+            <button v-for="tpl in LAYOUT_TEMPLATES" :key="tpl.id" type="button" :aria-pressed="layoutTemplate === tpl.id" @click="layoutTemplate = tpl.id" :style="layoutTemplate === tpl.id ? 'background:oklch(93% 0.02 250); border:1.5px solid oklch(52% 0.16 250); color:oklch(20% 0.01 75);' : 'background:oklch(97% 0.004 75); border:1.5px solid oklch(85% 0.008 75); color:oklch(20% 0.01 75);'" style="text-align:left; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
               {{ tpl.label }}
               <span style="display:block; font-weight:400; font-size:12px; color:oklch(45% 0.01 75); margin-top:2px;">{{ tpl.description || tpl.label }}</span>
             </button>
@@ -206,7 +206,7 @@ function handleCancel() {
         </div>
       </div>
 
-      <div style="position:sticky; top:24px;">
+      <div class="cm-preview-column" style="position:sticky; top:24px; min-width:0;">
         <p class="cm-preview-label" style="margin:0 0 10px; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); text-transform:uppercase; letter-spacing:0.04em;">Live preview</p>
         <PagePreview>
           <RecipeSheet :recipe="previewRecipe" />
@@ -248,6 +248,11 @@ function handleCancel() {
 </template>
 
 <style scoped>
+.cm-preview-column :deep(.page-preview) {
+  margin-left: 0;
+  margin-right: 0;
+}
+
 input:focus, textarea:focus, button:focus-visible, a:focus-visible {
   outline: 2px solid oklch(52% 0.16 250);
   outline-offset: 1px;

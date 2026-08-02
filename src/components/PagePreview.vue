@@ -19,9 +19,11 @@ defineProps({
 .page-preview {
   width: 8.5in;
   height: 11in;
+  max-width: 100%;
   flex-shrink: 0;
   background: #fff;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
   margin: 0 auto var(--space-lg);
   overflow: hidden;
   color: #232323;
@@ -37,6 +39,7 @@ defineProps({
 @media print {
   .page-preview {
     box-shadow: none;
+    border-radius: 0;
     margin: 0;
     width: auto;
     height: auto;

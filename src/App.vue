@@ -5,7 +5,7 @@
   <div style="min-height:100vh; background:oklch(97.5% 0.006 75); font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif; color:oklch(18% 0.01 75);">
     <a href="#cm-main" class="cm-skip-link" style="position:absolute; left:12px; top:-60px; transform:translateY(-100px); background:oklch(20% 0.015 75); color:white; padding:10px 16px; border-radius:6px; z-index:100; text-decoration:none; font-size:14px; font-weight:600; transition:transform 0.15s;">Skip to main content</a>
     <header style="border-bottom:1px solid oklch(88% 0.008 75); background:oklch(99% 0.003 75);">
-      <div style="max-width:1160px; margin:0 auto; padding:16px 32px; display:flex; align-items:center; gap:28px; flex-wrap:wrap;">
+      <div style="max-width:1280px; margin:0 auto; padding:16px 32px; display:flex; align-items:center; gap:28px; flex-wrap:wrap;">
         <div style="display:flex; align-items:center; gap:12px;">
           <span aria-hidden="true" style="width:28px; height:28px; border-radius:7px; background:oklch(20% 0.015 75); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="oklch(97% 0.006 75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>

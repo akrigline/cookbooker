@@ -59,7 +59,7 @@ async function confirmDelete(recipe) {
 </script>
 
 <template>
-  <main id="cm-main" style="max-width:1160px; margin:0 auto; padding:40px 32px 80px;">
+  <main id="cm-main" style="max-width:1280px; margin:0 auto; padding:40px 32px 80px;">
     <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:28px; flex-wrap:wrap;">
       <div>
         <h1 style="font-family:'Newsreader',Georgia,serif; font-size:34px; font-weight:600; margin:0 0 6px; letter-spacing:-0.01em;">Recipe Library</h1>

@@ -196,7 +196,7 @@ function handleModalKeyDown(e) {
 </script>
 
 <template>
-  <main id="cm-main" style="max-width:1160px; margin:0 auto; padding:40px 32px 80px;">
+  <main id="cm-main" style="max-width:1280px; margin:0 auto; padding:40px 32px 80px;">
 
     <!-- Header row -->
     <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:32px; flex-wrap:wrap;">

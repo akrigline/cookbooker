@@ -116,7 +116,7 @@ function handleKeydown(event) {
         </button>
       </div>
       <p class="cm-qr-no-print" style="margin:0 0 18px; font-size:13px; color:oklch(45% 0.01 75); line-height:1.5;">
-        Scan this code with a phone camera to open "{{ recipe.title }}"'s ingredient list — no app, account, or internet upload required.
+        Scan this code with a phone camera to open the ingredient list for "{{ recipe.title }}" — no app, account, or internet upload required.
       </p>
 
       <div
