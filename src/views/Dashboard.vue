@@ -2,19 +2,11 @@
 import { onMounted, ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectsStore } from '../stores/projects'
+import { ACCENT_COLORS } from '../js/templates'
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-const ACCENTS = [
-  { id: 'terracotta', name: 'Terracotta', color: 'oklch(62% 0.13 35)' },
-  { id: 'sage',       name: 'Sage',       color: 'oklch(62% 0.09 145)' },
-  { id: 'ochre',      name: 'Ochre',      color: 'oklch(70% 0.12 85)' },
-  { id: 'plum',       name: 'Plum',       color: 'oklch(50% 0.11 325)' },
-  { id: 'teal',       name: 'Teal',       color: 'oklch(55% 0.09 200)' },
-  { id: 'slate',      name: 'Slate Blue', color: 'oklch(55% 0.10 265)' },
-]
-
-const ACCENT_MAP = Object.fromEntries(ACCENTS.map(a => [a.id, a]))
+const ACCENT_MAP = Object.fromEntries(ACCENT_COLORS.map(a => [a.id, a]))
 
 const LAYOUTS = [
   { id: 'classic', name: 'Classic',       description: 'Centered title, rule line' },
@@ -54,10 +46,10 @@ const formSubmitLabel = computed(() => modal.value?.type === 'edit' ? 'Save chan
 const titleInvalid = computed(() => titleTouched.value && !form.value.title.trim())
 
 const accentOptions = computed(() =>
-  ACCENTS.map(a => ({
+  ACCENT_COLORS.map(a => ({
     ...a,
     selected: form.value.accentId === a.id,
-    ringColor: form.value.accentId === a.id ? a.color : 'transparent',
+    ringColor: form.value.accentId === a.id ? a.value : 'transparent',
   }))
 )
 
@@ -80,12 +72,12 @@ const deleteTarget = computed(() =>
 
 /** Resolve an accentId from a stored accentColor string (or default). */
 function accentIdFromColor(color) {
-  const match = ACCENTS.find(a => a.color === color)
+  const match = ACCENT_COLORS.find(a => a.value === color)
   return match ? match.id : 'terracotta'
 }
 
 function accentColorFromId(id) {
-  return (ACCENT_MAP[id] || ACCENTS[0]).color
+  return (ACCENT_MAP[id] || ACCENT_COLORS[0]).value
 }
 
 function recipeCountLabel(project) {
@@ -242,17 +234,17 @@ function handleModalKeyDown(e) {
           <!-- Classic layout: centered title + rule lines -->
           <template v-if="(project.coverTemplate || 'classic') !== 'modern'">
             <div style="height:100%; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px 20px; gap:9px;">
-              <div aria-hidden="true" :style="{ width:'34px', height:'2px', background: project.accentColor || 'oklch(62% 0.13 35)' }"></div>
+              <div aria-hidden="true" :style="{ width:'34px', height:'2px', background: project.accentColor || '#d97742' }"></div>
               <h2 :id="`cm-title-${project.id}`" style="font-family:'Newsreader',Georgia,serif; font-size:21px; font-weight:600; margin:0; letter-spacing:-0.01em; overflow-wrap:break-word;">{{ project.title || 'Untitled Cookbook' }}</h2>
               <p v-if="project.subtitle" style="margin:0; font-size:13px; font-style:italic; color:oklch(45% 0.01 75);">{{ project.subtitle }}</p>
-              <div aria-hidden="true" :style="{ width:'34px', height:'2px', background: project.accentColor || 'oklch(62% 0.13 35)' }"></div>
+              <div aria-hidden="true" :style="{ width:'34px', height:'2px', background: project.accentColor || '#d97742' }"></div>
             </div>
           </template>
 
           <!-- Modern layout: left-aligned, framed border -->
           <template v-else>
-            <div aria-hidden="true" :style="{ position:'absolute', inset:'10px', border:`1.5px solid ${project.accentColor || 'oklch(62% 0.13 35)'}` }"></div>
-            <div aria-hidden="true" :style="{ position:'absolute', left:'10px', top:'10px', bottom:'10px', width:'5px', background: project.accentColor || 'oklch(62% 0.13 35)' }"></div>
+            <div aria-hidden="true" :style="{ position:'absolute', inset:'10px', border:`1.5px solid ${project.accentColor || '#d97742'}` }"></div>
+            <div aria-hidden="true" :style="{ position:'absolute', left:'10px', top:'10px', bottom:'10px', width:'5px', background: project.accentColor || '#d97742' }"></div>
             <div style="position:relative; height:100%; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; padding:26px 30px; gap:7px;">
               <h2 :id="`cm-title-${project.id}`" style="font-family:'Newsreader',Georgia,serif; font-size:21px; font-weight:600; margin:0; letter-spacing:-0.01em; overflow-wrap:break-word;">{{ project.title || 'Untitled Cookbook' }}</h2>
               <p v-if="project.subtitle" style="margin:0; font-size:13px; font-style:italic; color:oklch(45% 0.01 75);">{{ project.subtitle }}</p>
@@ -338,12 +330,12 @@ function handleModalKeyDown(e) {
                   :key="opt.id"
                   type="button"
                   :aria-pressed="opt.selected"
-                  :aria-label="opt.name"
+                  :aria-label="opt.label"
                   @click="form.accentId = opt.id"
                   class="btn-swatch"
                   :style="{
-                    background: opt.color,
-                    boxShadow: `0 0 0 2px oklch(99% 0 0), 0 0 0 ${opt.selected ? '4px' : '0px'} ${opt.color}`
+                    background: opt.value,
+                    boxShadow: `0 0 0 2px oklch(99% 0 0), 0 0 0 ${opt.selected ? '4px' : '0px'} ${opt.value}`
                   }"
                 ></button>
               </div>
