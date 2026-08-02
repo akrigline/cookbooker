@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
 import { parseIngredientsText } from '../js/conversions'
-import { LAYOUT_TEMPLATES, DEFAULT_LAYOUT_TEMPLATE, INGREDIENT_COLUMN_OPTIONS, IMAGE_ASPECT_RATIOS } from '../js/templates'
+import { LAYOUT_TEMPLATES, DEFAULT_LAYOUT_TEMPLATE, INGREDIENT_COLUMN_OPTIONS, INGREDIENT_QTY_ALIGN_OPTIONS, DEFAULT_INGREDIENT_QTY_ALIGN, IMAGE_ASPECT_RATIOS } from '../js/templates'
 import RecipeSheet from '../components/RecipeSheet.vue'
 import PagePreview from '../components/PagePreview.vue'
 import QRCodeShare from '../components/QRCodeShare.vue'
@@ -26,6 +26,7 @@ const ingredientsText = ref('')
 const notes = ref('')
 const layoutTemplate = ref(DEFAULT_LAYOUT_TEMPLATE)
 const ingredientColumns = ref(1)
+const ingredientQtyAlign = ref(DEFAULT_INGREDIENT_QTY_ALIGN)
 const imageAspectRatio = ref('auto')
 const imageFile = ref(null)
 const existingImage = ref(null)
@@ -46,6 +47,7 @@ onMounted(async () => {
       notes.value = recipe.notes ?? ''
       layoutTemplate.value = recipe.layoutTemplate ?? DEFAULT_LAYOUT_TEMPLATE
       ingredientColumns.value = recipe.ingredientColumns ?? 1
+      ingredientQtyAlign.value = recipe.ingredientQtyAlign ?? DEFAULT_INGREDIENT_QTY_ALIGN
       imageAspectRatio.value = recipe.imageAspectRatio ?? 'auto'
       existingImage.value = recipe.image ?? null
     }
@@ -68,6 +70,7 @@ const previewRecipe = computed(() => ({
   notes: notes.value,
   layoutTemplate: layoutTemplate.value,
   ingredientColumns: ingredientColumns.value,
+  ingredientQtyAlign: ingredientQtyAlign.value,
   imageAspectRatio: imageAspectRatio.value,
   image: imageFile.value ?? existingImage.value ?? null,
 }))
@@ -164,6 +167,15 @@ function handleCancel() {
           <div style="display:flex; gap:8px;">
             <button v-for="n in INGREDIENT_COLUMN_OPTIONS" :key="n" type="button" :aria-pressed="ingredientColumns === n" @click="ingredientColumns = n" :style="ingredientColumns === n ? 'background:oklch(93% 0.02 250); border:1.5px solid oklch(52% 0.16 250); color:oklch(20% 0.01 75);' : 'background:oklch(97% 0.004 75); border:1.5px solid oklch(85% 0.008 75); color:oklch(20% 0.01 75);'" style="flex:1; text-align:center; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
               {{ n }}
+            </button>
+          </div>
+        </div>
+
+        <div role="group" aria-label="Ingredient quantity alignment">
+          <p style="font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin:0 0 8px;">Ingredient quantity alignment</p>
+          <div style="display:flex; gap:8px;">
+            <button v-for="opt in INGREDIENT_QTY_ALIGN_OPTIONS" :key="opt.id" type="button" :aria-pressed="ingredientQtyAlign === opt.id" @click="ingredientQtyAlign = opt.id" :style="ingredientQtyAlign === opt.id ? 'background:oklch(93% 0.02 250); border:1.5px solid oklch(52% 0.16 250); color:oklch(20% 0.01 75);' : 'background:oklch(97% 0.004 75); border:1.5px solid oklch(85% 0.008 75); color:oklch(20% 0.01 75);'" style="flex:1; text-align:center; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+              {{ opt.label }}
             </button>
           </div>
         </div>

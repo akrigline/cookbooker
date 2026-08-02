@@ -34,6 +34,7 @@ db.on('populate', async () => {
     notes: '',
     layoutTemplate: 'hero-split-balanced',
     ingredientColumns: 1,
+    ingredientQtyAlign: 'right',
     imageAspectRatio: 'auto',
   })
   await db.project_recipes.add({ projectId, chapterId, recipeId, sequence: 0 })

@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@dailykit/food-units-converter": "^1.0.2",
-    "@magrinj/parse-ingredients": "^1.0.0",
+    "@magrinj/parse-ingredients": "github:akrigline/parse-ingredients#e6a7647cec03de2fbce4f074a3f12bc6ebd34332",
     "dexie": "^4.4.4",
     "dexie-export-import": "^4.4.0",
     "fraction.js": "^5.3.4",

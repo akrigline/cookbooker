@@ -20,6 +20,7 @@ defineProps({
         class="layout-text-only__col"
         :ingredients="recipe.ingredients"
         :columns="recipe.ingredientColumns ?? 1"
+        :qty-align="recipe.ingredientQtyAlign ?? 'right'"
       />
       <RecipeInstructions class="layout-text-only__col" :instructions="recipe.instructions" />
     </div>

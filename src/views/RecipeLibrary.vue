@@ -1,8 +1,10 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
 import RecipeThumbnail from '../components/RecipeThumbnail.vue'
 
+const router = useRouter()
 const recipesStore = useRecipesStore()
 const query = ref('')
 const deletingId = ref(null)
@@ -41,6 +43,10 @@ function getIngredientPreview(recipe) {
     return `${ings.slice(0, 6).join(', ')} +${ings.length - 6} more`
   }
   return ings.join(', ')
+}
+
+function openRecipe(recipe) {
+  router.push(`/library/${recipe.id}`)
 }
 
 async function confirmDelete(recipe) {
@@ -86,8 +92,17 @@ async function confirmDelete(recipe) {
     </div>
 
     <div v-if="filteredRecipes.length" role="list" aria-label="Recipes" style="background:oklch(99.2% 0.002 75); border:1px solid oklch(88% 0.008 75); border-radius:14px; overflow:hidden;">
-      <article v-for="recipe in filteredRecipes" :key="recipe.id" role="listitem" :aria-labelledby="`cm-rtitle-${recipe.id}`" style="display:flex; align-items:flex-start; gap:16px; padding:16px 20px; border-bottom:1px solid oklch(90% 0.008 75);">
-        
+      <article
+        v-for="recipe in filteredRecipes"
+        :key="recipe.id"
+        role="listitem"
+        tabindex="0"
+        :aria-labelledby="`cm-rtitle-${recipe.id}`"
+        class="recipe-row"
+        style="display:flex; align-items:flex-start; gap:16px; padding:16px 20px; border-bottom:1px solid oklch(90% 0.008 75); cursor:pointer;"
+        @click="openRecipe(recipe)"
+        @keydown.enter="openRecipe(recipe)"
+      >
         <div class="recipe-thumb">
           <RecipeThumbnail :image="recipe.image" />
         </div>
@@ -97,7 +112,7 @@ async function confirmDelete(recipe) {
           <p :title="getIngredientSummary(recipe)" style="margin:0; font-size:13px; color:oklch(45% 0.01 75); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">{{ getIngredientPreview(recipe) }}</p>
         </div>
 
-        <div style="display:flex; gap:8px; flex-shrink:0; align-self:center;">
+        <div style="display:flex; gap:8px; flex-shrink:0; align-self:center;" @click.stop>
           <router-link :to="`/library/${recipe.id}`" class="btn-open">
             Open recipe
           </router-link>
@@ -135,6 +150,13 @@ async function confirmDelete(recipe) {
   width:100%; box-sizing:border-box; padding:11px 14px 11px 38px; font-size:15px; border:1px solid oklch(82% 0.008 75); border-radius:8px; font-family:inherit; background:oklch(99.3% 0.002 75);
 }
 .search-input:focus-visible { outline:2px solid oklch(52% 0.16 250); outline-offset:1px; border-color:oklch(52% 0.16 250); }
+
+.recipe-row:hover {
+  background:oklch(96.5% 0.005 75);
+}
+.recipe-row:focus-visible {
+  outline:2px solid oklch(52% 0.16 250); outline-offset:-2px;
+}
 
 .recipe-thumb {
   width:52px; height:52px; flex-shrink:0; border-radius:8px; overflow:hidden; border:1px solid oklch(85% 0.02 250);
