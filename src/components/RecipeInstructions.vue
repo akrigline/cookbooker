@@ -14,34 +14,62 @@ const steps = computed(() =>
     .map((s) => s.trim())
     .filter(Boolean),
 )
+
+function formatStepNumber(num) {
+  return num.toString().padStart(2, '0')
+}
 </script>
 
 <template>
-  <section class="recipe-instructions">
-    <h2>Instructions</h2>
-    <ol>
-      <li v-for="(step, idx) in steps" :key="idx">{{ step }}</li>
-    </ol>
-  </section>
+  <div class="recipe-instructions">
+    <h3 class="text-section-header instructions-title">
+      <span class="material-symbols-outlined title-icon">menu_book</span>
+      Method of Preparation
+    </h3>
+    
+    <div class="steps-container">
+      <div v-for="(step, idx) in steps" :key="idx" class="step-item">
+        <span class="text-section-header step-number">
+          {{ formatStepNumber(idx + 1) }}
+        </span>
+        <p class="text-instruction-step step-content">{{ step }}</p>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.recipe-instructions h2 {
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--recipe-accent);
-  margin: 0 0 var(--space-sm);
+.instructions-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem 0;
 }
 
-.recipe-instructions ol {
+.title-icon {
+  font-size: 16px;
+}
+
+.steps-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.step-item {
+  display: flex;
+  gap: 1rem;
+}
+
+.step-number {
+  color: var(--recipe-primary);
+  border-right: 1px solid var(--recipe-outline-variant);
+  padding-right: 1rem;
+  height: fit-content;
+  flex-shrink: 0;
+}
+
+.step-content {
   margin: 0;
-  padding-left: 1.25rem;
-}
-
-.recipe-instructions li {
-  margin-bottom: var(--space-xs);
-  font-size: 0.95rem;
-  line-height: 1.4;
 }
 </style>

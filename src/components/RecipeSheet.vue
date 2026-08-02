@@ -36,7 +36,7 @@ const activeLayout = computed(
 </script>
 
 <template>
-  <article class="recipe-sheet" :style="{ '--recipe-accent': accentColor }">
+  <article class="recipe-sheet print-container" :style="{ '--recipe-accent': accentColor }">
     <component :is="activeLayout" :recipe="recipe" />
   </article>
 </template>
@@ -44,12 +44,8 @@ const activeLayout = computed(
 <style scoped>
 .recipe-sheet {
   --recipe-accent: #d97742;
-  height: 100%;
-  padding: var(--space-lg);
-  box-sizing: border-box;
-  background: var(--bg-primary, #fff);
-  color: var(--text-primary, #232323);
-  font-family: var(--font-main, serif);
+  background: var(--recipe-bg);
+  color: var(--recipe-on-surface);
   position: relative;
 }
 </style>

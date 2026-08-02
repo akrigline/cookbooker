@@ -38,20 +38,20 @@ defineProps({
 .layout-hero-split-asymmetric {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--recipe-section-stack);
   height: 100%;
 }
 
 .layout-hero-split-asymmetric__hero {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--recipe-element-stack);
 }
 
 .layout-hero-split-asymmetric__split {
   display: flex;
   flex-direction: row;
-  gap: var(--space-lg);
+  gap: var(--recipe-section-stack);
   flex: 1;
 }
 

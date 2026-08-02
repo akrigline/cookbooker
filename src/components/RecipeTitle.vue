@@ -8,20 +8,18 @@ defineProps({
 </script>
 
 <template>
-  <header class="recipe-title">
-    <h2>{{ title }}</h2>
+  <header class="recipe-title-container">
+    <h2 class="text-recipe-title">{{ title }}</h2>
   </header>
 </template>
 
 <style scoped>
-.recipe-title {
-  border-bottom: 3px solid var(--recipe-accent);
-  padding-bottom: var(--space-sm);
+.recipe-title-container {
+  margin-bottom: var(--recipe-element-stack);
 }
 
-.recipe-title h2 {
+.text-recipe-title {
   margin: 0;
-  font-size: 1.75rem;
-  color: var(--recipe-accent);
+  color: var(--recipe-primary); /* Overrides global text-recipe-title if needed, or just sets margin */
 }
 </style>

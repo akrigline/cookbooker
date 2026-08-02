@@ -33,14 +33,14 @@ defineProps({
 .layout-column-optimized {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--recipe-section-stack);
   height: 100%;
 }
 
 .layout-column-optimized__split {
   display: flex;
   flex-direction: row;
-  gap: var(--space-lg);
+  gap: var(--recipe-section-stack);
   flex: 1;
 }
 
@@ -48,7 +48,7 @@ defineProps({
   flex: 1 1 50%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--recipe-element-stack);
   min-width: 0;
 }
 </style>

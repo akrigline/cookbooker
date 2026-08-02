@@ -34,7 +34,7 @@ defineProps({
 .layout-dual-column-bottom-split {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--recipe-section-stack);
   height: 100%;
 }
 
@@ -45,7 +45,7 @@ defineProps({
 .layout-dual-column-bottom-split__split {
   display: flex;
   flex-direction: row;
-  gap: var(--space-lg);
+  gap: var(--recipe-section-stack);
   flex: 1;
 }
 
@@ -53,7 +53,7 @@ defineProps({
   flex: 0 0 38%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--recipe-element-stack);
 }
 
 .layout-dual-column-bottom-split__instructions {

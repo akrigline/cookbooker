@@ -31,22 +31,22 @@ defineProps({
 .layout-asymmetric-sidebar {
   display: flex;
   flex-direction: row;
-  gap: var(--space-lg);
+  gap: var(--recipe-column-gap);
   height: 100%;
 }
 
 .layout-asymmetric-sidebar__aside {
-  flex: 0 0 33%;
+  flex: 0 0 33.333%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--recipe-element-stack);
 }
 
 .layout-asymmetric-sidebar__main {
-  flex: 1 1 67%;
+  flex: 1 1 66.667%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--recipe-section-stack);
   min-width: 0;
 }
 </style>

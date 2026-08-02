@@ -33,7 +33,7 @@ defineProps({
 .layout-balanced-header {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--recipe-section-stack);
   height: 100%;
 }
 
@@ -41,7 +41,7 @@ defineProps({
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: var(--space-lg);
+  gap: var(--recipe-section-stack);
 }
 
 .layout-balanced-header__title {

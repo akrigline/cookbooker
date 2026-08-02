@@ -25,7 +25,7 @@ const imageUrl = useObjectUrl(toRef(() => props.image))
 
 <template>
   <div
-    class="recipe-image"
+    class="recipe-image grayscale-print"
     :class="{ 'is-empty': !imageUrl }"
     :style="ASPECT_RATIO_CSS[aspectRatio] ? { aspectRatio: ASPECT_RATIO_CSS[aspectRatio], height: 'auto' } : null"
   >
@@ -37,13 +37,13 @@ const imageUrl = useObjectUrl(toRef(() => props.image))
 .recipe-image {
   width: 100%;
   height: 100%;
-  border-radius: 4px;
-  background: var(--bg-secondary, #f7f4ef);
+  background: var(--recipe-surface-container-low, #f5f3f3);
+  border: 1px solid var(--recipe-outline-variant, #cfc4c5);
   overflow: hidden;
 }
 
 .recipe-image.is-empty {
-  border: 1px dashed var(--border-color, #e0ddd6);
+  border: 1px dashed var(--recipe-outline-variant, #cfc4c5);
 }
 
 .recipe-image img {

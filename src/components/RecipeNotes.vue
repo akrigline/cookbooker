@@ -13,14 +13,33 @@ const notesHtml = computed(() => renderChefNotes(props.notes))
 </script>
 
 <template>
-  <footer class="recipe-notes" v-html="notesHtml" />
+  <div class="recipe-notes-container">
+    <h3 class="text-section-header notes-title">Chef's Notes</h3>
+    <div class="text-chef-note notes-content" v-html="notesHtml"></div>
+  </div>
 </template>
 
 <style scoped>
-.recipe-notes {
-  font-size: 0.9rem;
-  font-style: italic;
-  border-top: 1px solid var(--border-color, #e0ddd6);
-  padding-top: var(--space-sm);
+.recipe-notes-container {
+  background: var(--recipe-surface-container-low);
+  padding: 1rem;
+  border: 1px solid var(--recipe-outline-variant);
+}
+
+.notes-title {
+  margin: 0 0 0.5rem 0;
+  border-bottom: 1px solid var(--recipe-outline-variant);
+  padding-bottom: 0.25rem;
+}
+
+.notes-content {
+  line-height: 1.6;
+}
+
+:deep(.notes-content p) {
+  margin: 0 0 0.5rem 0;
+}
+:deep(.notes-content p:last-child) {
+  margin: 0;
 }
 </style>

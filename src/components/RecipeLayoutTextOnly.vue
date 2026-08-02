@@ -31,14 +31,14 @@ defineProps({
 .layout-text-only {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--recipe-section-stack);
   height: 100%;
 }
 
 .layout-text-only__split {
   display: flex;
   flex-direction: row;
-  gap: var(--space-lg);
+  gap: var(--recipe-section-stack);
   flex: 1;
 }
 

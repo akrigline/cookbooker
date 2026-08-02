@@ -25,6 +25,88 @@
   --sidebar-width: 240px;
 }
 
+/* Printable Recipe Specific Tokens (Light Theme Locked) */
+.recipe-sheet {
+  /* Colors */
+  --recipe-bg: #fbf9f9;
+  --recipe-surface-dim: #dbdad9;
+  --recipe-surface-container-low: #f5f3f3;
+  --recipe-on-surface: #1b1c1c;
+  --recipe-on-surface-variant: #4c4546;
+  --recipe-primary: #000000;
+  --recipe-outline-variant: #cfc4c5;
+  
+  /* Spacing */
+  --recipe-page-margin: 0.5in;
+  --recipe-column-gap: 2rem;
+  --recipe-element-stack: 0.5rem;
+  --recipe-section-stack: 1.5rem;
+
+  /* Fonts */
+  --font-recipe-title: 'EB Garamond', serif;
+  --font-recipe-body: 'Atkinson Hyperlegible Next', sans-serif;
+  --font-recipe-icon: 'Material Symbols Outlined';
+}
+
+/* Typographic utility classes for recipes */
+.text-recipe-title {
+  font-family: var(--font-recipe-title);
+  font-size: 32px;
+  line-height: 40px;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+  color: var(--recipe-on-surface);
+}
+
+.text-section-header {
+  font-family: var(--font-recipe-body);
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  color: var(--recipe-on-surface);
+}
+
+.text-meta-label {
+  font-family: var(--font-recipe-body);
+  font-size: 9px;
+  line-height: 12px;
+  font-weight: 700;
+  color: var(--recipe-on-surface);
+}
+
+.text-instruction-step {
+  font-family: var(--font-recipe-body);
+  font-size: 11px;
+  line-height: 18px;
+  font-weight: 400;
+  color: var(--recipe-on-surface);
+}
+
+.text-chef-note {
+  font-family: var(--font-recipe-title);
+  font-size: 10px;
+  line-height: 14px;
+  font-weight: 400;
+  color: var(--recipe-on-surface-variant);
+}
+
+.text-body-main {
+  font-family: var(--font-recipe-body);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 400;
+  color: var(--recipe-on-surface);
+}
+
+.text-ingredient-list {
+  font-family: var(--font-recipe-body);
+  font-size: 11px;
+  line-height: 18px;
+  font-weight: 400;
+  color: var(--recipe-on-surface);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-primary: #1c1b19;
