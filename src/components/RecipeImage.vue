@@ -25,11 +25,11 @@ const imageUrl = useObjectUrl(toRef(() => props.image))
 
 <template>
   <div
+    v-if="imageUrl"
     class="recipe-image grayscale-print"
-    :class="{ 'is-empty': !imageUrl }"
     :style="ASPECT_RATIO_CSS[aspectRatio] ? { aspectRatio: ASPECT_RATIO_CSS[aspectRatio], height: 'auto' } : null"
   >
-    <img v-if="imageUrl" :src="imageUrl" alt="" />
+    <img :src="imageUrl" alt="" />
   </div>
 </template>
 
@@ -42,9 +42,7 @@ const imageUrl = useObjectUrl(toRef(() => props.image))
   overflow: hidden;
 }
 
-.recipe-image.is-empty {
-  border: 1px dashed var(--recipe-outline-variant, #cfc4c5);
-}
+
 
 .recipe-image img {
   width: 100%;

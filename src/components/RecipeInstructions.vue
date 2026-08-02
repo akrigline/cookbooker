@@ -24,7 +24,7 @@ function formatStepNumber(num) {
   <div class="recipe-instructions">
     <h3 class="text-section-header instructions-title">
       <span class="material-symbols-outlined title-icon">menu_book</span>
-      Method of Preparation
+      Instructions
     </h3>
     
     <div class="steps-container">

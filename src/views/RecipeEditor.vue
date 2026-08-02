@@ -6,7 +6,6 @@ import { parseIngredientsText } from '../js/conversions'
 import { LAYOUT_TEMPLATES, DEFAULT_LAYOUT_TEMPLATE, INGREDIENT_COLUMN_OPTIONS, INGREDIENT_QTY_ALIGN_OPTIONS, DEFAULT_INGREDIENT_QTY_ALIGN, IMAGE_ASPECT_RATIOS } from '../js/templates'
 import RecipeSheet from '../components/RecipeSheet.vue'
 import PagePreview from '../components/PagePreview.vue'
-import QRCodeShare from '../components/QRCodeShare.vue'
 
 const props = defineProps({
   recipeId: {
@@ -33,7 +32,6 @@ const existingImage = ref(null)
 const notesTextarea = ref(null)
 const error = ref(null)
 const showDeleteModal = ref(false)
-const showQRModal = ref(false)
 const deleting = ref(false)
 
 onMounted(async () => {
@@ -231,10 +229,6 @@ function handleCancel() {
         <button v-if="isEditing" type="button" @click="showDeleteModal = true" style="padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(85% 0.06 25); background:none; color:oklch(45% 0.12 25); cursor:pointer;">Delete recipe</button>
       </div>
       <div style="display:flex; gap:10px;">
-        <button v-if="isEditing" type="button" @click="showQRModal = true" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;">
-          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3z"/><path d="M14 21v-3.5"/><path d="M21 14v3.5"/><path d="M17.5 21H21"/></svg>
-          Share via QR
-        </button>
         <button v-if="isEditing" type="button" @click="handlePrint" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;">
           <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
           Print recipe
@@ -255,8 +249,7 @@ function handleCancel() {
       </div>
     </div>
 
-    <QRCodeShare v-if="showQRModal" :recipe="previewRecipe" @close="showQRModal = false" />
-  </main>
+    </main>
 </template>
 
 <style scoped>
@@ -277,8 +270,5 @@ button:hover, a:hover {
   .cm-app-chrome, .cm-edit-column, .cm-preview-label, .cm-action-bar, .cm-back-link { display: none !important; }
   main { max-width: none !important; padding: 0 !important; margin: 0 !important; }
   .cm-grid { display: block !important; }
-  /* When the QR share modal is open, printing should produce only the QR
-     code, not the recipe sheet underneath it. */
-  main:has(.cm-qr-overlay) .cm-grid { display: none !important; }
 }
 </style>

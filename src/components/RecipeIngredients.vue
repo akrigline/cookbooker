@@ -1,7 +1,12 @@
 <script setup>
 import { convertIngredient, formatQuantity } from '../js/conversions'
+import RecipeQRCode from './RecipeQRCode.vue'
 
 const props = defineProps({
+  recipe: {
+    type: Object,
+    default: null,
+  },
   ingredients: {
     type: Array,
     default: () => [],
@@ -47,6 +52,9 @@ function getIngredientParts(parsed) {
         <div class="ingredient-qty" :style="{ textAlign: qtyAlign }">{{ getIngredientParts(ing).quantity }}</div>
         <div class="ingredient-name">{{ getIngredientParts(ing).name }}</div>
       </li>
+      <li v-if="recipe" class="ingredient-item qr-item">
+        <RecipeQRCode :recipe="recipe" />
+      </li>
     </ul>
   </div>
 </template>
@@ -85,5 +93,11 @@ function getIngredientParts(parsed) {
 
 .ingredient-name {
   flex: 1;
+}
+
+.qr-item {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
 }
 </style>

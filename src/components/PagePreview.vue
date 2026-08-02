@@ -49,9 +49,5 @@ defineProps({
   .page-preview:last-child {
     break-after: auto;
   }
-
-  .page-preview__margin {
-    padding: 0;
-  }
 }
 </style>

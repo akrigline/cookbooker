@@ -23,6 +23,7 @@ defineProps({
     <div class="layout-hero-split-asymmetric__split">
       <RecipeIngredients
         class="layout-hero-split-asymmetric__ingredients"
+        :recipe="recipe"
         :ingredients="recipe.ingredients"
         :columns="recipe.ingredientColumns ?? 1"
         :qty-align="recipe.ingredientQtyAlign ?? 'right'"

@@ -25,7 +25,6 @@ OUTPUT FORMAT — for EACH recipe, produce one block in this exact shape:
   </section>
 
   <section class="cm-notes">
-    <h2>Chef's Notes</h2>
     <p>Optional: prep/cook time, servings, tags, storage tips, or any other
     context from the source that doesn't fit above. For emphasis, use markdown
     syntax written as literal text — **bold** (double asterisks) and *italic*

@@ -28,7 +28,7 @@
 /* Printable Recipe Specific Tokens (Light Theme Locked) */
 .recipe-sheet {
   /* Colors */
-  --recipe-bg: #fbf9f9;
+  --recipe-bg: #ffffff;
   --recipe-surface-dim: #dbdad9;
   --recipe-surface-container-low: #f5f3f3;
   --recipe-on-surface: #1b1c1c;

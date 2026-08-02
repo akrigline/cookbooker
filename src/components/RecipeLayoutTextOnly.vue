@@ -18,6 +18,7 @@ defineProps({
     <div class="layout-text-only__split">
       <RecipeIngredients
         class="layout-text-only__col"
+        :recipe="recipe"
         :ingredients="recipe.ingredients"
         :columns="recipe.ingredientColumns ?? 1"
         :qty-align="recipe.ingredientQtyAlign ?? 'right'"
