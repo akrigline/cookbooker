@@ -8,7 +8,6 @@ import PagePreview from '../components/PagePreview.vue'
 
 const recipesStore = useRecipesStore()
 
-const fileInput = ref(null)
 const mode = ref('file') // 'file' | 'paste'
 const pastedHtml = ref('')
 const candidates = ref([]) // [{ key, recipe, included }]
@@ -29,10 +28,6 @@ const hasResults = computed(
 
 const isInputStage = computed(() => candidates.value.length === 0 && failures.value.length === 0 && rejectedSources.value.length === 0)
 const isReviewStage = computed(() => !isInputStage.value)
-
-function handleImportClick() {
-  fileInput.value?.click()
-}
 
 function resetResults() {
   error.value = null
@@ -156,7 +151,7 @@ function handleCancelReview() {
         <h2 id="cm-file-heading" style="font-family:'Newsreader',Georgia,serif; font-size:19px; font-weight:600; margin:0 0 6px;">Select a file</h2>
         <p style="margin:0 0 16px; font-size:14px; color:oklch(45% 0.01 75);">Choose an .html file containing one or more recipe/1 elements.</p>
         <label for="cm-file-input" style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);">Select recipe HTML file or files</label>
-        <input id="cm-file-input" ref="fileInput" type="file" accept=".html,.htm,text/html" multiple @change="handleFileChange" style="font-size:14px;" />
+        <input id="cm-file-input" type="file" accept=".html,.htm,text/html" multiple @change="handleFileChange" style="font-size:14px;" />
         <p style="margin:10px 0 0; font-size:12px; color:oklch(50% 0.01 75);">You can select multiple files at once — each may contain one or more recipes.</p>
       </section>
 

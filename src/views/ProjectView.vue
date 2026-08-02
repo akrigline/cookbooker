@@ -121,17 +121,6 @@ function selectAllInChapter(chapterId) {
   selectedIds.value = s
 }
 
-function chapterAllSelected(chapterId) {
-  const rows = recipesInChapter(chapterId)
-  if (!rows.length) return false
-  return rows.every((e) => selectedIds.value.has(e.pr.id))
-}
-
-function chapterSomeSelected(chapterId) {
-  const rows = recipesInChapter(chapterId)
-  return rows.some((e) => selectedIds.value.has(e.pr.id))
-}
-
 function clearSelection() {
   selectedIds.value = new Set()
 }

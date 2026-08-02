@@ -99,7 +99,6 @@ export const deleteRecipe = (id) =>
 // Projects
 // ---------------------------------------------------------------------------
 export const getAllProjects = () => db.projects.toArray()
-export const getProject = (id) => db.projects.get(id)
 
 // The defaults live here and nowhere else: `createProject` returns the rows it
 // actually wrote so callers (the Pinia store) mirror what was persisted instead
@@ -146,8 +145,6 @@ export const getAllChapters = () => db.chapters.toArray()
 
 export const getChaptersForProject = (projectId) =>
   db.chapters.where('projectId').equals(projectId).toArray()
-
-export const getChapter = (id) => db.chapters.get(id)
 
 // `isDefault` isn't an indexed field (and is stored as a real boolean), so a
 // Dexie compound where({...}) shorthand on it silently matches nothing -

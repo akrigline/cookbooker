@@ -69,15 +69,6 @@
   filter: grayscale(100%) contrast(1.1);
 }
 
-.print-container {
-  width: 8.5in;
-  height: 11in;
-  padding: 0.5in;
-  margin: 0;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
 @media print {
   body,
   #app {
