@@ -33,7 +33,7 @@ db.on('populate', async () => {
     ingredients: [],
     image: null,
     notes: '',
-    layoutTemplate: 'standard',
+    layoutTemplate: 'hero-split-balanced',
     ingredientColumns: 1,
     imageAspectRatio: 'auto',
   })

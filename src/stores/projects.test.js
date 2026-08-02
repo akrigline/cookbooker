@@ -15,7 +15,7 @@ function makeRecipeRow(overrides = {}) {
     ingredients: [],
     image: null,
     notes: '',
-    layoutTemplate: 'standard',
+    layoutTemplate: 'hero-split-balanced',
     ...overrides,
   }
 }

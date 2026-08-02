@@ -1,5 +1,5 @@
 import { parseIngredientsText } from './conversions'
-import { LAYOUT_TEMPLATES } from './templates'
+import { LAYOUT_TEMPLATES, DEFAULT_LAYOUT_TEMPLATE } from './templates'
 
 const KNOWN_LAYOUT_IDS = new Set(LAYOUT_TEMPLATES.map((tpl) => tpl.id))
 
@@ -25,7 +25,7 @@ function extractInstructions(root) {
 
 function extractLayoutTemplate(root) {
   const content = root.querySelector('.cm-layout')?.getAttribute('content')
-  return KNOWN_LAYOUT_IDS.has(content) ? content : 'standard'
+  return KNOWN_LAYOUT_IDS.has(content) ? content : DEFAULT_LAYOUT_TEMPLATE
 }
 
 /**

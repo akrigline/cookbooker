@@ -19,7 +19,7 @@ describe('backup.js', () => {
       ingredients: [],
       image: null,
       notes: '',
-      layoutTemplate: 'standard',
+      layoutTemplate: 'hero-split-balanced',
     })
 
     const blob = await exportDatabase()
@@ -35,7 +35,7 @@ describe('backup.js', () => {
       ingredients: [],
       image: null,
       notes: '',
-      layoutTemplate: 'standard',
+      layoutTemplate: 'hero-split-balanced',
     })
     const blob = await exportDatabase()
 
@@ -45,7 +45,7 @@ describe('backup.js', () => {
       ingredients: [],
       image: null,
       notes: '',
-      layoutTemplate: 'standard',
+      layoutTemplate: 'hero-split-balanced',
     })
 
     const file = new File([blob], 'backup.json', { type: 'application/json' })
@@ -63,7 +63,7 @@ describe('backup.js', () => {
       ingredients: [],
       image: null,
       notes: '',
-      layoutTemplate: 'standard',
+      layoutTemplate: 'hero-split-balanced',
     })
     const blob = await exportDatabase()
     const file = new File([blob], 'backup.json', { type: 'application/json' })

@@ -74,6 +74,11 @@ describe('parseRecipeImportHtml', () => {
     expect(recipes.map((r) => r.title)).toEqual(['Pancakes', 'Waffles'])
   })
 
+  it('defaults layoutTemplate to the registry default when omitted', () => {
+    const { recipes } = parseRecipeImportHtml(BATCH_RECIPES)
+    expect(recipes[0].layoutTemplate).toBe('hero-split-balanced')
+  })
+
   it('rejects a file missing the required data-cm-format marker', () => {
     const { recipes, failures, rejected } = parseRecipeImportHtml(NO_MARKERS)
     expect(rejected).toBe(true)

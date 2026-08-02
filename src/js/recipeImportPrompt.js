@@ -34,7 +34,7 @@ OUTPUT FORMAT — for EACH recipe, produce one block in this exact shape:
     lost.</p>
   </section>
 
-  <meta class="cm-layout" content="standard">
+  <meta class="cm-layout" content="hero-split-balanced">
 </article>
 
 Wrap the whole thing in a minimal valid HTML document (<!DOCTYPE html>, <head> with

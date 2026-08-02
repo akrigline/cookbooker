@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
 import { parseIngredientsText } from '../js/conversions'
-import { LAYOUT_TEMPLATES, INGREDIENT_COLUMN_OPTIONS, IMAGE_ASPECT_RATIOS } from '../js/templates'
+import { LAYOUT_TEMPLATES, DEFAULT_LAYOUT_TEMPLATE, INGREDIENT_COLUMN_OPTIONS, IMAGE_ASPECT_RATIOS } from '../js/templates'
 import RecipeSheet from '../components/RecipeSheet.vue'
 import PagePreview from '../components/PagePreview.vue'
 import QRCodeShare from '../components/QRCodeShare.vue'
@@ -24,7 +24,7 @@ const title = ref('Untitled Recipe')
 const instructionsText = ref('')
 const ingredientsText = ref('')
 const notes = ref('')
-const layoutTemplate = ref('standard')
+const layoutTemplate = ref(DEFAULT_LAYOUT_TEMPLATE)
 const ingredientColumns = ref(1)
 const imageAspectRatio = ref('auto')
 const imageFile = ref(null)
@@ -44,7 +44,7 @@ onMounted(async () => {
       instructionsText.value = recipe.instructions ?? ''
       ingredientsText.value = (recipe.ingredients ?? []).map((i) => i.raw).join('\n')
       notes.value = recipe.notes ?? ''
-      layoutTemplate.value = recipe.layoutTemplate ?? 'standard'
+      layoutTemplate.value = recipe.layoutTemplate ?? DEFAULT_LAYOUT_TEMPLATE
       ingredientColumns.value = recipe.ingredientColumns ?? 1
       imageAspectRatio.value = recipe.imageAspectRatio ?? 'auto'
       existingImage.value = recipe.image ?? null
@@ -55,7 +55,10 @@ onMounted(async () => {
 })
 
 const parsedIngredients = computed(() => parseIngredientsText(ingredientsText.value))
-const showImageAspectControl = computed(() => layoutTemplate.value !== 'text-only')
+const showImageAspectControl = computed(() => {
+  const active = LAYOUT_TEMPLATES.find((tpl) => tpl.id === layoutTemplate.value)
+  return active ? active.hasImage : true
+})
 
 const previewRecipe = computed(() => ({
   id: isEditing.value ? Number(props.recipeId) : Date.now(),

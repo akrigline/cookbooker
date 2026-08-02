@@ -1,8 +1,14 @@
 export const LAYOUT_TEMPLATES = [
-  { id: 'standard', label: 'Standard (image top, two columns)' },
-  { id: 'image-heavy', label: 'Image-Heavy (large photo side panel)' },
-  { id: 'text-only', label: 'Text-Only (no image container)' },
+  { id: 'hero-split-balanced', label: 'Hero Split (Balanced)', hasImage: true },
+  { id: 'hero-split-asymmetric', label: 'Hero Split (Asymmetric)', hasImage: true },
+  { id: 'asymmetric-sidebar', label: 'Asymmetric Sidebar', hasImage: true },
+  { id: 'column-optimized', label: 'Column Optimized', hasImage: true },
+  { id: 'balanced-header', label: 'Balanced Header', hasImage: true },
+  { id: 'dual-column-bottom-split', label: 'Dual Column, Bottom Split', hasImage: true },
+  { id: 'text-only', label: 'Text-Only (no image container)', hasImage: false },
 ]
+
+export const DEFAULT_LAYOUT_TEMPLATE = 'hero-split-balanced'
 
 export const COVER_TEMPLATES = [
   { id: 'classic', label: 'Classic Border' },
