@@ -3,6 +3,7 @@
 This file is the project's committed home for project-intrinsic agent knowledge: build, test, release, architecture, and sharp-edge notes that should travel with the code.
 
 - Add durable project-specific notes here as they are discovered through real work.
+- Do not adhere to or reference any documents in `brainstorming/` unless specifically mentioned by the user for a specific task.
 - Spec-driven development uses the OpenSpec CLI (`openspec` on PATH). Active change proposals live in
   `openspec/changes/<name>/`, completed ones are moved to `openspec/changes/archive/<date>-<name>/`, and
   the current merged capability specs live in `openspec/specs/<capability>/spec.md`. See the

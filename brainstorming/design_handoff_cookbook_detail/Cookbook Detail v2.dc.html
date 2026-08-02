@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; }
+    ::selection { background: oklch(85% 0.05 250); }
+    .cm-skip-link:focus { transform: translateY(0) !important; }
+    a { color: oklch(45% 0.14 250); }
+    a:hover { color: oklch(38% 0.15 250); }
+  </style>
+</helmet>
+
+<div style="min-height:100vh; background:oklch(97.5% 0.006 75); font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif; color:oklch(18% 0.01 75);">
+
+  <a href="#cm-main" class="cm-skip-link" style="position:absolute; left:12px; top:-60px; transform:translateY(-100px); background:oklch(20% 0.015 75); color:white; padding:10px 16px; border-radius:6px; z-index:100; text-decoration:none; font-size:14px; font-weight:600; transition:transform 0.15s;">Skip to main content</a>
+
+  <div role="status" aria-live="polite" style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;">{{ toastMessage }}</div>
+
+  <header style="border-bottom:1px solid oklch(88% 0.008 75); background:oklch(99% 0.003 75);">
+    <div style="max-width:1160px; margin:0 auto; padding:16px 32px; display:flex; align-items:center; gap:28px; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span aria-hidden="true" style="width:28px; height:28px; border-radius:7px; background:oklch(20% 0.015 75); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="oklch(97% 0.006 75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </span>
+        <span style="font-family:'Newsreader',Georgia,serif; font-size:20px; font-weight:600; letter-spacing:-0.01em;">Cookbook Studio</span>
+      </div>
+      <nav aria-label="Primary" style="display:flex; gap:4px;">
+        <a href="Cookbook Management.dc.html" aria-current="page" style="text-decoration:none; font-size:14px; font-weight:600; padding:8px 12px; border-radius:7px; background:oklch(93% 0.02 250); color:oklch(30% 0.1 250);">Cookbooks</a>
+        <a href="Global Recipe Library.dc.html" style="text-decoration:none; font-size:14px; font-weight:600; padding:8px 12px; border-radius:7px; color:oklch(40% 0.01 75);" style-hover="background:oklch(94% 0.006 75);">Recipe Library</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="cm-main" style="max-width:1160px; margin:0 auto; padding:22px 32px {{ mainBottomPadding }};">
+    <nav aria-label="Breadcrumb" style="margin-bottom:8px;">
+      <a href="Cookbook Management.dc.html" style="font-size:13px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+        <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Cookbooks
+      </a>
+    </nav>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+        <span aria-hidden="true" style="width:4px; height:28px; border-radius:2px; background:{{ accentColor }}; flex-shrink:0;"></span>
+        <div style="min-width:0;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <h1 style="font-family:'Newsreader',Georgia,serif; font-size:23px; font-weight:600; margin:0; letter-spacing:-0.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ title }}</h1>
+            <button type="button" aria-label="Edit cookbook name and details" onClick="{{ openEditDetails }}" style="width:26px; height:26px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:none; border:none; border-radius:6px; cursor:pointer; color:oklch(45% 0.01 75);" style-hover="background:oklch(93% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+          </div>
+          <p style="margin:2px 0 0; font-size:12.5px; color:oklch(45% 0.01 75); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ captionLabel }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:flex-start; gap:24px;">
+    <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:6px;">
+      <sc-for list="{{ chapters }}" as="chapter" hint-placeholder-count="4">
+        <sc-if value="{{ chapter.visible }}" hint-placeholder-val="{{ true }}">
+        <div onDragOver="{{ chapter.wrapperDragOverHandler }}" onDrop="{{ chapter.wrapperDropHandler }}">
+        <div aria-hidden="true" style="height:4px; margin:0 4px 5px; border-radius:2px; background:{{ chapter.insertionLineColor }}; transition:background 0.1s;"></div>
+        <section aria-labelledby="cm-ch-title-{{ chapter.id }}" onDragOver="{{ chapter.sectionDragOverHandler }}" onDrop="{{ chapter.sectionDropHandler }}" style="background:oklch(99.2% 0.002 75); border:1px solid oklch(88% 0.008 75); border-radius:14px; overflow:hidden;">
+          <div style="display:flex; align-items:center; gap:10px; padding:11px 16px; border-bottom:1px solid oklch(90% 0.008 75); background:oklch(97.5% 0.005 75); flex-wrap:wrap;">
+            <sc-if value="{{ chapter.showMoveButtons }}" hint-placeholder-val="{{ false }}">
+              <span aria-hidden="true" draggable="true" onDragStart="{{ chapter.dragStartHandler }}" onDragEnd="{{ chapter.dragEndHandler }}" title="Drag to reorder chapter" style="cursor:grab; color:oklch(55% 0.01 75); display:flex; align-items:center; padding:4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>
+              </span>
+            </sc-if>
+            <sc-if value="{{ chapter.showMoveButtons }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:2px;">
+                <button type="button" aria-label="Move chapter {{ chapter.name }} up" disabled="{{ chapter.moveUpDisabled }}" onClick="{{ chapter.moveUpHandler }}" style="width:24px; height:20px; display:flex; align-items:center; justify-content:center; background:none; border:1px solid oklch(85% 0.008 75); border-radius:5px 5px 0 0; cursor:pointer; color:oklch(30% 0.01 75);" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                </button>
+                <button type="button" aria-label="Move chapter {{ chapter.name }} down" disabled="{{ chapter.moveDownDisabled }}" onClick="{{ chapter.moveDownHandler }}" style="width:24px; height:20px; display:flex; align-items:center; justify-content:center; background:none; border:1px solid oklch(85% 0.008 75); border-top:none; border-radius:0 0 5px 5px; cursor:pointer; color:oklch(30% 0.01 75);" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+              </div>
+            </sc-if>
+            <div style="flex:1; min-width:160px;">
+              <h2 id="cm-ch-title-{{ chapter.id }}" style="font-family:'Newsreader',Georgia,serif; font-size:17px; font-weight:600; margin:0; letter-spacing:-0.01em; display:flex; align-items:center; gap:8px;">
+                {{ chapter.name }}
+                <sc-if value="{{ chapter.isMisc }}" hint-placeholder-val="{{ false }}">
+                  <span aria-hidden="true" title="Permanent chapter" style="color:oklch(55% 0.01 75);">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  </span>
+                </sc-if>
+              </h2>
+              <div style="display:flex; align-items:center; gap:10px; margin-top:1px; flex-wrap:wrap;">
+                <p style="margin:0; font-size:11.5px; color:oklch(48% 0.01 75);">{{ chapter.recipeCountLabel }}</p>
+                <sc-if value="{{ chapter.hasRecipes }}" hint-placeholder-val="{{ false }}">
+                  <label style="display:flex; align-items:center; gap:5px; font-size:11.5px; color:oklch(45% 0.01 75); cursor:pointer;">
+                    <input type="checkbox" checked="{{ chapter.allSelected }}" onChange="{{ chapter.toggleSelectAllHandler }}" style="width:13px; height:13px; cursor:pointer;" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px;" />
+                    Select all
+                  </label>
+                  <button type="button" onClick="{{ chapter.sortHandler }}" style="background:none; border:none; padding:0; font-size:11.5px; font-weight:600; color:oklch(45% 0.14 250); cursor:pointer; text-decoration:underline;" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px;">Sort A–Z</button>
+                </sc-if>
+              </div>
+            </div>
+            <sc-if value="{{ chapter.isMisc }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0; font-size:11.5px; font-style:italic; color:oklch(50% 0.01 75); max-width:200px; text-align:right;">Default chapter. Omitted from the compiled book when empty.</p>
+            </sc-if>
+            <sc-if value="{{ chapter.showEditButtons }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; gap:8px;">
+                <button type="button" aria-label="Rename chapter {{ chapter.name }}" onClick="{{ chapter.renameHandler }}" style="width:34px; height:34px; display:flex; align-items:center; justify-content:center; background:none; border:1px solid oklch(85% 0.008 75); border-radius:7px; cursor:pointer; color:oklch(30% 0.01 75);" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                </button>
+                <button type="button" aria-label="Delete chapter {{ chapter.name }}" onClick="{{ chapter.deleteHandler }}" style="width:34px; height:34px; display:flex; align-items:center; justify-content:center; background:none; border:1px solid oklch(85% 0.008 75); border-radius:7px; cursor:pointer; color:oklch(45% 0.05 25);" style-hover="background:oklch(94% 0.04 25); border-color:oklch(80% 0.06 25);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                </button>
+              </div>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ chapter.hasRecipes }}" hint-placeholder-val="{{ true }}">
+            <div role="list" aria-label="Recipes in {{ chapter.name }}">
+              <sc-for list="{{ chapter.recipes }}" as="recipe" hint-placeholder-count="2">
+                <div role="listitem" onDragOver="{{ recipe.dragOverHandler }}" onDrop="{{ recipe.dropHandler }}" onDragLeave="{{ recipe.dragLeaveHandler }}" style="display:flex; align-items:center; gap:11px; padding:9px 16px; border-bottom:1px solid oklch(92% 0.006 75); border-top:2px solid {{ recipe.dropIndicatorColor }}; background:{{ recipe.rowBg }};">
+                  <input type="checkbox" aria-label="Select {{ recipe.title }}" checked="{{ recipe.selected }}" onChange="{{ recipe.toggleSelectHandler }}" style="width:15px; height:15px; flex-shrink:0; cursor:pointer;" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px;" />
+                  <span aria-hidden="true" draggable="true" onDragStart="{{ recipe.dragStartHandler }}" onDragEnd="{{ recipe.dragEndHandler }}" title="Drag to reorder or move to another chapter" style="cursor:grab; color:oklch(60% 0.01 75); flex-shrink:0; display:flex; align-items:center;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>
+                  </span>
+
+                  <sc-if value="{{ recipe.hasImage }}" hint-placeholder-val="{{ false }}">
+                    <div aria-hidden="true" style="width:32px; height:32px; flex-shrink:0; border-radius:6px; background-image:repeating-linear-gradient(45deg, oklch(90% 0.02 250) 0 6px, oklch(94% 0.015 250) 6px 12px); border:1px solid oklch(85% 0.02 250);"></div>
+                  </sc-if>
+                  <sc-if value="{{ recipe.hasNoImage }}" hint-placeholder-val="{{ true }}">
+                    <div aria-hidden="true" style="width:32px; height:32px; flex-shrink:0; border-radius:6px; background:oklch(95% 0.004 75); border:1px dashed oklch(83% 0.008 75);"></div>
+                  </sc-if>
+
+                  <div style="flex:1; min-width:0;">
+                    <h3 title="{{ recipe.title }}" style="font-family:'Newsreader',Georgia,serif; font-size:14.5px; font-weight:600; margin:0; letter-spacing:-0.005em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ recipe.title }}</h3>
+                  </div>
+
+                  <div style="position:relative; flex-shrink:0;">
+                    <button type="button" aria-haspopup="true" aria-expanded="{{ recipe.menuOpen }}" aria-label="More actions for {{ recipe.title }}" onClick="{{ recipe.openMenuHandler }}" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:none; border:1px solid oklch(85% 0.008 75); border-radius:7px; cursor:pointer; color:oklch(30% 0.01 75);" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+                    </button>
+                    <sc-if value="{{ recipe.menuOpen }}" hint-placeholder-val="{{ false }}">
+                      <div onKeyDown="{{ recipe.menuKeyDownHandler }}" style="position:absolute; right:0; top:calc(100% + 6px); z-index:60; width:220px; background:oklch(99.5% 0.001 75); border:1px solid oklch(85% 0.008 75); border-radius:10px; box-shadow:0 12px 30px oklch(20% 0.02 75 / 0.2); padding:6px; display:flex; flex-direction:column; gap:2px;">
+                        <a ref="{{ recipe.firstMenuItemRef }}" href="Recipe Detail.dc.html" style="display:block; padding:8px 10px; font-size:13.5px; font-weight:600; text-decoration:none; color:oklch(18% 0.01 75); border-radius:6px;" style-hover="background:oklch(94% 0.006 75);">Open recipe</a>
+                        <button type="button" disabled="{{ recipe.moveUpDisabled }}" onClick="{{ recipe.moveUpHandler }}" style="text-align:left; padding:8px 10px; font-size:13.5px; font-weight:600; background:none; border:none; border-radius:6px; cursor:pointer; color:oklch(18% 0.01 75);" style-hover="background:oklch(94% 0.006 75);">Move up</button>
+                        <button type="button" disabled="{{ recipe.moveDownDisabled }}" onClick="{{ recipe.moveDownHandler }}" style="text-align:left; padding:8px 10px; font-size:13.5px; font-weight:600; background:none; border:none; border-radius:6px; cursor:pointer; color:oklch(18% 0.01 75);" style-hover="background:oklch(94% 0.006 75);">Move down</button>
+                        <div style="height:1px; background:oklch(90% 0.008 75); margin:4px 2px;"></div>
+                        <label style="display:block; padding:6px 10px 2px; font-size:11.5px; font-weight:600; color:oklch(50% 0.01 75);">Move to chapter</label>
+                        <select value="{{ recipe.chapterId }}" onChange="{{ recipe.changeChapterHandler }}" style="margin:0 6px 4px; font-size:13px; padding:7px 8px; border-radius:6px; border:1px solid oklch(82% 0.008 75); font-family:inherit; background:oklch(99.3% 0.002 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px;">
+                          <sc-for list="{{ chapters }}" as="copt" hint-placeholder-count="4">
+                            <option value="{{ copt.id }}">{{ copt.name }}</option>
+                          </sc-for>
+                        </select>
+                        <div style="height:1px; background:oklch(90% 0.008 75); margin:4px 2px;"></div>
+                        <button type="button" onClick="{{ recipe.removeHandler }}" style="text-align:left; padding:8px 10px; font-size:13.5px; font-weight:600; background:none; border:none; border-radius:6px; cursor:pointer; color:oklch(45% 0.14 25);" style-hover="background:oklch(94% 0.04 25);">Remove from cookbook</button>
+                      </div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ chapter.hasNoRecipes }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:0; padding:14px 16px; font-size:13px; color:oklch(50% 0.01 75); font-style:italic;">{{ chapter.emptyMessage }}</p>
+          </sc-if>
+        </section>
+        </div>
+        </sc-if>
+      </sc-for>
+    </div>
+
+    <div style="width:300px; flex-shrink:0; display:flex; flex-direction:column;">
+    <form onSubmit="{{ handleQuickChapterSubmit }}" style="display:flex; gap:8px; margin-bottom:12px;">
+      <label for="cm-quick-chapter" style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);">New chapter name</label>
+      <input id="cm-quick-chapter" type="text" placeholder="New chapter name…" value="{{ quickChapterName }}" onChange="{{ handleQuickChapterChange }}" style="flex:1; min-width:0; box-sizing:border-box; padding:8px 10px; font-size:13px; border:1px solid oklch(82% 0.008 75); border-radius:8px; font-family:inherit; background:oklch(99.3% 0.002 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px; border-color:oklch(52% 0.16 250);" />
+      <button type="submit" aria-label="Add chapter" style="display:flex; align-items:center; justify-content:center; gap:4px; flex-shrink:0; background:oklch(20% 0.015 75); color:oklch(98% 0.004 75); border:none; border-radius:8px; padding:8px 12px; font-size:13px; font-weight:600; cursor:pointer;" style-hover="background:oklch(28% 0.02 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Add
+      </button>
+    </form>
+
+    <aside aria-label="Recipe library" style="width:300px; flex-shrink:0; align-self:flex-start; position:sticky; top:16px; background:oklch(99.2% 0.002 75); border:1px solid oklch(88% 0.008 75); border-radius:14px; overflow:hidden; max-height:calc(100vh - 32px); display:flex; flex-direction:column;">
+      <div style="padding:14px 16px; border-bottom:1px solid oklch(90% 0.008 75); background:oklch(97.5% 0.005 75); flex-shrink:0;">
+        <h2 style="font-family:'Newsreader',Georgia,serif; font-size:15.5px; font-weight:600; margin:0 0 8px;">Recipe Library</h2>
+        <label for="cm-lib-search" style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);">Search the recipe library</label>
+        <div style="position:relative;">
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="oklch(50% 0.01 75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:10px; top:50%; transform:translateY(-50%);"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="cm-lib-search" type="text" placeholder="Search library…" value="{{ libQuery }}" onChange="{{ handleLibQueryChange }}" style="width:100%; box-sizing:border-box; padding:7px 8px 7px 30px; font-size:13px; border:1px solid oklch(82% 0.008 75); border-radius:7px; font-family:inherit; background:oklch(99.3% 0.002 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px; border-color:oklch(52% 0.16 250);" />
+        </div>
+        <p style="margin:8px 0 0; font-size:11px; color:oklch(50% 0.01 75);">{{ libraryCountLabel }}</p>
+        <p style="margin:4px 0 0; font-size:11px; color:oklch(55% 0.01 75);">Drag a recipe onto a chapter, or use +.</p>
+        <div style="display:flex; gap:12px; margin-top:8px;">
+          <button type="button" onClick="{{ selectAllVisibleLib }}" style="background:none; border:none; padding:0; font-size:11.5px; font-weight:600; color:oklch(45% 0.14 250); cursor:pointer; text-decoration:underline;" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Select all</button>
+          <button type="button" onClick="{{ deselectAllLib }}" style="background:none; border:none; padding:0; font-size:11.5px; font-weight:600; color:oklch(45% 0.14 250); cursor:pointer; text-decoration:underline;" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Deselect all</button>
+        </div>
+      </div>
+      <div style="flex:1; overflow-y:auto;">
+        <sc-if value="{{ hasSidebarResults }}" hint-placeholder-val="{{ true }}">
+          <div role="list" aria-label="Recipes available to add">
+            <sc-for list="{{ sidebarLibrary }}" as="item" hint-placeholder-count="3">
+              <div role="listitem" style="display:flex; align-items:center; gap:8px; padding:9px 12px; border-bottom:1px solid oklch(92% 0.006 75);">
+                <input type="checkbox" checked="{{ item.selected }}" onChange="{{ item.toggleHandler }}" aria-label="Select {{ item.title }}" style="width:15px; height:15px; flex-shrink:0; cursor:pointer;" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px;" />
+                <span aria-hidden="true" draggable="true" onDragStart="{{ item.dragStartHandler }}" onDragEnd="{{ item.dragEndHandler }}" title="Drag onto a chapter" style="cursor:grab; color:oklch(60% 0.01 75); flex-shrink:0; display:flex; align-items:center;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>
+                </span>
+                <sc-if value="{{ item.hasImage }}" hint-placeholder-val="{{ false }}">
+                  <div aria-hidden="true" style="width:28px; height:28px; flex-shrink:0; border-radius:6px; background-image:repeating-linear-gradient(45deg, oklch(90% 0.02 250) 0 6px, oklch(94% 0.015 250) 6px 12px); border:1px solid oklch(85% 0.02 250);"></div>
+                </sc-if>
+                <sc-if value="{{ item.hasNoImage }}" hint-placeholder-val="{{ true }}">
+                  <div aria-hidden="true" style="width:28px; height:28px; flex-shrink:0; border-radius:6px; background:oklch(95% 0.004 75); border:1px dashed oklch(83% 0.008 75);"></div>
+                </sc-if>
+                <span title="{{ item.title }}" style="flex:1; min-width:0; font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ item.title }}</span>
+                <button type="button" aria-label="Add {{ item.title }} to Miscellaneous" onClick="{{ item.quickAddHandler }}" style="width:24px; height:24px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:none; border:1px solid oklch(85% 0.008 75); border-radius:6px; cursor:pointer; color:oklch(30% 0.01 75);" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ hasNoSidebarResults }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:0; padding:20px 16px; font-size:12.5px; color:oklch(50% 0.01 75); font-style:italic; text-align:center;">{{ sidebarEmptyMessage }}</p>
+        </sc-if>
+      </div>
+      <sc-if value="{{ showLibBulkBar }}" hint-placeholder-val="{{ false }}">
+        <div style="flex-shrink:0; border-top:1px solid oklch(85% 0.008 75); background:oklch(97.5% 0.005 75); padding:10px 14px; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <p style="margin:0; font-size:12.5px; font-weight:600;">{{ libSelectedCountLabel }}</p>
+            <button type="button" onClick="{{ deselectAllLib }}" style="background:none; border:none; padding:2px 4px; font-size:12px; font-weight:600; color:oklch(45% 0.14 250); cursor:pointer; text-decoration:underline;" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Deselect all</button>
+          </div>
+          <label for="cm-lib-bulk-move" style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);">Add selected to chapter</label>
+          <select id="cm-lib-bulk-move" value="" onChange="{{ handleLibBulkMoveChange }}" style="width:100%; box-sizing:border-box; font-size:13px; padding:8px 10px; border-radius:8px; border:1px solid oklch(82% 0.008 75); font-family:inherit; background:oklch(99.3% 0.002 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px;">
+            <option value="">Add to chapter…</option>
+            <sc-for list="{{ chapters }}" as="copt" hint-placeholder-count="4">
+              <option value="{{ copt.id }}">{{ copt.name }}</option>
+            </sc-for>
+          </select>
+          <div style="display:flex; gap:8px;">
+            <button type="button" onClick="{{ libBulkAddMisc }}" style="flex:1; background:none; color:oklch(20% 0.015 75); border:1px solid oklch(82% 0.008 75); border-radius:8px; padding:8px 10px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Add to Misc.</button>
+            <button type="button" onClick="{{ openLibBulkNewChapter }}" style="flex:1; background:oklch(20% 0.015 75); color:oklch(98% 0.004 75); border:none; border-radius:8px; padding:8px 10px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:oklch(28% 0.02 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">New chapter…</button>
+          </div>
+        </div>
+      </sc-if>
+    </aside>
+    </div>
+    </div>
+  </main>
+
+  <sc-if value="{{ anyMenuOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeRecipeMenu }}" style="position:fixed; inset:0; z-index:55;"></div>
+  </sc-if>
+
+  <sc-if value="{{ showBulkBar }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; left:0; right:0; bottom:0; z-index:150; background:oklch(99.5% 0.001 75); border-top:1px solid oklch(85% 0.008 75); box-shadow:0 -8px 24px oklch(20% 0.02 75 / 0.12);">
+      <div style="max-width:1160px; margin:0 auto; padding:14px 32px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+        <p style="margin:0; font-size:14px; font-weight:600;">{{ selectedCountLabel }}</p>
+        <button type="button" onClick="{{ clearSelection }}" style="background:none; border:none; padding:4px 6px; font-size:13px; font-weight:600; color:oklch(45% 0.14 250); cursor:pointer; text-decoration:underline;" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Clear</button>
+        <div style="flex:1;"></div>
+        <label for="cm-bulk-move" style="font-size:13px; font-weight:600;">Move to</label>
+        <select id="cm-bulk-move" value="" onChange="{{ handleBulkMoveChange }}" style="font-size:13.5px; padding:8px 10px; border-radius:8px; border:1px solid oklch(82% 0.008 75); font-family:inherit; background:oklch(99.3% 0.002 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px;">
+          <option value="">Choose a chapter…</option>
+          <sc-for list="{{ chapters }}" as="copt" hint-placeholder-count="4">
+            <option value="{{ copt.id }}">{{ copt.name }}</option>
+          </sc-for>
+        </select>
+        <button type="button" onClick="{{ openCreateChapterFromSelection }}" style="background:none; color:oklch(20% 0.015 75); border:1px solid oklch(82% 0.008 75); border-radius:8px; padding:9px 14px; font-size:13.5px; font-weight:600; cursor:pointer; white-space:nowrap;" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">New chapter from these</button>
+        <button type="button" onClick="{{ openBulkRemove }}" style="background:none; color:oklch(45% 0.14 25); border:1px solid oklch(80% 0.06 25); border-radius:8px; padding:9px 14px; font-size:13.5px; font-weight:600; cursor:pointer; white-space:nowrap;" style-hover="background:oklch(94% 0.04 25);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Remove from cookbook</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showEditDetailsModal }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ handleBackdropClick }}" onKeyDown="{{ handleModalKeyDown }}" style="position:fixed; inset:0; background:oklch(20% 0.01 75 / 0.45); display:flex; align-items:center; justify-content:center; padding:24px; z-index:200;">
+      <div role="dialog" aria-modal="true" aria-labelledby="cm-cbform-heading" onClick="{{ stopPropagation }}" style="background:oklch(99.3% 0.002 75); border-radius:14px; width:100%; max-width:440px; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(20% 0.02 75 / 0.25);">
+        <h2 id="cm-cbform-heading" style="font-family:'Newsreader',Georgia,serif; font-size:20px; font-weight:600; margin:0 0 18px;">Edit cookbook details</h2>
+        <form onSubmit="{{ handleCookbookFormSubmit }}">
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <div>
+              <label for="cm-cb-title" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Title <span aria-hidden="true" style="color:oklch(45% 0.05 25);">*</span><span style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);"> (required)</span></label>
+              <input ref="{{ firstFieldRef }}" id="cm-cb-title" type="text" required="{{ true }}" value="{{ cookbookFormTitle }}" onChange="{{ handleCookbookTitleChange }}" aria-invalid="{{ cookbookTitleInvalid }}" aria-describedby="{{ cookbookTitleErrorId }}" style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:15px; border:1px solid oklch(80% 0.01 75); border-radius:8px; font-family:inherit;" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px; border-color:oklch(52% 0.16 250);" />
+              <sc-if value="{{ cookbookTitleInvalid }}" hint-placeholder-val="{{ false }}">
+                <p role="alert" style="margin:6px 0 0; font-size:13px; color:oklch(45% 0.14 25);">Title is required.</p>
+              </sc-if>
+            </div>
+            <div>
+              <label for="cm-cb-subtitle" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Subtitle</label>
+              <input id="cm-cb-subtitle" type="text" value="{{ cookbookFormSubtitle }}" onChange="{{ handleCookbookSubtitleChange }}" style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:15px; border:1px solid oklch(80% 0.01 75); border-radius:8px; font-family:inherit;" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px; border-color:oklch(52% 0.16 250);" />
+            </div>
+            <div role="group" aria-label="Accent color">
+              <p style="font-size:13px; font-weight:600; margin:0 0 8px;">Accent color</p>
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <sc-for list="{{ accentOptions }}" as="opt" hint-placeholder-count="6">
+                  <button type="button" aria-pressed="{{ opt.selected }}" aria-label="{{ opt.name }}" onClick="{{ opt.selectHandler }}" style="width:32px; height:32px; border-radius:999px; background:{{ opt.color }}; cursor:pointer; box-shadow:0 0 0 2px oklch(99% 0 0), 0 0 0 3px {{ opt.ringColor }};" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;"></button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:24px;">
+            <button type="button" onClick="{{ closeModal }}" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Cancel</button>
+            <button type="submit" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:oklch(20% 0.015 75); color:oklch(98% 0.004 75); cursor:pointer;" style-hover="background:oklch(28% 0.02 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Save changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showChapterFormModal }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ handleBackdropClick }}" onKeyDown="{{ handleModalKeyDown }}" style="position:fixed; inset:0; background:oklch(20% 0.01 75 / 0.45); display:flex; align-items:center; justify-content:center; padding:24px; z-index:200;">
+      <div role="dialog" aria-modal="true" aria-labelledby="cm-chform-heading" onClick="{{ stopPropagation }}" style="background:oklch(99.3% 0.002 75); border-radius:14px; width:100%; max-width:420px; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(20% 0.02 75 / 0.25);">
+        <h2 id="cm-chform-heading" style="font-family:'Newsreader',Georgia,serif; font-size:20px; font-weight:600; margin:0 0 6px;">{{ chapterFormHeading }}</h2>
+        <sc-if value="{{ chapterFormSubheading }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:0 0 16px; font-size:13px; color:oklch(45% 0.01 75);">{{ chapterFormSubheading }}</p>
+        </sc-if>
+        <form onSubmit="{{ handleChapterFormSubmit }}">
+          <label for="cm-chapter-name" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px; margin-top:12px;">Chapter name <span aria-hidden="true" style="color:oklch(45% 0.05 25);">*</span><span style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);"> (required)</span></label>
+          <input ref="{{ firstFieldRef }}" id="cm-chapter-name" type="text" required="{{ true }}" value="{{ chapterFormName }}" onChange="{{ handleChapterNameChange }}" aria-invalid="{{ chapterNameInvalid }}" aria-describedby="{{ chapterNameErrorId }}" style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:15px; border:1px solid oklch(80% 0.01 75); border-radius:8px; font-family:inherit;" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px; border-color:oklch(52% 0.16 250);" />
+          <sc-if value="{{ chapterNameInvalid }}" hint-placeholder-val="{{ false }}">
+            <p id="cm-chname-error" role="alert" style="margin:6px 0 0; font-size:13px; color:oklch(45% 0.14 25);">Chapter name is required.</p>
+          </sc-if>
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px;">
+            <button type="button" onClick="{{ closeModal }}" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Cancel</button>
+            <button type="submit" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:oklch(20% 0.015 75); color:oklch(98% 0.004 75); cursor:pointer;" style-hover="background:oklch(28% 0.02 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">{{ chapterFormSubmitLabel }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showDeleteChapterModal }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ handleBackdropClick }}" onKeyDown="{{ handleModalKeyDown }}" style="position:fixed; inset:0; background:oklch(20% 0.01 75 / 0.45); display:flex; align-items:center; justify-content:center; padding:24px; z-index:200;">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="cm-chdel-heading" aria-describedby="cm-chdel-desc" onClick="{{ stopPropagation }}" style="background:oklch(99.3% 0.002 75); border-radius:14px; width:100%; max-width:420px; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(20% 0.02 75 / 0.25);">
+        <h2 id="cm-chdel-heading" style="font-family:'Newsreader',Georgia,serif; font-size:20px; font-weight:600; margin:0 0 10px;">Delete chapter "{{ deleteChapterTitle }}"?</h2>
+        <p id="cm-chdel-desc" style="margin:0 0 22px; font-size:14px; color:oklch(40% 0.01 75); line-height:1.5;">{{ deleteChapterBody }}</p>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button ref="{{ firstFieldRef }}" type="button" onClick="{{ closeModal }}" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Cancel</button>
+          <button type="button" onClick="{{ confirmDeleteChapter }}" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:oklch(45% 0.14 25); color:white; cursor:pointer;" style-hover="background:oklch(38% 0.14 25);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Delete chapter</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showRemoveRecipeModal }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ handleBackdropClick }}" onKeyDown="{{ handleModalKeyDown }}" style="position:fixed; inset:0; background:oklch(20% 0.01 75 / 0.45); display:flex; align-items:center; justify-content:center; padding:24px; z-index:200;">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="cm-rmr-heading" aria-describedby="cm-rmr-desc" onClick="{{ stopPropagation }}" style="background:oklch(99.3% 0.002 75); border-radius:14px; width:100%; max-width:420px; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(20% 0.02 75 / 0.25);">
+        <h2 id="cm-rmr-heading" style="font-family:'Newsreader',Georgia,serif; font-size:20px; font-weight:600; margin:0 0 10px;">Remove "{{ removeRecipeTitle }}" from this cookbook?</h2>
+        <p id="cm-rmr-desc" style="margin:0 0 22px; font-size:14px; color:oklch(40% 0.01 75); line-height:1.5;">This only removes it from this cookbook. It stays in the Global Recipe Library and in any other cookbooks that use it.</p>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button ref="{{ firstFieldRef }}" type="button" onClick="{{ closeModal }}" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Cancel</button>
+          <button type="button" onClick="{{ confirmRemoveRecipe }}" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:oklch(45% 0.14 25); color:white; cursor:pointer;" style-hover="background:oklch(38% 0.14 25);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Remove from cookbook</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showBulkRemoveModal }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ handleBackdropClick }}" onKeyDown="{{ handleModalKeyDown }}" style="position:fixed; inset:0; background:oklch(20% 0.01 75 / 0.45); display:flex; align-items:center; justify-content:center; padding:24px; z-index:200;">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="cm-brm-heading" aria-describedby="cm-brm-desc" onClick="{{ stopPropagation }}" style="background:oklch(99.3% 0.002 75); border-radius:14px; width:100%; max-width:420px; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(20% 0.02 75 / 0.25);">
+        <h2 id="cm-brm-heading" style="font-family:'Newsreader',Georgia,serif; font-size:20px; font-weight:600; margin:0 0 10px;">Remove {{ selectedCount }} recipes from this cookbook?</h2>
+        <p id="cm-brm-desc" style="margin:0 0 22px; font-size:14px; color:oklch(40% 0.01 75); line-height:1.5;">They stay in the Global Recipe Library and in any other cookbooks that use them.</p>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button ref="{{ firstFieldRef }}" type="button" onClick="{{ closeModal }}" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Cancel</button>
+          <button type="button" onClick="{{ confirmBulkRemove }}" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:oklch(45% 0.14 25); color:white; cursor:pointer;" style-hover="background:oklch(38% 0.14 25);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Remove {{ selectedCount }} recipes</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showAddRecipesModal }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ handleBackdropClick }}" onKeyDown="{{ handleModalKeyDown }}" style="position:fixed; inset:0; background:oklch(20% 0.01 75 / 0.45); display:flex; align-items:center; justify-content:center; padding:24px; z-index:200;">
+      <div role="dialog" aria-modal="true" aria-labelledby="cm-addr-heading" onClick="{{ stopPropagation }}" style="background:oklch(99.3% 0.002 75); border-radius:14px; width:100%; max-width:560px; max-height:85vh; overflow-y:auto; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(20% 0.02 75 / 0.25); display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:16px;">
+          <h2 id="cm-addr-heading" style="font-family:'Newsreader',Georgia,serif; font-size:20px; font-weight:600; margin:0;">Add recipes from the Library</h2>
+          <button type="button" aria-label="Close dialog" onClick="{{ closeModal }}" style="width:32px; height:32px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:none; border:none; border-radius:6px; cursor:pointer; color:oklch(40% 0.01 75);" style-hover="background:oklch(93% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <label for="cm-addr-search" style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);">Search library recipes</label>
+        <div style="position:relative; margin-bottom:14px;">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="oklch(50% 0.01 75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:12px; top:50%; transform:translateY(-50%);"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input ref="{{ firstFieldRef }}" id="cm-addr-search" type="text" placeholder="Search by title…" value="{{ addRecipesSearch }}" onChange="{{ handleAddSearchChange }}" style="width:100%; box-sizing:border-box; padding:10px 12px 10px 36px; font-size:14px; border:1px solid oklch(82% 0.008 75); border-radius:8px; font-family:inherit;" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px; border-color:oklch(52% 0.16 250);" />
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <label for="cm-addr-target" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Add to chapter</label>
+          <select id="cm-addr-target" value="{{ addRecipesTargetChapterId }}" onChange="{{ handleAddTargetChange }}" style="width:100%; box-sizing:border-box; font-size:14px; padding:9px 12px; border-radius:8px; border:1px solid oklch(82% 0.008 75); font-family:inherit; background:oklch(99.3% 0.002 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:1px;">
+            <sc-for list="{{ chapters }}" as="copt" hint-placeholder-count="4">
+              <option value="{{ copt.id }}">{{ copt.name }}</option>
+            </sc-for>
+          </select>
+        </div>
+
+        <sc-if value="{{ hasLibraryResults }}" hint-placeholder-val="{{ true }}">
+          <fieldset style="border:1px solid oklch(88% 0.008 75); border-radius:10px; padding:0; margin:0 0 20px; max-height:280px; overflow-y:auto;">
+            <legend style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);">Select recipes to add</legend>
+            <sc-for list="{{ libraryResults }}" as="lr" hint-placeholder-count="3">
+              <label style="display:flex; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid oklch(92% 0.006 75); cursor:pointer;" style-hover="background:oklch(97% 0.005 75);">
+                <input type="checkbox" checked="{{ lr.selected }}" onChange="{{ lr.toggleHandler }}" style="width:17px; height:17px; flex-shrink:0; cursor:pointer;" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;" />
+                <sc-if value="{{ lr.hasImage }}" hint-placeholder-val="{{ false }}">
+                  <div aria-hidden="true" style="width:36px; height:36px; flex-shrink:0; border-radius:6px; background-image:repeating-linear-gradient(45deg, oklch(90% 0.02 250) 0 6px, oklch(94% 0.015 250) 6px 12px); border:1px solid oklch(85% 0.02 250);"></div>
+                </sc-if>
+                <sc-if value="{{ lr.hasNoImage }}" hint-placeholder-val="{{ true }}">
+                  <div aria-hidden="true" style="width:36px; height:36px; flex-shrink:0; border-radius:6px; background:oklch(95% 0.004 75); border:1px dashed oklch(83% 0.008 75);"></div>
+                </sc-if>
+                <span style="font-size:14.5px; font-weight:600; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ lr.title }}</span>
+              </label>
+            </sc-for>
+          </fieldset>
+        </sc-if>
+        <sc-if value="{{ hasNoLibraryResults }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:0 0 20px; font-size:13.5px; color:oklch(50% 0.01 75); font-style:italic; padding:16px; border:1px dashed oklch(85% 0.008 75); border-radius:10px; text-align:center;">{{ noResultsMessage }}</p>
+        </sc-if>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" onClick="{{ closeModal }}" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;" style-hover="background:oklch(94% 0.006 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">Cancel</button>
+          <button type="button" disabled="{{ addRecipesSubmitDisabled }}" onClick="{{ handleAddRecipesSubmit }}" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:oklch(20% 0.015 75); color:oklch(98% 0.004 75); cursor:pointer;" style-hover="background:oklch(28% 0.02 75);" style-focus="outline:2px solid oklch(52% 0.16 250); outline-offset:2px;">{{ addRecipesSubmitLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  static FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  static nextChapterId = 10;
+  static ACCENTS = [
+    { id: 'terracotta', name: 'Terracotta', color: 'oklch(62% 0.13 35)' },
+    { id: 'sage', name: 'Sage', color: 'oklch(62% 0.09 145)' },
+    { id: 'ochre', name: 'Ochre', color: 'oklch(70% 0.12 85)' },
+    { id: 'plum', name: 'Plum', color: 'oklch(50% 0.11 325)' },
+    { id: 'teal', name: 'Teal', color: 'oklch(55% 0.09 200)' },
+    { id: 'slate', name: 'Slate Blue', color: 'oklch(55% 0.10 265)' },
+  ];
+
+  state = {
+    title: "Sunday Suppers",
+    subtitle: "Family meals worth slowing down for",
+    accentId: 'terracotta',
+    cookbookForm: { title: '', subtitle: '', accentId: 'terracotta' },
+    cookbookTitleTouched: false,
+    chapters: [
+      { id: 1, name: 'Starters' },
+      { id: 2, name: 'Mains' },
+      { id: 3, name: 'Desserts' },
+      { id: 'misc', name: 'Miscellaneous', isMisc: true },
+    ],
+    recipes: [
+      { id: 101, title: 'Classic Caesar Salad', hasImage: false, chapterId: 1 },
+      { id: 102, title: 'Tomato Basil Soup', hasImage: false, chapterId: 1 },
+      { id: 103, title: 'Herb-Roasted Chicken', hasImage: true, chapterId: 2 },
+      { id: 104, title: 'Weeknight Stir-Fry', hasImage: true, chapterId: 2 },
+      { id: 105, title: 'Spaghetti Carbonara', hasImage: true, chapterId: 2 },
+      { id: 106, title: "Grandma's Apple Pie", hasImage: true, chapterId: 3 },
+      { id: 107, title: 'Banana Bread', hasImage: true, chapterId: 'misc' },
+    ],
+    libraryPool: [
+      { id: 201, title: 'Pancakes', hasImage: false },
+      { id: 202, title: 'Chocolate Chip Cookies', hasImage: true },
+      { id: 203, title: 'Beef Bourguignon', hasImage: true },
+      { id: 204, title: 'Garlic Bread', hasImage: false },
+    ],
+    query: '',
+    libQuery: '',
+    selectedIds: {},
+    openMenuRecipeId: null,
+    modal: null,
+    chapterForm: { name: '' },
+    chapterNameTouched: false,
+    quickChapterName: '',
+    libSelectedIds: {},
+    addSelectedIds: {},
+    addTargetChapterId: 'misc',
+    addSearch: '',
+    toastMessage: '',
+    dragType: null,
+    dragId: null,
+    dragOverChapterIndex: null,
+    dragOverRecipeId: null,
+  };
+
+  lastTrigger = null;
+  menuTrigger = null;
+  toastTimer = null;
+
+  announce(msg) {
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.setState({ toastMessage: msg });
+    this.toastTimer = setTimeout(() => this.setState({ toastMessage: '' }), 4000);
+  }
+
+  closeModal = () => {
+    this.setState({ modal: null });
+    if (this.lastTrigger && this.lastTrigger.focus) this.lastTrigger.focus();
+    this.lastTrigger = null;
+  };
+  handleBackdropClick = () => this.closeModal();
+  stopPropagation = (e) => e.stopPropagation();
+  handleModalKeyDown = (e) => {
+    if (e.key === 'Escape') { e.stopPropagation(); this.closeModal(); return; }
+    if (e.key === 'Tab') {
+      const nodes = Array.prototype.slice.call(e.currentTarget.querySelectorAll(Component.FOCUSABLE));
+      if (!nodes.length) return;
+      const first = nodes[0], last = nodes[nodes.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  };
+  firstFieldRef = (el) => { if (el) el.focus(); };
+
+  openRecipeMenu = (recipe, e) => {
+    this.menuTrigger = e.currentTarget;
+    this.setState({ openMenuRecipeId: this.state.openMenuRecipeId === recipe.id ? null : recipe.id });
+  };
+  closeRecipeMenu = () => {
+    this.setState({ openMenuRecipeId: null });
+    if (this.menuTrigger && this.menuTrigger.focus) this.menuTrigger.focus();
+    this.menuTrigger = null;
+  };
+  menuFirstItemRef = (el) => { if (el) el.focus(); };
+  handleMenuKeyDown = (e) => {
+    if (e.key === 'Escape') { e.stopPropagation(); this.closeRecipeMenu(); return; }
+    if (e.key === 'Tab') {
+      const nodes = Array.prototype.slice.call(e.currentTarget.querySelectorAll(Component.FOCUSABLE));
+      if (!nodes.length) return;
+      const first = nodes[0], last = nodes[nodes.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  };
+
+  customChapterIds() { return this.state.chapters.filter(c => !c.isMisc).map(c => c.id); }
+
+  openNewChapter = (e) => {
+    this.lastTrigger = e && e.currentTarget;
+    this.setState({ modal: { type: 'newChapter' }, chapterForm: { name: '' }, chapterNameTouched: false });
+  };
+  openRenameChapter = (chapter, e) => {
+    this.lastTrigger = e && e.currentTarget;
+    this.setState({ modal: { type: 'renameChapter', id: chapter.id }, chapterForm: { name: chapter.name }, chapterNameTouched: false });
+  };
+  openDeleteChapter = (chapter, e) => {
+    this.lastTrigger = e && e.currentTarget;
+    this.setState({ modal: { type: 'deleteChapter', id: chapter.id } });
+  };
+  openAddRecipes = (e) => {
+    this.lastTrigger = e && e.currentTarget;
+    this.setState({ modal: { type: 'addRecipes' }, addSelectedIds: {}, addTargetChapterId: 'misc', addSearch: '' });
+  };
+  openRemoveRecipe = (recipe, e) => {
+    this.lastTrigger = e && e.currentTarget;
+    this.setState({ modal: { type: 'removeRecipe', id: recipe.id } });
+  };
+  openBulkRemove = (e) => {
+    this.lastTrigger = e && e.currentTarget;
+    this.setState({ modal: { type: 'bulkRemove' } });
+  };
+  openCreateChapterFromSelection = (e) => {
+    this.lastTrigger = e && e.currentTarget;
+    this.setState({ modal: { type: 'newChapterFromSelection' }, chapterForm: { name: '' }, chapterNameTouched: false });
+  };
+  openEditDetails = (e) => {
+    this.lastTrigger = e && e.currentTarget;
+    const { title, subtitle, accentId } = this.state;
+    this.setState({ modal: { type: 'editDetails' }, cookbookForm: { title, subtitle, accentId }, cookbookTitleTouched: false });
+  };
+  handleCookbookTitleChange = (e) => this.setState(s => ({ cookbookForm: { ...s.cookbookForm, title: e.target.value } }));
+  handleCookbookSubtitleChange = (e) => this.setState(s => ({ cookbookForm: { ...s.cookbookForm, subtitle: e.target.value } }));
+  selectCookbookAccent = (id) => this.setState(s => ({ cookbookForm: { ...s.cookbookForm, accentId: id } }));
+  handleCookbookFormSubmit = (e) => {
+    e.preventDefault();
+    const { cookbookForm } = this.state;
+    if (!cookbookForm.title.trim()) { this.setState({ cookbookTitleTouched: true }); return; }
+    this.setState({ title: cookbookForm.title.trim(), subtitle: cookbookForm.subtitle.trim(), accentId: cookbookForm.accentId });
+    this.announce('Cookbook details updated.');
+    this.closeModal();
+  };
+
+  handleChapterNameChange = (e) => this.setState({ chapterForm: { name: e.target.value } });
+
+  handleQuickChapterChange = (e) => this.setState({ quickChapterName: e.target.value });
+  handleQuickChapterSubmit = (e) => {
+    e.preventDefault();
+    const name = this.state.quickChapterName.trim();
+    if (!name) return;
+    const newChapter = { id: Component.nextChapterId++, name };
+    this.setState(s => {
+      const chapters = s.chapters.slice();
+      chapters.splice(chapters.length - 1, 0, newChapter);
+      return { chapters, quickChapterName: '' };
+    });
+    this.announce(`Chapter "${name}" created.`);
+  };
+
+  handleChapterFormSubmit = (e) => {
+    e.preventDefault();
+    const { chapterForm, modal } = this.state;
+    const name = chapterForm.name.trim();
+    if (!name) { this.setState({ chapterNameTouched: true }); return; }
+    if (modal.type === 'newChapter') {
+      const newChapter = { id: Component.nextChapterId++, name };
+      this.setState(s => {
+        const chapters = s.chapters.slice();
+        chapters.splice(chapters.length - 1, 0, newChapter);
+        return { chapters };
+      });
+      this.announce(`Chapter "${name}" created.`);
+      this.closeModal();
+    } else if (modal.type === 'renameChapter') {
+      this.setState(s => ({ chapters: s.chapters.map(c => c.id === modal.id ? { ...c, name } : c) }));
+      this.announce(`Chapter renamed to "${name}".`);
+      this.closeModal();
+    } else if (modal.type === 'newChapterFromSelection') {
+      const newChapter = { id: Component.nextChapterId++, name };
+      this.setState(s => {
+        const chapters = s.chapters.slice();
+        chapters.splice(chapters.length - 1, 0, newChapter);
+        const selected = s.selectedIds;
+        const recipes = s.recipes.map(r => selected[r.id] ? { ...r, chapterId: newChapter.id } : r);
+        return { chapters, recipes, selectedIds: {} };
+      });
+      this.announce(`Created chapter "${name}" with the selected recipes.`);
+      this.closeModal();
+    } else if (modal.type === 'newChapterFromLibrarySelection') {
+      const newChapter = { id: Component.nextChapterId++, name };
+      const ids = Object.keys(this.state.libSelectedIds).filter(k => this.state.libSelectedIds[k]).map(Number);
+      let addedCount = 0;
+      this.setState(s => {
+        const chapters = s.chapters.slice();
+        chapters.splice(chapters.length - 1, 0, newChapter);
+        const toAdd = s.libraryPool.filter(r => ids.includes(r.id));
+        addedCount = toAdd.length;
+        return {
+          chapters,
+          recipes: s.recipes.concat(toAdd.map(r => ({ id: r.id, title: r.title, hasImage: r.hasImage, chapterId: newChapter.id }))),
+          libraryPool: s.libraryPool.filter(r => !ids.includes(r.id)),
+          libSelectedIds: {},
+        };
+      });
+      this.announce(`Created chapter "${name}" with ${addedCount} recipe${addedCount === 1 ? '' : 's'} from the library.`);
+      this.closeModal();
+    }
+  };
+
+  confirmDeleteChapter = () => {
+    const { modal, chapters } = this.state;
+    const target = chapters.find(c => c.id === modal.id);
+    if (!target) { this.closeModal(); return; }
+    this.setState(s => ({
+      chapters: s.chapters.filter(c => c.id !== modal.id),
+      recipes: s.recipes.map(r => r.chapterId === modal.id ? { ...r, chapterId: 'misc' } : r),
+    }));
+    this.announce(`Chapter "${target.name}" deleted. Its recipes moved to Miscellaneous.`);
+    this.closeModal();
+  };
+
+  moveChapter = (chapter, dir) => {
+    this.setState(s => {
+      const chapters = s.chapters.slice();
+      const customIds = chapters.filter(c => !c.isMisc).map(c => c.id);
+      const pos = customIds.indexOf(chapter.id);
+      const swapPos = dir === 'up' ? pos - 1 : pos + 1;
+      if (pos < 0 || swapPos < 0 || swapPos >= customIds.length) return {};
+      const idxA = chapters.findIndex(c => c.id === customIds[pos]);
+      const idxB = chapters.findIndex(c => c.id === customIds[swapPos]);
+      [chapters[idxA], chapters[idxB]] = [chapters[idxB], chapters[idxA]];
+      return { chapters };
+    });
+  };
+
+  sortChapterAlpha = (chapter) => {
+    this.setState(s => {
+      const others = s.recipes.filter(r => r.chapterId !== chapter.id);
+      const group = s.recipes.filter(r => r.chapterId === chapter.id).slice().sort((a, b) => a.title.localeCompare(b.title));
+      return { recipes: others.concat(group) };
+    });
+    this.announce(`Sorted ${chapter.name} alphabetically.`);
+  };
+
+  moveRecipe = (recipe, dir) => {
+    this.setState(s => {
+      const list = s.recipes.slice();
+      const idx = list.findIndex(r => r.id === recipe.id);
+      const chapterIdxs = list.reduce((acc, r, i) => r.chapterId === recipe.chapterId ? acc.concat(i) : acc, []);
+      const pos = chapterIdxs.indexOf(idx);
+      const swapPos = dir === 'up' ? pos - 1 : pos + 1;
+      if (swapPos < 0 || swapPos >= chapterIdxs.length) return {};
+      const otherIdx = chapterIdxs[swapPos];
+      [list[idx], list[otherIdx]] = [list[otherIdx], list[idx]];
+      return { recipes: list };
+    });
+  };
+
+  changeRecipeChapter = (recipeId, newChapterId) => {
+    let title = '', chapterName = '';
+    this.setState(s => {
+      const chapters = s.chapters;
+      chapterName = (chapters.find(c => c.id === newChapterId) || {}).name || '';
+      const list = s.recipes.slice();
+      const idx = list.findIndex(r => r.id === recipeId);
+      if (idx === -1) return {};
+      const [item] = list.splice(idx, 1);
+      title = item.title;
+      list.push({ ...item, chapterId: newChapterId });
+      return { recipes: list };
+    });
+    setTimeout(() => this.announce(`Moved "${title}" to ${chapterName}.`), 0);
+    this.closeRecipeMenu();
+  };
+
+  confirmRemoveRecipe = () => {
+    const { modal, recipes } = this.state;
+    const target = recipes.find(r => r.id === modal.id);
+    if (!target) { this.closeModal(); return; }
+    this.setState(s => ({ recipes: s.recipes.filter(r => r.id !== modal.id) }));
+    this.announce(`Removed "${target.title}" from this cookbook. It's still in the Global Recipe Library.`);
+    this.closeModal();
+  };
+
+  confirmBulkRemove = () => {
+    const { selectedIds, recipes } = this.state;
+    const ids = Object.keys(selectedIds).filter(k => selectedIds[k]).map(Number);
+    this.setState(s => ({ recipes: s.recipes.filter(r => !ids.includes(r.id)), selectedIds: {} }));
+    this.announce(`Removed ${ids.length} recipes from this cookbook. They're still in the Global Recipe Library.`);
+    this.closeModal();
+  };
+
+  toggleRecipeSelected = (recipe) => this.setState(s => ({ selectedIds: { ...s.selectedIds, [recipe.id]: !s.selectedIds[recipe.id] } }));
+  toggleSelectAllInChapter = (chapterId, ids, allSelected) => this.setState(s => {
+    const selectedIds = { ...s.selectedIds };
+    ids.forEach(id => { selectedIds[id] = !allSelected; });
+    return { selectedIds };
+  });
+  clearSelection = () => this.setState({ selectedIds: {} });
+
+  handleBulkMoveChange = (e) => {
+    const newChapterId = e.target.value;
+    if (!newChapterId) return;
+    const { selectedIds, chapters } = this.state;
+    const ids = Object.keys(selectedIds).filter(k => selectedIds[k]).map(Number);
+    const chapterName = (chapters.find(c => String(c.id) === newChapterId) || {}).name || '';
+    this.setState(s => ({
+      recipes: s.recipes.map(r => ids.includes(r.id) ? { ...r, chapterId: chapters.find(c => String(c.id) === newChapterId).id } : r),
+      selectedIds: {},
+    }));
+    this.announce(`Moved ${ids.length} recipes to ${chapterName}.`);
+    e.target.value = '';
+  };
+
+  handleQueryChange = (e) => this.setState({ query: e.target.value });
+  handleLibQueryChange = (e) => this.setState({ libQuery: e.target.value });
+  toggleLibSelect = (id) => {
+    this.setState(s => {
+      const libSelectedIds = { ...s.libSelectedIds };
+      if (libSelectedIds[id]) delete libSelectedIds[id]; else libSelectedIds[id] = true;
+      return { libSelectedIds };
+    });
+  };
+  selectAllVisibleLib = () => {
+    const libQ = this.state.libQuery.trim().toLowerCase();
+    const visible = libQ ? this.state.libraryPool.filter(r => r.title.toLowerCase().includes(libQ)) : this.state.libraryPool;
+    this.setState(s => {
+      const libSelectedIds = { ...s.libSelectedIds };
+      visible.forEach(r => { libSelectedIds[r.id] = true; });
+      return { libSelectedIds };
+    });
+  };
+  deselectAllLib = () => this.setState({ libSelectedIds: {} });
+  libBulkAddMisc = () => {
+    const ids = Object.keys(this.state.libSelectedIds).filter(k => this.state.libSelectedIds[k]).map(Number);
+    if (!ids.length) return;
+    let addedCount = 0;
+    this.setState(s => {
+      const toAdd = s.libraryPool.filter(r => ids.includes(r.id));
+      addedCount = toAdd.length;
+      return {
+        recipes: s.recipes.concat(toAdd.map(r => ({ id: r.id, title: r.title, hasImage: r.hasImage, chapterId: 'misc' }))),
+        libraryPool: s.libraryPool.filter(r => !ids.includes(r.id)),
+        libSelectedIds: {},
+      };
+    });
+    this.announce(`Added ${addedCount} recipe${addedCount === 1 ? '' : 's'} to Miscellaneous.`);
+  };
+  handleLibBulkMoveChange = (e) => {
+    const chapterId = e.target.value;
+    if (!chapterId) return;
+    const ids = Object.keys(this.state.libSelectedIds).filter(k => this.state.libSelectedIds[k]).map(Number);
+    if (!ids.length) return;
+    const chapterName = (this.state.chapters.find(c => c.id === chapterId) || {}).name || '';
+    let addedCount = 0;
+    this.setState(s => {
+      const toAdd = s.libraryPool.filter(r => ids.includes(r.id));
+      addedCount = toAdd.length;
+      return {
+        recipes: s.recipes.concat(toAdd.map(r => ({ id: r.id, title: r.title, hasImage: r.hasImage, chapterId }))),
+        libraryPool: s.libraryPool.filter(r => !ids.includes(r.id)),
+        libSelectedIds: {},
+      };
+    });
+    this.announce(`Added ${addedCount} recipe${addedCount === 1 ? '' : 's'} to ${chapterName}.`);
+  };
+  openLibBulkNewChapter = (e) => {
+    this.lastTrigger = e && e.currentTarget;
+    this.setState({ modal: { type: 'newChapterFromLibrarySelection' }, chapterForm: { name: '' }, chapterNameTouched: false });
+  };
+
+  quickAddFromLibrary = (item) => {
+    this.setState(s => ({
+      recipes: s.recipes.concat([{ id: item.id, title: item.title, hasImage: item.hasImage, chapterId: 'misc' }]),
+      libraryPool: s.libraryPool.filter(r => r.id !== item.id),
+    }));
+    this.announce(`Added "${item.title}" to Miscellaneous.`);
+  };
+
+  handleLibraryDragStart = (item, e) => {
+    e.stopPropagation();
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(item.id));
+    this.setState({ dragType: 'library', dragId: item.id });
+  };
+
+  handleAddSearchChange = (e) => this.setState({ addSearch: e.target.value });
+  handleAddTargetChange = (e) => this.setState({ addTargetChapterId: e.target.value });
+  toggleAddSelected = (id) => this.setState(s => ({ addSelectedIds: { ...s.addSelectedIds, [id]: !s.addSelectedIds[id] } }));
+
+  handleAddRecipesSubmit = () => {
+    const { libraryPool, addSelectedIds, addTargetChapterId, chapters } = this.state;
+    const selectedIds = Object.keys(addSelectedIds).filter(k => addSelectedIds[k]).map(Number);
+    if (!selectedIds.length) return;
+    const toAdd = libraryPool.filter(r => selectedIds.includes(r.id));
+    const chapterName = (chapters.find(c => c.id === addTargetChapterId) || {}).name || '';
+    this.setState(s => ({
+      recipes: s.recipes.concat(toAdd.map(r => ({ id: r.id, title: r.title, hasImage: r.hasImage, chapterId: addTargetChapterId }))),
+      libraryPool: s.libraryPool.filter(r => !selectedIds.includes(r.id)),
+    }));
+    this.announce(`Added ${toAdd.length} recipe${toAdd.length === 1 ? '' : 's'} to ${chapterName}.`);
+    this.closeModal();
+  };
+
+  clearDrag = () => this.setState({ dragType: null, dragId: null, dragOverChapterIndex: null, dragOverRecipeId: null });
+
+  handleChapterDragStart = (chapter, e) => {
+    e.stopPropagation();
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(chapter.id));
+    this.setState({ dragType: 'chapter', dragId: chapter.id });
+  };
+  handleChapterWrapperDragOver = (chapter, index, e) => {
+    if (this.state.dragType !== 'chapter' || this.state.dragId === chapter.id) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const rect = e.currentTarget.getBoundingClientRect();
+    const before = (e.clientY - rect.top) < rect.height / 2;
+    const targetIndex = before ? index : index + 1;
+    if (this.state.dragOverChapterIndex !== targetIndex) this.setState({ dragOverChapterIndex: targetIndex });
+  };
+  handleChapterWrapperDrop = (chapter, index, e) => {
+    if (this.state.dragType !== 'chapter') return;
+    e.preventDefault();
+    const draggedId = this.state.dragId;
+    this.setState(s => {
+      const customIds = s.chapters.filter(c => !c.isMisc).map(c => c.id);
+      const fromIdx = customIds.indexOf(draggedId);
+      if (fromIdx === -1) return { dragType: null, dragId: null, dragOverChapterIndex: null };
+      let targetIdx = s.dragOverChapterIndex != null ? s.dragOverChapterIndex : index;
+      const newCustomIds = customIds.slice();
+      newCustomIds.splice(fromIdx, 1);
+      if (fromIdx < targetIdx) targetIdx -= 1;
+      targetIdx = Math.max(0, Math.min(targetIdx, newCustomIds.length));
+      newCustomIds.splice(targetIdx, 0, draggedId);
+      const chapterMap = Object.fromEntries(s.chapters.map(c => [c.id, c]));
+      const miscChapter = s.chapters.find(c => c.isMisc);
+      const chapters = newCustomIds.map(id => chapterMap[id]).concat(miscChapter ? [miscChapter] : []);
+      return { chapters, dragType: null, dragId: null, dragOverChapterIndex: null };
+    });
+  };
+
+  handleRecipeDragStart = (recipe, e) => {
+    e.stopPropagation();
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(recipe.id));
+    this.setState({ dragType: 'recipe', dragId: recipe.id });
+  };
+  handleRecipeDragOver = (recipe, e) => {
+    if (this.state.dragType !== 'recipe' || this.state.dragId === recipe.id) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    if (this.state.dragOverRecipeId !== recipe.id) this.setState({ dragOverRecipeId: recipe.id });
+  };
+  handleRecipeDrop = (recipe, e) => {
+    if (this.state.dragType !== 'recipe') return;
+    e.preventDefault();
+    e.stopPropagation();
+    const draggedId = this.state.dragId;
+    if (draggedId === recipe.id) { this.clearDrag(); return; }
+    let movedTitle = '', chapterName = '';
+    this.setState(s => {
+      const list = s.recipes.slice();
+      const fromIdx = list.findIndex(r => r.id === draggedId);
+      if (fromIdx === -1) return {};
+      const [item] = list.splice(fromIdx, 1);
+      movedTitle = item.title;
+      item.chapterId = recipe.chapterId;
+      const toIdx = list.findIndex(r => r.id === recipe.id);
+      list.splice(toIdx, 0, item);
+      chapterName = (s.chapters.find(c => c.id === recipe.chapterId) || {}).name || '';
+      return { recipes: list, dragType: null, dragId: null, dragOverRecipeId: null };
+    });
+    setTimeout(() => this.announce(`Moved "${movedTitle}" to ${chapterName}.`), 0);
+  };
+  handleRecipeDragLeave = (recipe, e) => {
+    e.stopPropagation();
+    if (this.state.dragOverRecipeId === recipe.id) this.setState({ dragOverRecipeId: null });
+  };
+
+  handleChapterBodyDragOver = (chapter, e) => {
+    if (this.state.dragType !== 'recipe' && this.state.dragType !== 'library') return;
+    e.preventDefault();
+  };
+  handleChapterBodyDrop = (chapter, e) => {
+    if (this.state.dragType === 'library') {
+      e.preventDefault();
+      const draggedId = this.state.dragId;
+      let addedTitle = '';
+      this.setState(s => {
+        const item = s.libraryPool.find(r => r.id === draggedId);
+        if (!item) return { dragType: null, dragId: null };
+        addedTitle = item.title;
+        return {
+          recipes: s.recipes.concat([{ id: item.id, title: item.title, hasImage: item.hasImage, chapterId: chapter.id }]),
+          libraryPool: s.libraryPool.filter(r => r.id !== draggedId),
+          dragType: null, dragId: null,
+        };
+      });
+      if (addedTitle) setTimeout(() => this.announce(`Added "${addedTitle}" to ${chapter.name}.`), 0);
+      return;
+    }
+    if (this.state.dragType !== 'recipe') return;
+    e.preventDefault();
+    const draggedId = this.state.dragId;
+    let movedTitle = '';
+    this.setState(s => {
+      const list = s.recipes.slice();
+      const fromIdx = list.findIndex(r => r.id === draggedId);
+      if (fromIdx === -1) return {};
+      const [item] = list.splice(fromIdx, 1);
+      movedTitle = item.title;
+      item.chapterId = chapter.id;
+      list.push(item);
+      return { recipes: list, dragType: null, dragId: null, dragOverRecipeId: null };
+    });
+    setTimeout(() => this.announce(`Moved "${movedTitle}" to ${chapter.name}.`), 0);
+  };
+
+  renderVals() {
+    const { title, subtitle, accentId, cookbookForm, cookbookTitleTouched, chapters, recipes, libraryPool, query, libQuery, selectedIds, libSelectedIds, openMenuRecipeId, modal, chapterForm, chapterNameTouched, addSelectedIds, addTargetChapterId, addSearch, toastMessage } = this.state;
+    const accentColor = (Component.ACCENTS.find(a => a.id === accentId) || Component.ACCENTS[0]).color;
+
+    const customIds = this.customChapterIds();
+    const q = query.trim().toLowerCase();
+    const hasQuery = !!q;
+
+    const chaptersView = chapters.map(ch => {
+      const allChapterRecipes = recipes.filter(r => r.chapterId === ch.id);
+      const chapterRecipes = hasQuery ? allChapterRecipes.filter(r => r.title.toLowerCase().includes(q)) : allChapterRecipes;
+      const customPos = customIds.indexOf(ch.id);
+      const posForIndicator = ch.isMisc ? customIds.length : customPos;
+      const allSelected = chapterRecipes.length > 0 && chapterRecipes.every(r => selectedIds[r.id]);
+      const chapterRecipeIds = chapterRecipes.map(r => r.id);
+      return {
+        id: ch.id,
+        name: ch.name,
+        isMisc: !!ch.isMisc,
+        visible: !hasQuery || chapterRecipes.length > 0,
+        showMoveButtons: !ch.isMisc,
+        showEditButtons: !ch.isMisc,
+        moveUpDisabled: customPos <= 0,
+        moveDownDisabled: customPos === -1 || customPos >= customIds.length - 1,
+        moveUpHandler: () => this.moveChapter(ch, 'up'),
+        moveDownHandler: () => this.moveChapter(ch, 'down'),
+        renameHandler: (e) => this.openRenameChapter(ch, e),
+        deleteHandler: (e) => this.openDeleteChapter(ch, e),
+        sortHandler: () => this.sortChapterAlpha(ch),
+        allSelected,
+        toggleSelectAllHandler: () => this.toggleSelectAllInChapter(ch.id, chapterRecipeIds, allSelected),
+        recipeCountLabel: hasQuery
+          ? `${chapterRecipes.length} of ${allChapterRecipes.length} recipe${allChapterRecipes.length === 1 ? '' : 's'}`
+          : `${allChapterRecipes.length} recipe${allChapterRecipes.length === 1 ? '' : 's'}`,
+        hasRecipes: chapterRecipes.length > 0,
+        hasNoRecipes: chapterRecipes.length === 0,
+        emptyMessage: hasQuery ? `No recipes match "${query.trim()}" in this chapter.` : 'No recipes in this chapter yet. Use "Add Recipes" or move one in from another chapter.',
+        insertionLineColor: (this.state.dragType === 'chapter' && this.state.dragOverChapterIndex === posForIndicator) ? 'oklch(52% 0.16 250)' : 'transparent',
+        dragStartHandler: (e) => this.handleChapterDragStart(ch, e),
+        dragEndHandler: this.clearDrag,
+        wrapperDragOverHandler: (e) => this.handleChapterWrapperDragOver(ch, posForIndicator, e),
+        wrapperDropHandler: (e) => this.handleChapterWrapperDrop(ch, posForIndicator, e),
+        sectionDragOverHandler: (e) => this.handleChapterBodyDragOver(ch, e),
+        sectionDropHandler: (e) => this.handleChapterBodyDrop(ch, e),
+        recipes: chapterRecipes.map((r, i) => ({
+          id: r.id,
+          title: r.title,
+          hasImage: r.hasImage,
+          hasNoImage: !r.hasImage,
+          chapterId: r.chapterId,
+          selected: !!selectedIds[r.id],
+          toggleSelectHandler: () => this.toggleRecipeSelected(r),
+          rowBg: selectedIds[r.id] ? 'oklch(95% 0.02 250)' : 'transparent',
+          moveUpDisabled: i === 0,
+          moveDownDisabled: i === chapterRecipes.length - 1,
+          moveUpHandler: () => { this.moveRecipe(r, 'up'); this.closeRecipeMenu(); },
+          moveDownHandler: () => { this.moveRecipe(r, 'down'); this.closeRecipeMenu(); },
+          changeChapterHandler: (e) => this.changeRecipeChapter(r.id, chapters.find(c => String(c.id) === e.target.value).id),
+          removeHandler: () => { this.closeRecipeMenu(); this.openRemoveRecipe(r); },
+          menuOpen: openMenuRecipeId === r.id,
+          openMenuHandler: (e) => this.openRecipeMenu(r, e),
+          menuKeyDownHandler: this.handleMenuKeyDown,
+          firstMenuItemRef: this.menuFirstItemRef,
+          dropIndicatorColor: this.state.dragOverRecipeId === r.id ? 'oklch(52% 0.16 250)' : 'transparent',
+          dragStartHandler: (e) => this.handleRecipeDragStart(r, e),
+          dragEndHandler: this.clearDrag,
+          dragOverHandler: (e) => this.handleRecipeDragOver(r, e),
+          dropHandler: (e) => this.handleRecipeDrop(r, e),
+          dragLeaveHandler: (e) => this.handleRecipeDragLeave(r, e),
+        })),
+      };
+    });
+
+    const chapterNameInvalid = chapterNameTouched && !chapterForm.name.trim();
+    const deleteTarget = modal && modal.type === 'deleteChapter' ? chapters.find(c => c.id === modal.id) : null;
+    const deleteTargetRecipeCount = deleteTarget ? recipes.filter(r => r.chapterId === deleteTarget.id).length : 0;
+    const removeTarget = modal && modal.type === 'removeRecipe' ? recipes.find(r => r.id === modal.id) : null;
+
+    const selectedCount = Object.values(selectedIds).filter(Boolean).length;
+
+    const addQ = addSearch.trim().toLowerCase();
+    const libraryFiltered = addQ ? libraryPool.filter(r => r.title.toLowerCase().includes(addQ)) : libraryPool;
+    const libraryResults = libraryFiltered.map(r => ({
+      id: r.id,
+      title: r.title,
+      hasImage: r.hasImage,
+      hasNoImage: !r.hasImage,
+      selected: !!addSelectedIds[r.id],
+      toggleHandler: () => this.toggleAddSelected(r.id),
+    }));
+    const addSelectedCount = Object.values(addSelectedIds).filter(Boolean).length;
+
+    const libQ = libQuery.trim().toLowerCase();
+    const libSelectedCount = Object.keys(libSelectedIds).filter(k => libSelectedIds[k]).length;
+    const sidebarLibrary = (libQ ? libraryPool.filter(r => r.title.toLowerCase().includes(libQ)) : libraryPool).map(item => ({
+      id: item.id,
+      title: item.title,
+      selected: !!libSelectedIds[item.id],
+      toggleHandler: () => this.toggleLibSelect(item.id),
+      hasImage: item.hasImage,
+      hasNoImage: !item.hasImage,
+      quickAddHandler: () => this.quickAddFromLibrary(item),
+      dragStartHandler: (e) => this.handleLibraryDragStart(item, e),
+      dragEndHandler: this.clearDrag,
+    }));
+
+    const metaLabel = hasQuery
+      ? `${chaptersView.reduce((n, c) => n + c.recipes.length, 0)} of ${recipes.length} recipes match "${query.trim()}"`
+      : `${recipes.length} recipe${recipes.length === 1 ? '' : 's'} · ${chapters.length} chapter${chapters.length === 1 ? '' : 's'}`;
+    const captionLabel = subtitle ? `${subtitle} · ${metaLabel}` : metaLabel;
+
+    const cookbookTitleInvalid = cookbookTitleTouched && !cookbookForm.title.trim();
+    const accentOptions = Component.ACCENTS.map(a => ({
+      id: a.id,
+      name: a.name,
+      color: a.color,
+      selected: cookbookForm.accentId === a.id,
+      ringColor: cookbookForm.accentId === a.id ? a.color : 'transparent',
+      selectHandler: () => this.selectCookbookAccent(a.id),
+    }));
+
+    return {
+      title, subtitle, accentColor,
+      metaLabel,
+      captionLabel,
+      chapters: chaptersView,
+      query,
+      handleQueryChange: this.handleQueryChange,
+      openNewChapter: this.openNewChapter,
+      openAddRecipes: this.openAddRecipes,
+      openEditDetails: this.openEditDetails,
+      quickChapterName: this.state.quickChapterName,
+      handleQuickChapterChange: this.handleQuickChapterChange,
+      handleQuickChapterSubmit: this.handleQuickChapterSubmit,
+      showEditDetailsModal: !!modal && modal.type === 'editDetails',
+      cookbookFormTitle: cookbookForm.title,
+      cookbookFormSubtitle: cookbookForm.subtitle,
+      cookbookTitleInvalid,
+      cookbookTitleErrorId: cookbookTitleInvalid ? 'cm-cb-title-error' : undefined,
+      handleCookbookTitleChange: this.handleCookbookTitleChange,
+      handleCookbookSubtitleChange: this.handleCookbookSubtitleChange,
+      handleCookbookFormSubmit: this.handleCookbookFormSubmit,
+      accentOptions,
+      mainBottomPadding: selectedCount > 0 ? '96px' : '56px',
+      libQuery,
+      handleLibQueryChange: this.handleLibQueryChange,
+      sidebarLibrary,
+      selectAllVisibleLib: this.selectAllVisibleLib,
+      deselectAllLib: this.deselectAllLib,
+      libSelectedCount,
+      libSelectedCountLabel: `${libSelectedCount} recipe${libSelectedCount === 1 ? '' : 's'} selected`,
+      showLibBulkBar: libSelectedCount > 0,
+      handleLibBulkMoveChange: this.handleLibBulkMoveChange,
+      libBulkAddMisc: this.libBulkAddMisc,
+      openLibBulkNewChapter: this.openLibBulkNewChapter,
+      hasSidebarResults: sidebarLibrary.length > 0,
+      hasNoSidebarResults: sidebarLibrary.length === 0,
+      libraryCountLabel: libQ ? `${sidebarLibrary.length} of ${libraryPool.length} available` : `${libraryPool.length} available`,
+      sidebarEmptyMessage: libraryPool.length === 0 ? 'All library recipes are already in this cookbook.' : `Nothing matches "${libQuery.trim()}".`,
+
+      anyMenuOpen: openMenuRecipeId != null,
+      closeRecipeMenu: this.closeRecipeMenu,
+
+      showBulkBar: selectedCount > 0,
+      selectedCount,
+      selectedCountLabel: `${selectedCount} recipe${selectedCount === 1 ? '' : 's'} selected`,
+      clearSelection: this.clearSelection,
+      handleBulkMoveChange: this.handleBulkMoveChange,
+      openCreateChapterFromSelection: this.openCreateChapterFromSelection,
+      openBulkRemove: this.openBulkRemove,
+
+      showChapterFormModal: !!modal && (modal.type === 'newChapter' || modal.type === 'renameChapter' || modal.type === 'newChapterFromSelection' || modal.type === 'newChapterFromLibrarySelection'),
+      chapterFormHeading: modal && modal.type === 'renameChapter' ? 'Rename chapter' : ((modal && (modal.type === 'newChapterFromSelection' || modal.type === 'newChapterFromLibrarySelection')) ? 'New chapter from selection' : 'New chapter'),
+      chapterFormSubheading: modal && modal.type === 'newChapterFromSelection' ? `${selectedCount} selected recipe${selectedCount === 1 ? '' : 's'} will move into it.` : (modal && modal.type === 'newChapterFromLibrarySelection' ? `${libSelectedCount} selected library recipe${libSelectedCount === 1 ? '' : 's'} will move into it.` : ''),
+      chapterFormSubmitLabel: modal && modal.type === 'renameChapter' ? 'Save changes' : 'Create chapter',
+      chapterFormName: chapterForm.name,
+      chapterNameInvalid,
+      chapterNameErrorId: chapterNameInvalid ? 'cm-chname-error' : undefined,
+      handleChapterNameChange: this.handleChapterNameChange,
+      handleChapterFormSubmit: this.handleChapterFormSubmit,
+
+      showDeleteChapterModal: !!modal && modal.type === 'deleteChapter',
+      deleteChapterTitle: deleteTarget ? deleteTarget.name : '',
+      deleteChapterBody: deleteTargetRecipeCount > 0
+        ? `This removes the chapter. Its ${deleteTargetRecipeCount} recipe${deleteTargetRecipeCount === 1 ? '' : 's'} will move to Miscellaneous, not be deleted. This can't be undone.`
+        : `This removes the empty chapter. This can't be undone.`,
+      confirmDeleteChapter: this.confirmDeleteChapter,
+
+      showRemoveRecipeModal: !!modal && modal.type === 'removeRecipe',
+      removeRecipeTitle: removeTarget ? removeTarget.title : '',
+      confirmRemoveRecipe: this.confirmRemoveRecipe,
+
+      showBulkRemoveModal: !!modal && modal.type === 'bulkRemove',
+      confirmBulkRemove: this.confirmBulkRemove,
+
+      showAddRecipesModal: !!modal && modal.type === 'addRecipes',
+      addRecipesSearch: addSearch,
+      handleAddSearchChange: this.handleAddSearchChange,
+      addRecipesTargetChapterId: addTargetChapterId,
+      handleAddTargetChange: this.handleAddTargetChange,
+      hasLibraryResults: libraryResults.length > 0,
+      hasNoLibraryResults: libraryResults.length === 0,
+      libraryResults,
+      noResultsMessage: libraryPool.length === 0
+        ? 'Every library recipe is already in this cookbook.'
+        : `Nothing matches "${addSearch.trim()}".`,
+      addRecipesSubmitDisabled: addSelectedCount === 0,
+      addRecipesSubmitLabel: addSelectedCount > 0 ? `Add ${addSelectedCount} recipe${addSelectedCount === 1 ? '' : 's'}` : 'Add recipes',
+      handleAddRecipesSubmit: this.handleAddRecipesSubmit,
+
+
+      closeModal: this.closeModal,
+      handleBackdropClick: this.handleBackdropClick,
+      handleModalKeyDown: this.handleModalKeyDown,
+      stopPropagation: this.stopPropagation,
+      firstFieldRef: this.firstFieldRef,
+      toastMessage,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
