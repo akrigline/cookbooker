@@ -52,6 +52,8 @@ const DENSITY_TABLE = [
   ['whole wheat flour', 132],
   ['all-purpose flour', 120],
   ['flour', 120],
+  ['peanut butter', 258],
+  ['buttermilk', 245],
   ['butter', 227],
   ['vegetable oil', 218],
   ['olive oil', 216],

@@ -20,11 +20,12 @@ defineProps({
       <RecipeImage
         class="layout-balanced-header__image"
         :image="recipe.image"
-        :aspect-ratio="recipe.imageAspectRatio ?? 'auto'"
+        :aspect-ratio="recipe.imageAspectRatio"
+        :title="recipe.title"
       />
     </div>
     <RecipeNotes v-if="recipe.notes" :notes="recipe.notes" />
-    <RecipeIngredients :recipe="recipe" :ingredients="recipe.ingredients" :columns="recipe.ingredientColumns ?? 1" :qty-align="recipe.ingredientQtyAlign ?? 'right'" />
+    <RecipeIngredients :recipe="recipe" :ingredients="recipe.ingredients" :columns="recipe.ingredientColumns" :qty-align="recipe.ingredientQtyAlign" />
     <RecipeInstructions :instructions="recipe.instructions" />
   </div>
 </template>

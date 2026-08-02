@@ -35,6 +35,8 @@ const error = ref(null)
 const showDeleteModal = ref(false)
 const deleting = ref(false)
 const saving = ref(false)
+const loaded = ref(false)
+const recipeNotFound = ref(false)
 
 onMounted(async () => {
   if (!recipesStore.loaded) await recipesStore.load()
@@ -50,10 +52,13 @@ onMounted(async () => {
       ingredientQtyAlign.value = recipe.ingredientQtyAlign ?? DEFAULT_INGREDIENT_QTY_ALIGN
       imageAspectRatio.value = recipe.imageAspectRatio ?? 'auto'
       existingImage.value = recipe.image ?? null
+    } else {
+      recipeNotFound.value = true
     }
   } else {
     title.value = ''
   }
+  loaded.value = true
 })
 
 const parsedIngredients = computed(() => parseIngredientsText(ingredientsText.value))
@@ -165,7 +170,14 @@ function handleCancel() {
 </script>
 
 <template>
-  <main id="cm-main" style="max-width:1280px; margin:0 auto; padding:32px 32px 100px;">
+  <main v-if="loaded && recipeNotFound" id="cm-main" style="max-width:640px; margin:0 auto; padding:100px 32px; text-align:center;">
+    <h1 style="font-family:'Newsreader',Georgia,serif; font-size:26px; font-weight:600; margin:0 0 12px;">Recipe not found</h1>
+    <p style="margin:0 0 24px; font-size:15px; color:oklch(45% 0.01 75);">This recipe may have been deleted.</p>
+    <router-link to="/library" class="btn-primary" style="display:inline-flex; align-items:center; background:oklch(20% 0.015 75); color:oklch(98% 0.004 75); border:none; border-radius:8px; padding:11px 20px; font-size:14px; font-weight:600; text-decoration:none;">
+      Back to Recipe Library
+    </router-link>
+  </main>
+  <main v-else id="cm-main" style="max-width:1280px; margin:0 auto; padding:32px 32px 100px;">
     <router-link to="/library" class="cm-back-link" style="display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:600; text-decoration:none; margin-bottom:20px;">
       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
       Back to Recipe Library
@@ -239,9 +251,9 @@ function handleCancel() {
         </div>
 
         <div>
-          <label style="display:block; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin-bottom:6px;">Recipe Image (optional)</label>
+          <label for="cm-image" style="display:block; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin-bottom:6px;">Recipe Image (optional)</label>
           <div style="display:flex; align-items:center; gap:16px;">
-            <input type="file" accept="image/*" @change="handleImageChange" style="font-size:14px;" />
+            <input id="cm-image" type="file" accept="image/*" @change="handleImageChange" style="font-size:14px;" />
           </div>
         </div>
       </div>

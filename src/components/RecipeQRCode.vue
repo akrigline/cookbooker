@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import QRCode from 'qrcode'
-import { generateQRURL, isPayloadOversized } from '../js/qrShare'
+import { generateQRURL, getIngredientLines, getIngredientTextLength, INGREDIENT_WARNING_LENGTH } from '../js/qrShare'
 
 const props = defineProps({
   recipe: {
@@ -12,7 +12,22 @@ const props = defineProps({
 
 const svgContent = ref('')
 
-const url = computed(() => generateQRURL(props.recipe))
+const ingredientLines = computed(() => getIngredientLines(props.recipe))
+
+// Rather than falling back outright once the full ingredient list is too
+// long to encode reliably, find the largest prefix of the list that fits
+// under the warning threshold (down to 0) and encode that instead.
+const includedIngredientCount = computed(() => {
+  const lines = ingredientLines.value
+  for (let n = lines.length; n > 0; n--) {
+    if (getIngredientTextLength(props.recipe, n) <= INGREDIENT_WARNING_LENGTH) return n
+  }
+  return 0
+})
+
+const wasTruncated = computed(() => includedIngredientCount.value < ingredientLines.value.length)
+
+const url = computed(() => generateQRURL(props.recipe, { maxIngredients: includedIngredientCount.value }))
 
 // Check actual QR version, not just the character-count heuristic (same logic
 // as the old QRCodeShare modal — see qrShare.js and design.md Decision 3).
@@ -25,7 +40,7 @@ const qrVersion = computed(() => {
 })
 
 const tooDenseToScan = computed(() => qrVersion.value == null || qrVersion.value > 15)
-const showFallback = computed(() => isPayloadOversized(props.recipe) || tooDenseToScan.value)
+const showFallback = computed(() => tooDenseToScan.value)
 
 async function renderSVG() {
   if (showFallback.value) {
@@ -67,7 +82,10 @@ watch(url, renderSVG)
     <template v-else-if="svgContent">
       <!-- eslint-disable-next-line vue/no-v-html -->
       <div class="cm-recipe-qr__svg" v-html="svgContent" />
-      <p class="cm-recipe-qr__caption">Scan for shopping list</p>
+      <p class="cm-recipe-qr__caption">
+        Scan for shopping list
+        <template v-if="wasTruncated">(first {{ includedIngredientCount }} of {{ ingredientLines.length }})</template>
+      </p>
     </template>
   </div>
 </template>

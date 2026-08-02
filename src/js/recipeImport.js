@@ -30,8 +30,21 @@ export function dataUriToBlob(dataUri) {
 }
 
 
+// Backstop for the prompt's "strip citation markers" instruction
+// (recipeImportPrompt.js) - a noncompliant LLM response can still leave
+// "[cite:1]", "[cite: 2, 5]", or "[1]"-style bracketed references in the
+// text, so strip them here rather than trusting the model alone.
+function stripCitationMarkers(text) {
+  return text
+    .replace(/\[cite:?\s*\d+(?:\s*,\s*\d+)*\]/gi, '')
+    .replace(/\[\d+(?:\s*,\s*\d+)*\]/g, '')
+    .replace(/\s+([.,!?;:])/g, '$1')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim()
+}
+
 function textOf(el) {
-  return (el?.textContent ?? '').trim()
+  return stripCitationMarkers((el?.textContent ?? '').trim())
 }
 
 function extractIngredients(root) {

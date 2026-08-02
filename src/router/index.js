@@ -7,6 +7,7 @@ import ProjectView from '../views/ProjectView.vue'
 import ProjectPrint from '../views/ProjectPrint.vue'
 import RecipePrint from '../views/RecipePrint.vue'
 import Settings from '../views/Settings.vue'
+import NotFound from '../views/NotFound.vue'
 
 const routes = [
   { path: '/', name: 'dashboard', component: Dashboard },
@@ -23,6 +24,7 @@ const routes = [
     props: true,
   },
   { path: '/settings', name: 'settings', component: Settings },
+  { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFound },
 ]
 
 export default createRouter({

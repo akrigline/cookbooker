@@ -11,6 +11,10 @@ const props = defineProps({
     type: String,
     default: 'auto',
   },
+  title: {
+    type: String,
+    default: '',
+  },
 })
 
 const ASPECT_RATIO_CSS = {
@@ -29,7 +33,7 @@ const imageUrl = useObjectUrl(toRef(() => props.image))
     class="recipe-image grayscale-print"
     :style="ASPECT_RATIO_CSS[aspectRatio] ? { aspectRatio: ASPECT_RATIO_CSS[aspectRatio], height: 'auto' } : null"
   >
-    <img :src="imageUrl" alt="" />
+    <img :src="imageUrl" :alt="title ? `Photo of ${title}` : 'Recipe photo'" />
   </div>
 </template>
 

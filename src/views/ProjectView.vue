@@ -1,12 +1,15 @@
 <script setup>
-import { computed, nextTick, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectsStore } from '../stores/projects'
 import { useRecipesStore } from '../stores/recipes'
-import RecipeThumbnail from '../components/RecipeThumbnail.vue'
-import Modal from '../components/Modal.vue'
 import RecipePreviewDialog from '../components/RecipePreviewDialog.vue'
-import { ACCENT_COLORS, COVER_TEMPLATES } from '../js/templates'
+import ChapterCard from '../components/ChapterCard.vue'
+import LibrarySidebarPanel from '../components/LibrarySidebarPanel.vue'
+import BulkActionBar from '../components/BulkActionBar.vue'
+import ConfirmDialog from '../components/ConfirmDialog.vue'
+import EditCookbookModal from '../components/EditCookbookModal.vue'
+import ChapterNameModal from '../components/ChapterNameModal.vue'
 import { nextSequence } from '../js/sequence'
 
 // ---------------------------------------------------------------------------
@@ -537,6 +540,15 @@ async function moveChapter(chapter, direction) {
   if (ok && moved) announce(`Chapter moved.`)
 }
 
+// Recipe-row up/down equivalent of moveChapter, for keyboard/screen-reader
+// users who can't use the row's drag handle to reorder within a chapter.
+async function moveRecipe(pr, recipe, direction) {
+  const ok = await persist(`move "${recipe.title}"`, () =>
+    projectsStore.reorderProjectRecipe(pr.id, direction),
+  )
+  if (ok) announce(`"${recipe.title}" moved.`)
+}
+
 function onChapterDragEnd() {
   dragChapterId.value = null
   dragOverChapterId.value = null
@@ -671,10 +683,65 @@ onMounted(() => {
   document.addEventListener('click', closeMenus)
 })
 
-import { onUnmounted } from 'vue'
 onUnmounted(() => {
   document.removeEventListener('click', closeMenus)
 })
+
+// ---------------------------------------------------------------------------
+// Grouped props for the extracted view components below. ProjectView.vue
+// keeps ownership of every store write and the shared persist/announce
+// plumbing; these components only render and forward interactions, so
+// extracting them isn't a behavior change, just a markup split.
+// ---------------------------------------------------------------------------
+
+const dragState = computed(() => ({
+  dragChapterId: dragChapterId.value,
+  dragOverChapterId: dragOverChapterId.value,
+  dropChapterId: dropChapterId.value,
+  dropAfterPrId: dropAfterPrId.value,
+}))
+
+const chapterCardHandlers = {
+  onChapterDragStart,
+  onChapterDragOver,
+  onChapterDragLeave,
+  onChapterDrop,
+  onChapterDragEnd,
+  onRecipeDragOver,
+  onChapterAreaDragLeave,
+  onRecipeDrop,
+  onRecipeDragStart,
+  onRecipeDragEnd,
+  onSelectAll: selectAllInChapter,
+  onSortAZ: sortChapterAZ,
+  onMoveChapter: moveChapter,
+  onDeleteChapter: openDeleteChapter,
+  onRenameChapter: (chapterId, name) => openChapterNameModal('rename', chapterId, name),
+  onToggleSelect: toggleSelect,
+  onMoveRecipe: moveRecipe,
+  onOpenPreview: openPreview,
+  onToggleMenu: toggleMenu,
+  onMoveRecipeToChapter: moveRecipeToChapter,
+  onOpenRemoveRecipe: openRemoveRecipe,
+}
+
+const librarySidebarHandlers = {
+  onNewChapter: () => openChapterNameModal('new'),
+  onToggleLibSelect: toggleLibSelect,
+  onLibRecipeDragStart,
+  onRecipeDragEnd,
+  onQuickAdd: quickAddRecipe,
+  onLibBulkAddToChapter: libBulkAddToChapter,
+  onLibBulkAddToMisc: libBulkAddToMisc,
+  onNewChapterFromLibrary: () => openChapterNameModal('newFromLibrary'),
+}
+
+const bulkActionHandlers = {
+  onMove: doBulkMove,
+  onNewChapterFromSelection: () => openChapterNameModal('newFromSelection'),
+  onBulkRemove: openBulkRemove,
+  onClear: clearSelection,
+}
 </script>
 
 <template>
@@ -752,190 +819,18 @@ onUnmounted(() => {
       <main id="cm-main" class="pv-main">
 
         <!-- Chapters -->
-        <div
+        <ChapterCard
           v-for="chapter in orderedChapters"
           :key="chapter.id"
-          class="chapter-card"
-          :class="{
-            'chapter-card--drag-over': dragOverChapterId === chapter.id,
-            'chapter-card--dragging': dragChapterId === chapter.id,
-          }"
-          :draggable="!chapter.isDefault"
-          @dragstart="!chapter.isDefault && onChapterDragStart($event, chapter.id)"
-          @dragover="onChapterDragOver($event, chapter.id)"
-          @dragleave="onChapterDragLeave"
-          @drop="onChapterDrop($event, chapter.id)"
-          @dragend="onChapterDragEnd"
-        >
-          <!-- Task 3.1: Chapter Card header row -->
-          <div class="chapter-card__header">
-            <div class="chapter-card__title-row">
-              <!-- Drag handle (only for non-default chapters) -->
-              <span
-                v-if="!chapter.isDefault"
-                class="drag-handle"
-                aria-hidden="true"
-                title="Drag to reorder chapter"
-              >
-                <svg width="12" height="18" viewBox="0 0 12 18" fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="9" r="1.5"/><circle cx="9" cy="9" r="1.5"/><circle cx="3" cy="15" r="1.5"/><circle cx="9" cy="15" r="1.5"/></svg>
-              </span>
-              <h2 class="chapter-card__name">{{ chapter.name }}</h2>
-              <span v-if="chapter.isDefault" class="chapter-badge">Default</span>
-            </div>
-            <div class="chapter-card__controls">
-              <!-- Select all checkbox -->
-              <label class="chapter-select-all" :title="chapterAllSelected(chapter.id) ? 'Deselect all' : 'Select all'">
-                <input
-                  type="checkbox"
-                  :checked="chapterAllSelected(chapter.id)"
-                  :indeterminate="!chapterAllSelected(chapter.id) && chapterSomeSelected(chapter.id)"
-                  :aria-label="`Select all recipes in ${chapter.name}`"
-                  @change="selectAllInChapter(chapter.id)"
-                />
-                <span>Select all</span>
-              </label>
-              <!-- Sort A–Z -->
-              <button
-                type="button"
-                class="chapter-action-btn"
-                :aria-label="`Sort recipes in ${chapter.name} A–Z`"
-                @click="sortChapterAZ(chapter.id)"
-              >
-                Sort A–Z
-              </button>
-              <!-- Move up/down (non-default chapters) -->
-              <template v-if="!chapter.isDefault">
-                <button
-                  type="button"
-                  class="chapter-action-btn"
-                  :aria-label="`Move chapter '${chapter.name}' up`"
-                  @click="moveChapter(chapter, -1)"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-                </button>
-                <button
-                  type="button"
-                  class="chapter-action-btn"
-                  :aria-label="`Move chapter '${chapter.name}' down`"
-                  @click="moveChapter(chapter, 1)"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                <button
-                  type="button"
-                  class="chapter-action-btn chapter-action-btn--danger"
-                  :aria-label="`Delete chapter '${chapter.name}'`"
-                  @click="openDeleteChapter(chapter)"
-                >
-                  Delete
-                </button>
-                <button
-                  type="button"
-                  class="chapter-action-btn"
-                  :aria-label="`Rename chapter '${chapter.name}'`"
-                  @click="openChapterNameModal('rename', chapter.id, chapter.name)"
-                >
-                  Rename
-                </button>
-              </template>
-            </div>
-          </div>
-
-          <!-- Recipe list drop zone -->
-          <ul
-            class="recipe-list"
-            :class="{ 'recipe-list--drop-active': dropChapterId === chapter.id }"
-            @dragover="onRecipeDragOver($event, chapter.id)"
-            @dragleave="onChapterAreaDragLeave"
-            @drop="onRecipeDrop($event, chapter.id)"
-          >
-            <li v-if="!recipesInChapter(chapter.id).length" class="recipe-list__empty">
-              No recipes yet. Add from the library →
-            </li>
-
-            <!-- Task 3.2: Recipe Row -->
-            <li
-              v-for="{ pr, recipe } in recipesInChapter(chapter.id)"
-              :key="pr.id"
-              class="recipe-row"
-              :class="{ 'recipe-row--selected': selectedIds.has(pr.id) }"
-              draggable="true"
-              @dragstart="onRecipeDragStart($event, pr)"
-              @dragover="onRecipeDragOver($event, chapter.id, pr.id)"
-              @dragend="onRecipeDragEnd"
-            >
-              <!-- Checkbox -->
-              <input
-                type="checkbox"
-                class="recipe-row__check"
-                :checked="selectedIds.has(pr.id)"
-                :aria-label="`Select '${recipe.title}'`"
-                @change="toggleSelect(pr.id)"
-              />
-              <!-- Drag handle -->
-              <span class="drag-handle recipe-row__drag" aria-hidden="true" title="Drag to reorder">
-                <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor"><circle cx="2.5" cy="2.5" r="1.5"/><circle cx="7.5" cy="2.5" r="1.5"/><circle cx="2.5" cy="8" r="1.5"/><circle cx="7.5" cy="8" r="1.5"/><circle cx="2.5" cy="13.5" r="1.5"/><circle cx="7.5" cy="13.5" r="1.5"/></svg>
-              </span>
-              <!-- Thumbnail -->
-              <div class="recipe-row__thumb">
-                <RecipeThumbnail :image="recipe.image" />
-              </div>
-              <!-- Title -->
-              <a href="#" class="recipe-row__title" @click.prevent="openPreview(recipe)">
-                {{ recipe.title }}
-              </a>
-              <!-- Overflow menu -->
-              <div class="recipe-row__menu-wrap" @click.stop>
-                <button
-                  type="button"
-                  class="recipe-row__menu-btn"
-                  :aria-label="`Actions for '${recipe.title}'`"
-                  :aria-expanded="openMenuPrId === pr.id"
-                  @click="toggleMenu(pr.id)"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
-                </button>
-                <div v-if="openMenuPrId === pr.id" class="overflow-menu" role="menu">
-                  <button
-                    type="button"
-                    role="menuitem"
-                    @click="() => { closeMenus(); openChapterNameModal('rename', chapter.id, chapter.name) }"
-                  >
-                    Rename chapter
-                  </button>
-                  <hr />
-                  <div role="group" aria-label="Move to chapter">
-                    <button
-                      v-for="c in orderedChapters.filter(c => c.id !== chapter.id)"
-                      :key="c.id"
-                      type="button"
-                      role="menuitem"
-                      @click="() => { closeMenus(); moveRecipeToChapter(pr, c.id) }"
-                    >
-                      Move to: {{ c.name }}
-                    </button>
-                  </div>
-                  <hr />
-                  <router-link
-                    role="menuitem"
-                    :to="`/projects/${project.id}/recipes/${recipe.id}/print`"
-                    @click="closeMenus"
-                  >
-                    Print recipe
-                  </router-link>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    class="overflow-menu__danger"
-                    @click="() => { closeMenus(); openRemoveRecipe(pr, recipe.title) }"
-                  >
-                    Remove from cookbook
-                  </button>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </div>
+          :chapter="chapter"
+          :recipes="recipesInChapter(chapter.id)"
+          :ordered-chapters="orderedChapters"
+          :selected-ids="selectedIds"
+          :open-menu-pr-id="openMenuPrId"
+          :project-id="project.id"
+          :drag-state="dragState"
+          :handlers="chapterCardHandlers"
+        />
 
         <!-- Empty state -->
         <div v-if="orderedChapters.length === 0" class="empty-state">
@@ -943,310 +838,96 @@ onUnmounted(() => {
         </div>
       </main>
 
-      <!-- Task 4.1 / 4.2: Recipe Library Sidebar -->
-      <aside class="pv-sidebar" aria-label="Recipe Library">
-
-        <!-- Task 3.3: New Chapter quick-add form -->
-        <section class="sidebar-section sidebar-section--new-chapter">
-          <h2 class="sidebar-section__heading">New Chapter</h2>
-          <form class="new-chapter-form" @submit.prevent="openChapterNameModal('new')">
-            <button type="submit" class="sidebar-btn sidebar-btn--full">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              New Chapter…
-            </button>
-          </form>
-        </section>
-
-        <div class="sidebar-divider" />
-
-        <!-- Library search -->
-        <section class="sidebar-section sidebar-section--library">
-          <h2 class="sidebar-section__heading">Global Recipe Library</h2>
-          <input
-            v-model="librarySearch"
-            type="search"
-            class="sidebar-search"
-            placeholder="Search recipes…"
-            aria-label="Search recipe library"
-          />
-
-          <!-- Library recipe list -->
-          <ul class="lib-list" aria-label="Available recipes">
-            <li v-if="!availableRecipes.length" class="lib-list__empty">
-              <template v-if="librarySearch">No matches for "{{ librarySearch }}".</template>
-              <template v-else>All library recipes are already in this cookbook.
-                <router-link to="/library/new">Create a new recipe</router-link>.
-              </template>
-            </li>
-            <li
-              v-for="recipe in availableRecipes"
-              :key="recipe.id"
-              class="lib-row"
-              :class="{ 'lib-row--selected': libSelectedIds.has(recipe.id) }"
-              draggable="true"
-              @dragstart="onLibRecipeDragStart($event, recipe)"
-              @dragend="onRecipeDragEnd"
-            >
-              <input
-                type="checkbox"
-                class="lib-row__check"
-                :checked="libSelectedIds.has(recipe.id)"
-                :aria-label="`Select '${recipe.title}'`"
-                @change="toggleLibSelect(recipe.id)"
-              />
-              <div class="lib-row__thumb">
-                <RecipeThumbnail :image="recipe.image" />
-              </div>
-              <span class="lib-row__title">{{ recipe.title }}</span>
-              <button
-                type="button"
-                class="lib-row__add-btn"
-                :aria-label="`Add '${recipe.title}' to cookbook`"
-                :disabled="addingRecipeId === recipe.id"
-                @click="quickAddRecipe(recipe)"
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              </button>
-            </li>
-          </ul>
-        </section>
-
-        <!-- Task 4.2: Library bulk action bar -->
-        <Transition name="slide-up">
-          <div v-if="libSelectedIds.size > 0" class="lib-bulk-bar" role="toolbar" aria-label="Library bulk actions">
-            <span class="lib-bulk-bar__count">{{ libSelectedIds.size }} selected</span>
-            <div class="lib-bulk-bar__actions">
-              <label class="lib-bulk-label" for="lib-bulk-chapter-select">Add to chapter:</label>
-              <select
-                id="lib-bulk-chapter-select"
-                v-model="libBulkChapterTarget"
-                class="lib-bulk-select"
-                aria-label="Select target chapter"
-                @change="libBulkAddToChapter"
-              >
-                <option value="">Choose…</option>
-                <option v-for="c in orderedChapters" :key="c.id" :value="c.id">{{ c.name }}</option>
-              </select>
-              <button type="button" class="sidebar-btn" @click="libBulkAddToMisc">
-                Add to Misc.
-              </button>
-              <button
-                type="button"
-                class="sidebar-btn"
-                @click="openChapterNameModal('newFromLibrary')"
-              >
-                New chapter…
-              </button>
-            </div>
-          </div>
-        </Transition>
-      </aside>
+      <!-- Recipe Library Sidebar -->
+      <LibrarySidebarPanel
+        v-model:library-search="librarySearch"
+        v-model:lib-bulk-chapter-target="libBulkChapterTarget"
+        :ordered-chapters="orderedChapters"
+        :available-recipes="availableRecipes"
+        :lib-selected-ids="libSelectedIds"
+        :adding-recipe-id="addingRecipeId"
+        :handlers="librarySidebarHandlers"
+      />
     </div>
 
-    <!-- Task 5.1 / 5.2: In-cookbook bulk action bar -->
-    <Transition name="slide-up">
-      <div v-if="selectedIds.size > 0" class="bulk-bar" role="toolbar" aria-label="Bulk recipe actions">
-        <span class="bulk-bar__count">
-          {{ selectedIds.size }} recipe{{ selectedIds.size !== 1 ? 's' : '' }} selected
-        </span>
-        <div class="bulk-bar__actions">
-          <label for="bulk-move-select" class="bulk-bar__label">Move to:</label>
-          <select
-            id="bulk-move-select"
-            v-model="bulkMoveTarget"
-            class="bulk-bar__select"
-            aria-label="Select chapter to move to"
-            @change="doBulkMove"
-          >
-            <option value="">Choose chapter…</option>
-            <option v-for="c in orderedChapters" :key="c.id" :value="c.id">{{ c.name }}</option>
-          </select>
-          <button
-            type="button"
-            class="bulk-bar__btn"
-            @click="openChapterNameModal('newFromSelection')"
-          >
-            New chapter from these
-          </button>
-          <button
-            type="button"
-            class="bulk-bar__btn bulk-bar__btn--danger"
-            @click="openBulkRemove"
-          >
-            Remove from cookbook
-          </button>
-          <button type="button" class="bulk-bar__btn bulk-bar__btn--ghost" @click="clearSelection">
-            Cancel
-          </button>
-        </div>
-      </div>
-    </Transition>
+    <!-- In-cookbook bulk action bar -->
+    <BulkActionBar
+      v-model:bulk-move-target="bulkMoveTarget"
+      :count="selectedIds.size"
+      :ordered-chapters="orderedChapters"
+      :handlers="bulkActionHandlers"
+    />
   </div>
 
-  <!-- ============================================================
-       Task 2.3: Delete Chapter modal (double confirmation)
-       ============================================================ -->
-  <Modal
+  <!-- Delete Chapter modal (double confirmation) -->
+  <ConfirmDialog
     v-if="modal.type === 'deleteChapter'"
-    role="alertdialog"
     title-id="modal-delete-chapter-title"
+    heading="Delete Chapter"
+    confirm-label="Delete chapter"
+    busy-label="Deleting…"
+    :busy="modalBusy"
     @close="closeModal"
+    @confirm="confirmDeleteChapter"
   >
-    <h2 id="modal-delete-chapter-title" class="modal-title">Delete Chapter</h2>
-    <p class="modal-body">
-      Delete <strong>{{ modal.deletingChapter?.name }}</strong>?
-      Its recipes will be moved to the Miscellaneous chapter.
-    </p>
-    <div class="modal-actions">
-      <button type="button" class="modal-btn modal-btn--ghost" :disabled="modalBusy" @click="closeModal">
-        Cancel
-      </button>
-      <button type="button" class="modal-btn modal-btn--danger" :disabled="modalBusy" @click="confirmDeleteChapter">
-        {{ modalBusy ? 'Deleting…' : 'Delete chapter' }}
-      </button>
-    </div>
-  </Modal>
+    Delete <strong>{{ modal.deletingChapter?.name }}</strong>?
+    Its recipes will be moved to the Miscellaneous chapter.
+  </ConfirmDialog>
 
-  <!-- Task 2.3: Remove Recipe modal -->
-  <Modal
+  <!-- Remove Recipe modal -->
+  <ConfirmDialog
     v-if="modal.type === 'removeRecipe'"
-    role="alertdialog"
     title-id="modal-remove-recipe-title"
+    heading="Remove Recipe"
+    confirm-label="Remove recipe"
+    busy-label="Removing…"
+    :busy="modalBusy"
     @close="closeModal"
+    @confirm="confirmRemoveRecipe"
   >
-    <h2 id="modal-remove-recipe-title" class="modal-title">Remove Recipe</h2>
-    <p class="modal-body">
-      Remove <strong>{{ modal.removingTitle }}</strong> from this cookbook?
-      It will remain in the Global Recipe Library.
-    </p>
-    <div class="modal-actions">
-      <button type="button" class="modal-btn modal-btn--ghost" :disabled="modalBusy" @click="closeModal">
-        Cancel
-      </button>
-      <button type="button" class="modal-btn modal-btn--danger" :disabled="modalBusy" @click="confirmRemoveRecipe">
-        {{ modalBusy ? 'Removing…' : 'Remove recipe' }}
-      </button>
-    </div>
-  </Modal>
+    Remove <strong>{{ modal.removingTitle }}</strong> from this cookbook?
+    It will remain in the Global Recipe Library.
+  </ConfirmDialog>
 
-  <!-- Task 2.3: Bulk Remove modal -->
-  <Modal
+  <!-- Bulk Remove modal -->
+  <ConfirmDialog
     v-if="modal.type === 'bulkRemove'"
-    role="alertdialog"
     title-id="modal-bulk-remove-title"
+    heading="Remove Recipes"
+    :confirm-label="`Remove ${selectedIds.size} recipe${selectedIds.size !== 1 ? 's' : ''}`"
+    busy-label="Removing…"
+    :busy="modalBusy"
     @close="closeModal"
+    @confirm="confirmBulkRemove"
   >
-    <h2 id="modal-bulk-remove-title" class="modal-title">Remove Recipes</h2>
-    <p class="modal-body">
-      Remove {{ selectedIds.size }} recipe{{ selectedIds.size !== 1 ? 's' : '' }} from this cookbook?
-      They will remain in the Global Recipe Library.
-    </p>
-    <div class="modal-actions">
-      <button type="button" class="modal-btn modal-btn--ghost" :disabled="modalBusy" @click="closeModal">
-        Cancel
-      </button>
-      <button type="button" class="modal-btn modal-btn--danger" :disabled="modalBusy" @click="confirmBulkRemove">
-        {{ modalBusy ? 'Removing…' : `Remove ${selectedIds.size} recipe${selectedIds.size !== 1 ? 's' : ''}` }}
-      </button>
-    </div>
-  </Modal>
+    Remove {{ selectedIds.size }} recipe{{ selectedIds.size !== 1 ? 's' : '' }} from this cookbook?
+    They will remain in the Global Recipe Library.
+  </ConfirmDialog>
 
-  <!-- Task 2.4: Edit Cookbook Details modal -->
-  <Modal
+  <!-- Edit Cookbook Details modal -->
+  <EditCookbookModal
     v-if="modal.type === 'editCookbook'"
-    title-id="modal-edit-cookbook-title"
+    v-model:title="modal.editTitle"
+    v-model:subtitle="modal.editSubtitle"
+    v-model:accent="modal.editAccent"
+    :cover-template="project?.coverTemplate"
+    :page-numbers-enabled="project?.pageNumbersEnabled"
+    :busy="modalBusy"
+    @update-field="updateField"
     @close="closeModal"
-  >
-    <h2 id="modal-edit-cookbook-title" class="modal-title">Edit Cookbook Details</h2>
-    <div class="modal-form">
-      <label class="form-field">
-        <span class="form-label">Title</span>
-        <input v-model="modal.editTitle" type="text" class="form-input" placeholder="Cookbook title" />
-      </label>
-      <label class="form-field">
-        <span class="form-label">Subtitle</span>
-        <input v-model="modal.editSubtitle" type="text" class="form-input" placeholder="Optional subtitle" />
-      </label>
-      <div class="form-field">
-        <span class="form-label">Accent Color</span>
-        <div class="swatches">
-          <button
-            v-for="color in ACCENT_COLORS"
-            :key="color.id"
-            type="button"
-            class="swatch"
-            :class="{ 'swatch--active': modal.editAccent === color.value }"
-            :style="{ background: color.value }"
-            :title="color.label"
-            :aria-pressed="modal.editAccent === color.value"
-            @click="modal.editAccent = color.value"
-          />
-        </div>
-      </div>
-      <!-- Cover layout stays in-line edit for now; design only specified title/subtitle/accent in modal -->
-      <label class="form-field">
-        <span class="form-label">Cover Layout</span>
-        <select
-          :value="project?.coverTemplate"
-          class="form-input"
-          @change="updateField('coverTemplate', $event.target.value)"
-        >
-          <option v-for="tpl in COVER_TEMPLATES" :key="tpl.id" :value="tpl.id">{{ tpl.label }}</option>
-        </select>
-      </label>
-      <label class="form-field form-field--checkbox">
-        <input
-          type="checkbox"
-          :checked="project?.pageNumbersEnabled"
-          @change="updateField('pageNumbersEnabled', $event.target.checked)"
-        />
-        <span>Page numbers &amp; Table of Contents</span>
-      </label>
-    </div>
-    <div class="modal-actions">
-      <button type="button" class="modal-btn modal-btn--ghost" :disabled="modalBusy" @click="closeModal">
-        Cancel
-      </button>
-      <button type="button" class="modal-btn modal-btn--primary" :disabled="modalBusy" @click="saveEditCookbook">
-        {{ modalBusy ? 'Saving…' : 'Save changes' }}
-      </button>
-    </div>
-  </Modal>
+    @save="saveEditCookbook"
+  />
 
-  <!-- Task 2.5: Shared Chapter Name modal -->
-  <Modal
+  <!-- Shared Chapter Name modal -->
+  <ChapterNameModal
     v-if="modal.type === 'chapterName'"
-    title-id="modal-chapter-name-title"
+    v-model:value="modal.chapterNameValue"
+    :heading="modal.chapterNameHeading"
+    :subheading="modal.chapterNameSubheading"
+    :busy="modalBusy"
     @close="closeModal"
-  >
-    <h2 id="modal-chapter-name-title" class="modal-title">{{ modal.chapterNameHeading }}</h2>
-    <p v-if="modal.chapterNameSubheading" class="modal-body">{{ modal.chapterNameSubheading }}</p>
-    <form class="modal-form" @submit.prevent="submitChapterName">
-      <label class="form-field">
-        <span class="form-label">Chapter name</span>
-        <input
-          v-model="modal.chapterNameValue"
-          type="text"
-          class="form-input"
-          placeholder="e.g. Breakfast & Brunch"
-          required
-          autofocus
-        />
-      </label>
-      <div class="modal-actions">
-        <button type="button" class="modal-btn modal-btn--ghost" :disabled="modalBusy" @click="closeModal">
-          Cancel
-        </button>
-        <button
-          type="submit"
-          class="modal-btn modal-btn--primary"
-          :disabled="modalBusy || !modal.chapterNameValue.trim()"
-        >
-          {{ modalBusy ? 'Saving…' : modal.chapterNameHeading }}
-        </button>
-      </div>
-    </form>
-  </Modal>
+    @submit="submitChapterName"
+  />
   <!-- Recipe Preview Dialog -->
   <RecipePreviewDialog
     v-if="previewRecipe"
@@ -1423,711 +1104,6 @@ onUnmounted(() => {
 }
 
 .pv-error__dismiss:hover { background: oklch(90% 0.06 25); }
-
-/* ================================================================
-   Task 3.1 — Chapter Card
-   ================================================================ */
-
-.chapter-card {
-  background: oklch(99.2% 0.002 75);
-  border: 1px solid oklch(88% 0.008 75);
-  border-radius: 14px;
-  margin-bottom: 20px;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.chapter-card--drag-over {
-  border-color: oklch(52% 0.16 250);
-  box-shadow: 0 0 0 3px oklch(75% 0.12 250 / 35%);
-}
-
-.chapter-card--dragging {
-  opacity: 0.5;
-}
-
-.chapter-card__header {
-  padding: 16px 20px 12px;
-  border-bottom: 1px solid oklch(91% 0.007 75);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.chapter-card__title-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.chapter-card__name {
-  font-family: 'Newsreader', Georgia, serif;
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0;
-  color: oklch(20% 0.015 75);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.chapter-badge {
-  font-size: 11px;
-  font-weight: 600;
-  color: oklch(55% 0.01 75);
-  background: oklch(93% 0.006 75);
-  border: 1px solid oklch(86% 0.008 75);
-  padding: 2px 8px;
-  border-radius: 99px;
-  white-space: nowrap;
-}
-
-.chapter-card__controls {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.chapter-select-all {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 13px;
-  color: oklch(45% 0.01 75);
-  cursor: pointer;
-  user-select: none;
-}
-
-.chapter-select-all input[type='checkbox'] {
-  width: 15px;
-  height: 15px;
-  cursor: pointer;
-  accent-color: oklch(52% 0.16 250);
-}
-
-.chapter-action-btn {
-  background: oklch(95% 0.005 75);
-  border: 1px solid oklch(86% 0.008 75);
-  border-radius: 7px;
-  padding: 5px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: oklch(30% 0.01 75);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: background 0.12s;
-}
-
-.chapter-action-btn:hover { background: oklch(91% 0.007 75); }
-
-.chapter-action-btn--danger {
-  background: none;
-  border-color: oklch(82% 0.06 25);
-  color: oklch(45% 0.12 25);
-}
-
-.chapter-action-btn--danger:hover { background: oklch(95% 0.04 25); }
-
-/* ================================================================
-   Task 3.2 — Recipe Row
-   ================================================================ */
-
-.recipe-list {
-  list-style: none;
-  margin: 0;
-  padding: 8px 20px;
-}
-
-.recipe-list--drop-active {
-  background: oklch(95% 0.05 250 / 30%);
-  border-radius: 0 0 14px 14px;
-}
-
-.recipe-list__empty {
-  padding: 16px 0;
-  color: oklch(55% 0.01 75);
-  font-style: italic;
-  font-size: 14px;
-}
-
-.recipe-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid oklch(93% 0.005 75);
-  cursor: grab;
-  border-radius: 6px;
-  transition: background 0.1s;
-}
-
-.recipe-row:last-child { border-bottom: none; }
-
-.recipe-row--selected {
-  background: oklch(95% 0.04 250 / 40%);
-}
-
-.recipe-row:active { cursor: grabbing; }
-
-.recipe-row__check {
-  flex-shrink: 0;
-  width: 16px;
-  height: 16px;
-  accent-color: oklch(52% 0.16 250);
-  cursor: pointer;
-}
-
-.recipe-row__drag {
-  flex-shrink: 0;
-  color: oklch(72% 0.008 75);
-  cursor: grab;
-}
-
-.recipe-row__thumb {
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
-  overflow: hidden;
-  border: 1px solid oklch(88% 0.01 250);
-  flex-shrink: 0;
-}
-
-.recipe-row__title {
-  flex: 1;
-  font-size: 14px;
-  font-weight: 600;
-  color: oklch(20% 0.01 75);
-  text-decoration: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-
-.recipe-row__title:hover { text-decoration: underline; }
-
-/* Overflow menu */
-.recipe-row__menu-wrap {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.recipe-row__menu-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 7px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: oklch(55% 0.01 75);
-  cursor: pointer;
-  transition: background 0.12s, border-color 0.12s;
-}
-
-.recipe-row__menu-btn:hover {
-  background: oklch(93% 0.006 75);
-  border-color: oklch(86% 0.008 75);
-}
-
-.overflow-menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 4px);
-  background: oklch(99.5% 0.002 75);
-  border: 1px solid oklch(88% 0.008 75);
-  border-radius: 10px;
-  padding: 6px;
-  min-width: 180px;
-  box-shadow: 0 8px 28px oklch(10% 0.01 75 / 14%);
-  z-index: 200;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.overflow-menu button,
-.overflow-menu a {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 8px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  color: oklch(25% 0.01 75);
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.1s;
-}
-
-.overflow-menu button:hover,
-.overflow-menu a:hover {
-  background: oklch(94% 0.006 75);
-}
-
-.overflow-menu hr {
-  border: none;
-  border-top: 1px solid oklch(91% 0.007 75);
-  margin: 4px 0;
-}
-
-.overflow-menu__danger {
-  color: oklch(45% 0.12 25) !important;
-}
-
-.overflow-menu__danger:hover {
-  background: oklch(95% 0.04 25) !important;
-}
-
-/* ================================================================
-   Drag handle (shared)
-   ================================================================ */
-
-.drag-handle {
-  display: inline-flex;
-  align-items: center;
-  color: oklch(75% 0.006 75);
-  cursor: grab;
-  flex-shrink: 0;
-}
-
-/* ================================================================
-   Task 4.1 / 4.2 — Sidebar
-   ================================================================ */
-
-.pv-sidebar {
-  border-left: 1px solid oklch(88% 0.008 75);
-  background: oklch(98.5% 0.003 75);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-}
-
-.sidebar-section {
-  padding: 16px 16px 12px;
-}
-
-.sidebar-section--library {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding-bottom: 0;
-}
-
-.sidebar-section__heading {
-  font-family: 'Newsreader', Georgia, serif;
-  font-size: 15px;
-  font-weight: 600;
-  color: oklch(28% 0.015 75);
-  margin: 0 0 10px;
-}
-
-.sidebar-divider {
-  height: 1px;
-  background: oklch(89% 0.007 75);
-  margin: 0 16px;
-}
-
-.sidebar-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: oklch(20% 0.015 75);
-  color: oklch(98% 0.004 75);
-  border: none;
-  border-radius: 8px;
-  padding: 9px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-  white-space: nowrap;
-}
-
-.sidebar-btn:hover { background: oklch(28% 0.02 75); }
-
-.sidebar-btn--full { width: 100%; justify-content: center; }
-
-.sidebar-search {
-  font: inherit;
-  font-size: 13px;
-  padding: 8px 12px;
-  border: 1px solid oklch(86% 0.008 75);
-  border-radius: 8px;
-  background: oklch(99.3% 0.002 75);
-  color: oklch(18% 0.01 75);
-  width: 100%;
-  margin-bottom: 10px;
-}
-
-.sidebar-search:focus-visible {
-  outline: 2px solid oklch(52% 0.16 250);
-  outline-offset: 1px;
-}
-
-.lib-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  overflow-y: auto;
-  flex: 1;
-  /* bottom padding to ensure last item isn't hidden by bulk bar */
-  padding-bottom: 80px;
-}
-
-.lib-list__empty {
-  padding: 16px 0;
-  font-size: 13px;
-  color: oklch(50% 0.01 75);
-  font-style: italic;
-}
-
-.lib-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid oklch(93% 0.005 75);
-  cursor: grab;
-}
-
-.lib-row:last-child { border-bottom: none; }
-
-.lib-row--selected { background: oklch(95% 0.04 250 / 40%); border-radius: 6px; }
-
-.lib-row__check {
-  width: 15px;
-  height: 15px;
-  flex-shrink: 0;
-  accent-color: oklch(52% 0.16 250);
-  cursor: pointer;
-}
-
-.lib-row__thumb {
-  width: 34px;
-  height: 34px;
-  border-radius: 5px;
-  overflow: hidden;
-  border: 1px solid oklch(88% 0.01 250);
-  flex-shrink: 0;
-}
-
-.lib-row__title {
-  flex: 1;
-  font-size: 13px;
-  font-weight: 500;
-  color: oklch(22% 0.01 75);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-
-.lib-row__add-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  border: 1px solid oklch(86% 0.008 75);
-  background: oklch(96% 0.004 75);
-  color: oklch(35% 0.01 75);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.12s;
-}
-
-.lib-row__add-btn:hover { background: oklch(91% 0.007 75); }
-.lib-row__add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-/* Task 4.2 — Library bulk action bar */
-.lib-bulk-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: oklch(99% 0.003 75);
-  border-top: 1px solid oklch(88% 0.008 75);
-  padding: 10px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 -4px 14px oklch(10% 0.01 75 / 8%);
-}
-
-.lib-bulk-bar__count {
-  font-size: 12px;
-  font-weight: 600;
-  color: oklch(45% 0.01 75);
-}
-
-.lib-bulk-bar__actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.lib-bulk-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: oklch(45% 0.01 75);
-  white-space: nowrap;
-}
-
-.lib-bulk-select {
-  font: inherit;
-  font-size: 12px;
-  padding: 6px 8px;
-  border: 1px solid oklch(86% 0.008 75);
-  border-radius: 7px;
-  background: oklch(99% 0.003 75);
-  color: oklch(20% 0.01 75);
-  flex: 1;
-}
-
-/* ================================================================
-   Task 5.1 — In-cookbook bulk action bar (fixed to viewport bottom)
-   ================================================================ */
-
-.bulk-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: oklch(20% 0.015 75);
-  color: oklch(97% 0.004 75);
-  padding: 14px 32px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  z-index: 500;
-  box-shadow: 0 -4px 24px oklch(10% 0.01 75 / 25%);
-  flex-wrap: wrap;
-}
-
-.bulk-bar__count {
-  font-size: 14px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.bulk-bar__actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  flex-wrap: wrap;
-}
-
-.bulk-bar__label {
-  font-size: 13px;
-  font-weight: 600;
-  color: oklch(80% 0.008 75);
-  white-space: nowrap;
-}
-
-.bulk-bar__select {
-  font: inherit;
-  font-size: 13px;
-  padding: 7px 10px;
-  border: 1px solid oklch(50% 0.012 75);
-  border-radius: 8px;
-  background: oklch(25% 0.015 75);
-  color: oklch(97% 0.004 75);
-}
-
-.bulk-bar__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  border: 1px solid oklch(50% 0.012 75);
-  background: oklch(28% 0.018 75);
-  color: oklch(97% 0.004 75);
-  cursor: pointer;
-  transition: background 0.12s;
-  white-space: nowrap;
-}
-
-.bulk-bar__btn:hover { background: oklch(34% 0.018 75); }
-
-.bulk-bar__btn--danger {
-  background: none;
-  border-color: oklch(65% 0.15 25);
-  color: oklch(80% 0.1 25);
-}
-
-.bulk-bar__btn--danger:hover { background: oklch(30% 0.08 25); }
-
-.bulk-bar__btn--ghost {
-  background: none;
-  border-color: oklch(50% 0.01 75);
-  color: oklch(75% 0.008 75);
-}
-
-.bulk-bar__btn--ghost:hover { background: oklch(28% 0.01 75); }
-
-/* ================================================================
-   Modals (titles / buttons / forms)
-   ================================================================ */
-
-.modal-title {
-  font-family: 'Newsreader', Georgia, serif;
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0 0 12px;
-  color: oklch(18% 0.01 75);
-}
-
-.modal-body {
-  font-size: 14px;
-  color: oklch(35% 0.01 75);
-  line-height: 1.6;
-  margin: 0 0 20px;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.modal-btn {
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: background 0.12s;
-}
-
-.modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.modal-btn--primary {
-  background: oklch(20% 0.015 75);
-  color: oklch(98% 0.004 75);
-}
-
-.modal-btn--primary:hover:not(:disabled) { background: oklch(28% 0.02 75); }
-
-.modal-btn--ghost {
-  background: oklch(93% 0.006 75);
-  color: oklch(25% 0.01 75);
-  border: 1px solid oklch(86% 0.008 75);
-}
-
-.modal-btn--ghost:hover:not(:disabled) { background: oklch(88% 0.008 75); }
-
-.modal-btn--danger {
-  background: oklch(45% 0.18 25);
-  color: oklch(98% 0.004 75);
-}
-
-.modal-btn--danger:hover:not(:disabled) { background: oklch(38% 0.18 25); }
-
-/* ================================================================
-   Modal form fields
-   ================================================================ */
-
-.modal-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.form-field--checkbox {
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-}
-
-.form-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: oklch(48% 0.01 75);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.form-input {
-  font: inherit;
-  font-size: 14px;
-  padding: 9px 12px;
-  border: 1px solid oklch(85% 0.008 75);
-  border-radius: 8px;
-  background: oklch(99.3% 0.002 75);
-  color: oklch(18% 0.01 75);
-}
-
-.form-input:focus-visible {
-  outline: 2px solid oklch(52% 0.16 250);
-  outline-offset: 1px;
-  border-color: oklch(52% 0.16 250);
-}
-
-/* Accent color swatches inside modal */
-.swatches {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 4px 0;
-}
-
-.swatch {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  box-shadow: 0 0 0 2px oklch(99% 0 0);
-  transition: transform 0.15s;
-}
-
-.swatch--active {
-  border-color: oklch(20% 0.015 75);
-  transform: scale(1.15);
-}
-
-.swatch:focus-visible { outline: 2px solid oklch(52% 0.16 250); outline-offset: 2px; }
-
-/* ================================================================
-   Transitions
-   ================================================================ */
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: transform 0.22s ease, opacity 0.22s ease;
-}
-
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translateY(100%);
-  opacity: 0;
-}
 
 /* ================================================================
    Utility

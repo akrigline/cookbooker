@@ -8,6 +8,7 @@ const router = useRouter()
 const recipesStore = useRecipesStore()
 const query = ref('')
 const deletingId = ref(null)
+const deleteTarget = ref(null)
 
 onMounted(() => {
   if (!recipesStore.loaded) recipesStore.load()
@@ -49,8 +50,13 @@ function openRecipe(recipe) {
   router.push(`/library/${recipe.id}`)
 }
 
-async function confirmDelete(recipe) {
-  if (!confirm(`Delete "${recipe.title}" permanently?`)) return
+function requestDelete(recipe) {
+  deleteTarget.value = recipe
+}
+
+async function confirmDelete() {
+  const recipe = deleteTarget.value
+  if (!recipe) return
   deletingId.value = recipe.id
   try {
     if (recipesStore.removeRecipe) {
@@ -60,6 +66,7 @@ async function confirmDelete(recipe) {
     }
   } finally {
     deletingId.value = null
+    deleteTarget.value = null
   }
 }
 </script>
@@ -104,7 +111,7 @@ async function confirmDelete(recipe) {
         @keydown.enter="openRecipe(recipe)"
       >
         <div class="recipe-thumb">
-          <RecipeThumbnail :image="recipe.image" />
+          <RecipeThumbnail :image="recipe.image" :title="recipe.title" />
         </div>
 
         <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;">
@@ -116,7 +123,7 @@ async function confirmDelete(recipe) {
           <router-link :to="`/library/${recipe.id}`" class="btn-open">
             Open recipe
           </router-link>
-          <button type="button" :aria-label="`Delete ${recipe.title}`" @click="confirmDelete(recipe)" class="btn-icon-danger" :disabled="deletingId === recipe.id">
+          <button type="button" :aria-label="`Delete ${recipe.title}`" @click="requestDelete(recipe)" class="btn-icon-danger" :disabled="deletingId === recipe.id">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
           </button>
         </div>
@@ -129,6 +136,17 @@ async function confirmDelete(recipe) {
       <router-link v-if="!recipesStore.recipes.length" to="/library/new" class="btn-new" style="display:inline-flex;">
         New Recipe
       </router-link>
+    </div>
+
+    <div v-if="deleteTarget" @click="deleteTarget = null" style="position:fixed; inset:0; background:oklch(20% 0.01 75 / 0.45); display:flex; align-items:center; justify-content:center; padding:24px; z-index:200;">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="cm-del-heading" aria-describedby="cm-del-desc" @click.stop style="background:oklch(99.3% 0.002 75); border-radius:14px; width:100%; max-width:420px; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(20% 0.02 75 / 0.25);">
+        <h2 id="cm-del-heading" style="font-family:'Newsreader',Georgia,serif; font-size:20px; font-weight:600; margin:0 0 10px;">Delete "{{ deleteTarget.title }}"?</h2>
+        <p id="cm-del-desc" style="margin:0 0 22px; font-size:14px; color:oklch(40% 0.01 75); line-height:1.5;">This permanently removes the recipe from the Global Recipe Library and withdraws it from every cookbook that includes it. This can't be undone.</p>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" @click="deleteTarget = null" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;">Cancel</button>
+          <button type="button" @click="confirmDelete" :disabled="deletingId === deleteTarget.id" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:oklch(45% 0.14 25); color:white; cursor:pointer;">Delete permanently</button>
+        </div>
+      </div>
     </div>
   </main>
 </template>

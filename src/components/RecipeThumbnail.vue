@@ -7,6 +7,10 @@ const props = defineProps({
     type: Blob,
     default: null,
   },
+  title: {
+    type: String,
+    default: '',
+  },
 })
 
 const url = useObjectUrl(toRef(props, 'image'))
@@ -14,7 +18,7 @@ const url = useObjectUrl(toRef(props, 'image'))
 
 <template>
   <div class="recipe-thumb" :class="{ 'is-empty': !url }">
-    <img v-if="url" :src="url" alt="" />
+    <img v-if="url" :src="url" :alt="title ? `Photo of ${title}` : 'Recipe photo'" />
   </div>
 </template>
 

@@ -45,4 +45,15 @@ describe('renderChefNotes', () => {
     expect(result).not.toContain('<strong>already bold</strong>')
     expect(result).toBe('&lt;strong&gt;already bold&lt;/strong&gt;')
   })
+
+  it('does not pair up unrelated stray markers separated by whitespace', () => {
+    expect(renderChefNotes('mix 2 * 3 * 4 cups')).toBe('mix 2 * 3 * 4 cups')
+    expect(renderChefNotes('a _ b _ c')).toBe('a _ b _ c')
+  })
+
+  it('still renders emphasis when markers are not whitespace-flanked', () => {
+    expect(renderChefNotes('a *tip* and *another tip* here')).toBe(
+      'a <em>tip</em> and <em>another tip</em> here',
+    )
+  })
 })

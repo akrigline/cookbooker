@@ -104,14 +104,28 @@ async function confirmImport() {
   if (!toImport.length) return
 
   importing.value = true
+  error.value = null
+  const importFailures = []
   try {
-    for (const { recipe } of toImport) {
-      await recipesStore.createRecipe(recipe)
+    for (const item of toImport) {
+      try {
+        await recipesStore.createRecipe(item.recipe)
+        candidates.value = candidates.value.filter((c) => c.key !== item.key)
+      } catch (err) {
+        importFailures.push(`"${item.recipe.title}": ${err.message}`)
+      }
     }
-    success.value = `Import complete - ${toImport.length} recipe${toImport.length === 1 ? '' : 's'} added to the Global Recipe Library.`
-    candidates.value = []
-    failures.value = []
-    rejectedSources.value = []
+
+    const importedCount = toImport.length - importFailures.length
+    if (importedCount) {
+      success.value = `Import complete - ${importedCount} recipe${importedCount === 1 ? '' : 's'} added to the Global Recipe Library.`
+    }
+    if (importFailures.length) {
+      error.value = `${importFailures.length} recipe${importFailures.length === 1 ? '' : 's'} could not be saved and remain below for review:\n${importFailures.join('\n')}`
+    } else {
+      failures.value = []
+      rejectedSources.value = []
+    }
   } finally {
     importing.value = false
   }
@@ -208,6 +222,8 @@ function handleCancelReview() {
           </div>
         </div>
       </section>
+
+      <p v-if="error" role="alert" style="white-space:pre-line; margin:0 0 20px; font-size:14px; color:oklch(45% 0.14 25); background:oklch(96% 0.03 25); border:1px solid oklch(85% 0.06 25); border-radius:8px; padding:12px 16px;">{{ error }}</p>
 
       <div style="display:flex; justify-content:flex-end; gap:10px; padding-top:8px; border-top:1px solid oklch(88% 0.008 75); flex-wrap:wrap;">
         <button type="button" @click="handleCancelReview" class="btn-cancel">Cancel</button>

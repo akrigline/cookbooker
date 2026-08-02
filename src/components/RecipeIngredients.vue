@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import { convertIngredient, formatQuantity } from '../js/conversions'
 import RecipeQRCode from './RecipeQRCode.vue'
 
@@ -34,6 +35,8 @@ function getIngredientParts(parsed) {
   }
   return { quantity: quantityText, name }
 }
+
+const parsedIngredients = computed(() => props.ingredients.map(getIngredientParts))
 </script>
 
 <template>
@@ -45,12 +48,12 @@ function getIngredientParts(parsed) {
     
     <ul class="ingredients-list text-ingredient-list" :style="{ columnCount: columns }">
       <li
-        v-for="(ing, idx) in ingredients"
+        v-for="(parts, idx) in parsedIngredients"
         :key="idx"
         class="ingredient-item"
       >
-        <div class="ingredient-qty" :style="{ textAlign: qtyAlign }">{{ getIngredientParts(ing).quantity }}</div>
-        <div class="ingredient-name">{{ getIngredientParts(ing).name }}</div>
+        <div class="ingredient-qty" :style="{ textAlign: qtyAlign }">{{ parts.quantity }}</div>
+        <div class="ingredient-name">{{ parts.name }}</div>
       </li>
       <li v-if="recipe" class="ingredient-item qr-item">
         <RecipeQRCode :recipe="recipe" />

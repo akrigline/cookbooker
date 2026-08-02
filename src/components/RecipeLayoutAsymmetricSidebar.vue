@@ -17,11 +17,11 @@ defineProps({
   <div class="layout-asymmetric-sidebar">
     <div class="layout-asymmetric-sidebar__aside">
       <RecipeTitle :title="recipe.title" />
-      <RecipeImage :image="recipe.image" :aspect-ratio="recipe.imageAspectRatio ?? 'auto'" />
+      <RecipeImage :image="recipe.image" :aspect-ratio="recipe.imageAspectRatio" :title="recipe.title" />
       <RecipeNotes v-if="recipe.notes" :notes="recipe.notes" />
     </div>
     <div class="layout-asymmetric-sidebar__main">
-      <RecipeIngredients :recipe="recipe" :ingredients="recipe.ingredients" :columns="recipe.ingredientColumns ?? 1" :qty-align="recipe.ingredientQtyAlign ?? 'right'" />
+      <RecipeIngredients :recipe="recipe" :ingredients="recipe.ingredients" :columns="recipe.ingredientColumns" :qty-align="recipe.ingredientQtyAlign" />
       <RecipeInstructions :instructions="recipe.instructions" />
     </div>
   </div>

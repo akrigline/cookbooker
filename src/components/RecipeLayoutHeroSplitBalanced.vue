@@ -17,7 +17,7 @@ defineProps({
   <div class="layout-hero-split-balanced">
     <div class="layout-hero-split-balanced__hero">
       <RecipeTitle :title="recipe.title" />
-      <RecipeImage :image="recipe.image" :aspect-ratio="recipe.imageAspectRatio ?? 'auto'" />
+      <RecipeImage :image="recipe.image" :aspect-ratio="recipe.imageAspectRatio" :title="recipe.title" />
       <RecipeNotes v-if="recipe.notes" :notes="recipe.notes" />
     </div>
     <div class="layout-hero-split-balanced__split">
@@ -25,8 +25,8 @@ defineProps({
         class="layout-hero-split-balanced__col"
         :recipe="recipe"
         :ingredients="recipe.ingredients"
-        :columns="recipe.ingredientColumns ?? 1"
-        :qty-align="recipe.ingredientQtyAlign ?? 'right'"
+        :columns="recipe.ingredientColumns"
+        :qty-align="recipe.ingredientQtyAlign"
       />
       <RecipeInstructions class="layout-hero-split-balanced__col" :instructions="recipe.instructions" />
     </div>

@@ -198,6 +198,23 @@ describe('parseRecipeImportHtml', () => {
     expect(failures[0].reason).toMatch(/version/i)
   })
 
+  it('strips citation markers the LLM prompt asked for but a response left in anyway', () => {
+    const html = wrapDocument(`
+      <article class="cm-recipe" data-cm-format="recipe" data-cm-version="1">
+        <h1 class="cm-title">Apple Pie [cite:1]</h1>
+        <section class="cm-ingredients"><ul><li>2 cups flour [1]</li></ul></section>
+        <section class="cm-instructions"><ol><li>Preheat the oven [cite: 2, 5].</li></ol></section>
+        <section class="cm-notes"><p>A family favorite [3].</p></section>
+      </article>
+    `)
+    const { recipes } = parseRecipeImportHtml(html)
+    expect(recipes).toHaveLength(1)
+    expect(recipes[0].title).toBe('Apple Pie')
+    expect(recipes[0].ingredients[0].raw).toBe('2 cups flour')
+    expect(recipes[0].instructions).toBe('Preheat the oven.')
+    expect(recipes[0].notes).toBe('A family favorite.')
+  })
+
   it('produces a candidate recipe with a null image when .cm-image src is malformed', () => {
     const html = wrapDocument(`
       <article class="cm-recipe" data-cm-format="recipe" data-cm-version="1">
