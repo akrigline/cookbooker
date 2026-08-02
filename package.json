@@ -7,11 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@dailykit/food-units-converter": "^1.0.2",
-    "@magrinj/parse-ingredients": "github:akrigline/parse-ingredients#e6a7647cec03de2fbce4f074a3f12bc6ebd34332",
+    "@magrinj/parse-ingredients": "^1.0.0",
     "dexie": "^4.4.4",
     "dexie-export-import": "^4.4.0",
     "fraction.js": "^5.3.4",
@@ -25,6 +26,7 @@
     "@vitejs/plugin-vue": "^6.0.7",
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.10.6",
+    "patch-package": "^8.0.1",
     "vite": "^8.1.1",
     "vitest": "^4.1.9"
   }

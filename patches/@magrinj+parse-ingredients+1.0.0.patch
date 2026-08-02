@@ -1,0 +1,120 @@
+diff --git a/node_modules/@magrinj/parse-ingredients/LICENSE b/node_modules/@magrinj/parse-ingredients/LICENSE
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/README.md b/node_modules/@magrinj/parse-ingredients/README.md
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/index.cjs b/node_modules/@magrinj/parse-ingredients/lib/index.cjs
+old mode 100644
+new mode 100755
+index e57e028..00ba1c2
+--- a/node_modules/@magrinj/parse-ingredients/lib/index.cjs
++++ b/node_modules/@magrinj/parse-ingredients/lib/index.cjs
+@@ -60,7 +60,7 @@ function findQuantityAndConvertIfUnicode(ingredientLine, options) {
+ 	const numericAndFractionRegex = /(\d+\s\d+\/\d+)|(\d+\/\d+)|(\d+\.\d+)|\d+/g;
+ 	const prepositions = require_locales.locales[language].prepositions.join("|");
+ 	const numericRangeWithSpaceRegex = new RegExp(`^(\\d+\\-\\d+)|^(\\d+\\s\\-\\s\\d+)|^(\\d+\\s(${prepositions})\\s\\d+)`, "g");
+-	const unicodeFractionRegex = /\d*[^\u0020-\u007F]+/g;
++	const unicodeFractionRegex = /\d*\s*[^\u0020-\u007F]+/g;
+ 	const onlyUnicodeFraction = /[^\u0020-\u007F]+/g;
+ 	if (ingredientLine.match(unicodeFractionRegex)) {
+ 		const numericPart = getFirstMatch(ingredientLine, numericAndFractionRegex);
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/index.d.cts b/node_modules/@magrinj/parse-ingredients/lib/index.d.cts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/index.d.mts b/node_modules/@magrinj/parse-ingredients/lib/index.d.mts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/index.mjs b/node_modules/@magrinj/parse-ingredients/lib/index.mjs
+old mode 100644
+new mode 100755
+index 9ffb245..cf885d1
+--- a/node_modules/@magrinj/parse-ingredients/lib/index.mjs
++++ b/node_modules/@magrinj/parse-ingredients/lib/index.mjs
+@@ -56,7 +56,7 @@ function findQuantityAndConvertIfUnicode(ingredientLine, options) {
+ 	const numericAndFractionRegex = /(\d+\s\d+\/\d+)|(\d+\/\d+)|(\d+\.\d+)|\d+/g;
+ 	const prepositions = locales[language].prepositions.join("|");
+ 	const numericRangeWithSpaceRegex = new RegExp(`^(\\d+\\-\\d+)|^(\\d+\\s\\-\\s\\d+)|^(\\d+\\s(${prepositions})\\s\\d+)`, "g");
+-	const unicodeFractionRegex = /\d*[^\u0020-\u007F]+/g;
++	const unicodeFractionRegex = /\d*\s*[^\u0020-\u007F]+/g;
+ 	const onlyUnicodeFraction = /[^\u0020-\u007F]+/g;
+ 	if (ingredientLine.match(unicodeFractionRegex)) {
+ 		const numericPart = getFirstMatch(ingredientLine, numericAndFractionRegex);
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/de.cjs b/node_modules/@magrinj/parse-ingredients/lib/locale/de.cjs
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/de.d.cts b/node_modules/@magrinj/parse-ingredients/lib/locale/de.d.cts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/de.d.mts b/node_modules/@magrinj/parse-ingredients/lib/locale/de.d.mts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/de.mjs b/node_modules/@magrinj/parse-ingredients/lib/locale/de.mjs
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/en.cjs b/node_modules/@magrinj/parse-ingredients/lib/locale/en.cjs
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/en.d.cts b/node_modules/@magrinj/parse-ingredients/lib/locale/en.d.cts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/en.d.mts b/node_modules/@magrinj/parse-ingredients/lib/locale/en.d.mts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/en.mjs b/node_modules/@magrinj/parse-ingredients/lib/locale/en.mjs
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/es.cjs b/node_modules/@magrinj/parse-ingredients/lib/locale/es.cjs
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/es.d.cts b/node_modules/@magrinj/parse-ingredients/lib/locale/es.d.cts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/es.d.mts b/node_modules/@magrinj/parse-ingredients/lib/locale/es.d.mts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/es.mjs b/node_modules/@magrinj/parse-ingredients/lib/locale/es.mjs
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/fr.cjs b/node_modules/@magrinj/parse-ingredients/lib/locale/fr.cjs
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/fr.d.cts b/node_modules/@magrinj/parse-ingredients/lib/locale/fr.d.cts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/fr.d.mts b/node_modules/@magrinj/parse-ingredients/lib/locale/fr.d.mts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/fr.mjs b/node_modules/@magrinj/parse-ingredients/lib/locale/fr.mjs
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/it.cjs b/node_modules/@magrinj/parse-ingredients/lib/locale/it.cjs
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/it.d.cts b/node_modules/@magrinj/parse-ingredients/lib/locale/it.d.cts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/it.d.mts b/node_modules/@magrinj/parse-ingredients/lib/locale/it.d.mts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/it.mjs b/node_modules/@magrinj/parse-ingredients/lib/locale/it.mjs
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/pt.cjs b/node_modules/@magrinj/parse-ingredients/lib/locale/pt.cjs
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/pt.d.cts b/node_modules/@magrinj/parse-ingredients/lib/locale/pt.d.cts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/pt.d.mts b/node_modules/@magrinj/parse-ingredients/lib/locale/pt.d.mts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/pt.mjs b/node_modules/@magrinj/parse-ingredients/lib/locale/pt.mjs
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locales-BGzv2tO2.mjs b/node_modules/@magrinj/parse-ingredients/lib/locales-BGzv2tO2.mjs
+old mode 100644
+new mode 100755
+diff --git a/node_modules/@magrinj/parse-ingredients/lib/locales-BbCH1daU.cjs b/node_modules/@magrinj/parse-ingredients/lib/locales-BbCH1daU.cjs
+old mode 100644
+new mode 100755

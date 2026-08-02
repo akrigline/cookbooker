@@ -64,6 +64,16 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `src/js/qrShare.js` is a placeholder domain — design.md's Open Question 1 (which real domain
   to deploy the decoder to) is still unresolved.
 
+- `@magrinj/parse-ingredients` is patched via `patch-package`. The upstream package
+  mis-parses quantities like `"1 ¼ cups milk"` (integer + space + unicode fraction) because
+  its `unicodeFractionRegex` lacked `\s*`. The fix is a one-character change in
+  `findQuantityAndConvertIfUnicode` — PR open at https://github.com/magrinj/parse-ingredients/pull/1
+  (authored by akrigline). Installing directly from the GitHub fork branch didn't work because
+  the fork's `lib/` build output wasn't committed, leaving an empty package with no JS.
+  The patch lives in `patches/@magrinj+parse-ingredients+1.0.0.patch` and is auto-applied via
+  `"postinstall": "patch-package"` in `package.json`. When the PR merges and a new version is
+  published to npm, bump `package.json` to that version and delete the patch file.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
