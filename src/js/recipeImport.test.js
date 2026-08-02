@@ -64,6 +64,9 @@ describe('parseRecipeImportHtml', () => {
     expect(recipe.notes).toContain('Grandma Ruth')
     expect(recipe.layoutTemplate).toBe('text-only')
     expect(recipe.image).toBeNull()
+    expect(recipe.ingredientColumns).toBe(1)
+    expect(recipe.ingredientQtyAlign).toBe('right')
+    expect(recipe.imageAspectRatio).toBe('auto')
   })
 
   it('parses a well-formed batch file with multiple recipes', () => {
@@ -193,5 +196,20 @@ describe('parseRecipeImportHtml', () => {
     expect(recipes).toHaveLength(0)
     expect(failures).toHaveLength(1)
     expect(failures[0].reason).toMatch(/version/i)
+  })
+
+  it('produces a candidate recipe with a null image when .cm-image src is malformed', () => {
+    const html = wrapDocument(`
+      <article class="cm-recipe" data-cm-format="recipe" data-cm-version="1">
+        <h1 class="cm-title">Bad Image</h1>
+        <section class="cm-ingredients"><ul><li>2 cups flour</li></ul></section>
+        <section class="cm-instructions"><ol><li>Mix and cook.</li></ol></section>
+        <img class="cm-image" src="data:image/png;base64,not-valid-base64!">
+      </article>
+    `)
+    const { recipes } = parseRecipeImportHtml(html)
+    expect(recipes).toHaveLength(1)
+    expect(recipes[0].title).toBe('Bad Image')
+    expect(recipes[0].image).toBeNull()
   })
 })

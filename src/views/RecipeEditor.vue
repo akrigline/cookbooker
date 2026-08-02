@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
 import { parseIngredientsText } from '../js/conversions'
+import { exportRecipeToHtml } from '../js/recipeExport'
 import { LAYOUT_TEMPLATES, DEFAULT_LAYOUT_TEMPLATE, INGREDIENT_COLUMN_OPTIONS, INGREDIENT_QTY_ALIGN_OPTIONS, DEFAULT_INGREDIENT_QTY_ALIGN, IMAGE_ASPECT_RATIOS } from '../js/templates'
 import RecipeSheet from '../components/RecipeSheet.vue'
 import PagePreview from '../components/PagePreview.vue'
@@ -129,6 +130,21 @@ function handlePrint() {
   window.print()
 }
 
+function slugify(text) {
+  return (text || 'recipe').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+async function handleExport() {
+  const html = await exportRecipeToHtml(previewRecipe.value)
+  const blob = new Blob([html], { type: 'text/html' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${slugify(form.title)}.html`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 function handleCancel() {
   router.push('/library')
 }
@@ -229,6 +245,10 @@ function handleCancel() {
         <button v-if="isEditing" type="button" @click="showDeleteModal = true" style="padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(85% 0.06 25); background:none; color:oklch(45% 0.12 25); cursor:pointer;">Delete recipe</button>
       </div>
       <div style="display:flex; gap:10px;">
+        <button v-if="isEditing" type="button" @click="handleExport" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;">
+          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export recipe
+        </button>
         <button v-if="isEditing" type="button" @click="handlePrint" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;">
           <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
           Print recipe

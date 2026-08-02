@@ -1,7 +1,34 @@
 import { parseIngredientsText } from './conversions'
-import { LAYOUT_TEMPLATES, DEFAULT_LAYOUT_TEMPLATE } from './templates'
+import {
+  LAYOUT_TEMPLATES, DEFAULT_LAYOUT_TEMPLATE,
+  INGREDIENT_COLUMN_OPTIONS, INGREDIENT_QTY_ALIGN_OPTIONS,
+  IMAGE_ASPECT_RATIOS, DEFAULT_INGREDIENT_QTY_ALIGN
+} from './templates'
 
 const KNOWN_LAYOUT_IDS = new Set(LAYOUT_TEMPLATES.map((tpl) => tpl.id))
+const KNOWN_COLUMNS = new Set(INGREDIENT_COLUMN_OPTIONS.map(String))
+const KNOWN_QTY_ALIGNS = new Set(INGREDIENT_QTY_ALIGN_OPTIONS.map((o) => o.id))
+const KNOWN_ASPECT_RATIOS = new Set(IMAGE_ASPECT_RATIOS.map((o) => o.id))
+
+export function dataUriToBlob(dataUri) {
+  try {
+    if (!dataUri) return null
+    const match = dataUri.match(/^data:([^;]+);base64,(.+)$/)
+    if (!match) return null
+    const type = match[1]
+    const b64Data = match[2]
+    const byteString = atob(b64Data)
+    const ab = new ArrayBuffer(byteString.length)
+    const ia = new Uint8Array(ab)
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i)
+    }
+    return new Blob([ab], { type })
+  } catch (err) {
+    return null
+  }
+}
+
 
 function textOf(el) {
   return (el?.textContent ?? '').trim()
@@ -28,6 +55,26 @@ function extractLayoutTemplate(root) {
   return KNOWN_LAYOUT_IDS.has(content) ? content : DEFAULT_LAYOUT_TEMPLATE
 }
 
+function extractImage(root) {
+  const img = root.querySelector('.cm-image')
+  return img ? dataUriToBlob(img.getAttribute('src')) : null
+}
+
+function extractIngredientColumns(root) {
+  const content = root.querySelector('.cm-ingredient-columns')?.getAttribute('content')
+  return KNOWN_COLUMNS.has(content) ? Number(content) : 1
+}
+
+function extractIngredientQtyAlign(root) {
+  const content = root.querySelector('.cm-ingredient-qty-align')?.getAttribute('content')
+  return KNOWN_QTY_ALIGNS.has(content) ? content : DEFAULT_INGREDIENT_QTY_ALIGN
+}
+
+function extractImageAspectRatio(root) {
+  const content = root.querySelector('.cm-image-aspect-ratio')?.getAttribute('content')
+  return KNOWN_ASPECT_RATIOS.has(content) ? content : 'auto'
+}
+
 /**
  * Parses one `data-cm-format="recipe"` root element into either a candidate
  * recipe or a failure reason - mirrors the required-field validation
@@ -46,6 +93,10 @@ function parseRecipeElement(root, index) {
   const instructions = extractInstructions(root)
   const notes = textOf(root.querySelector('.cm-notes'))
   const layoutTemplate = extractLayoutTemplate(root)
+  const image = extractImage(root)
+  const ingredientColumns = extractIngredientColumns(root)
+  const ingredientQtyAlign = extractIngredientQtyAlign(root)
+  const imageAspectRatio = extractImageAspectRatio(root)
 
   if (!title) {
     return { failure: { label, reason: 'Missing or empty title (.cm-title)' } }
@@ -61,7 +112,10 @@ function parseRecipeElement(root, index) {
       ingredients,
       notes,
       layoutTemplate,
-      image: null,
+      image,
+      ingredientColumns,
+      ingredientQtyAlign,
+      imageAspectRatio,
     },
   }
 }

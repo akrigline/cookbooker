@@ -5,6 +5,7 @@ import { useProjectsStore } from '../stores/projects'
 import { useRecipesStore } from '../stores/recipes'
 import RecipeThumbnail from '../components/RecipeThumbnail.vue'
 import Modal from '../components/Modal.vue'
+import RecipePreviewDialog from '../components/RecipePreviewDialog.vue'
 import { ACCENT_COLORS, COVER_TEMPLATES } from '../js/templates'
 import { nextSequence } from '../js/sequence'
 
@@ -187,6 +188,24 @@ function closeModal() {
   if (modalBusy.value) return
   modal.type = null
 }
+
+const previewRecipe = ref(null)
+
+function openPreview(recipe) {
+  previewRecipe.value = recipe
+}
+
+function closePreview() {
+  previewRecipe.value = null
+}
+
+function editPreviewRecipe() {
+  const r = previewRecipe.value
+  if (r) {
+    router.push(`/library/${r.id}`)
+  }
+}
+
 
 // ---------------------------------------------------------------------------
 // Cookbook actions
@@ -754,9 +773,9 @@ onUnmounted(() => {
                 <RecipeThumbnail :image="recipe.image" />
               </div>
               <!-- Title -->
-              <router-link :to="`/library/${recipe.id}`" class="recipe-row__title">
+              <a href="#" class="recipe-row__title" @click.prevent="openPreview(recipe)">
                 {{ recipe.title }}
-              </router-link>
+              </a>
               <!-- Overflow menu -->
               <div class="recipe-row__menu-wrap" @click.stop>
                 <button
@@ -1120,6 +1139,14 @@ onUnmounted(() => {
       </div>
     </form>
   </Modal>
+  <!-- Recipe Preview Dialog -->
+  <RecipePreviewDialog
+    v-if="previewRecipe"
+    :recipe="previewRecipe"
+    :accent-color="project?.accentColor"
+    @close="closePreview"
+    @edit="editPreviewRecipe"
+  />
 </template>
 
 <style scoped>

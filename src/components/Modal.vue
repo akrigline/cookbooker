@@ -5,6 +5,7 @@ const props = defineProps({
   /** 'dialog' for confirmations/forms, 'alertdialog' for destructive confirms */
   role: { type: String, default: 'dialog' },
   titleId: { type: String, default: 'modal-title' },
+  boxClass: { type: String, default: '' },
 })
 const emit = defineEmits(['close'])
 
@@ -67,6 +68,7 @@ onUnmounted(() => {
     <div
       ref="wrapEl"
       class="modal-box"
+      :class="boxClass"
       :role="role"
       aria-modal="true"
       :aria-labelledby="titleId"

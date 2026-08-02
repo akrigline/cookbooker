@@ -90,11 +90,19 @@ For each matched, correctly-versioned recipe element, the system SHALL extract:
 title (from `.cm-title`), ingredients (one raw line per `.cm-ingredients li`, parsed
 via the application's existing ingredient-line parser), instructions (one step per
 `.cm-instructions li`, or `.cm-instructions p` when no list items are present, joined
-into a newline-separated string), notes (from `.cm-notes`, optional), and layout
+into a newline-separated string), notes (from `.cm-notes`, optional), layout
 template (from `.cm-layout`'s `content` attribute when it is one of the application's
-known template identifiers, defaulting to the standard template otherwise). The
-system SHALL always set the imported recipe's image to absent/null, regardless of any
-image-related content in the source file.
+known template identifiers, defaulting to the standard template otherwise), ingredient
+column count (from `.cm-ingredient-columns`'s `content` attribute when it is one of the
+application's known column-count options, defaulting to the standard column count
+otherwise), ingredient quantity alignment (from `.cm-ingredient-qty-align`'s `content`
+attribute when it is one of the application's known alignment options, defaulting to
+the standard alignment otherwise), and image aspect ratio (from
+`.cm-image-aspect-ratio`'s `content` attribute when it is one of the application's
+known aspect-ratio options, defaulting to the standard aspect ratio otherwise). When a
+recipe element carries a `.cm-image` element with a well-formed `data:` URI `src`, the
+system SHALL decode it into the imported recipe's image; otherwise, or when decoding
+fails, the imported recipe's image SHALL be absent/null.
 
 #### Scenario: Extracting a well-formed recipe
 - **WHEN** a recipe element has a title, one or more ingredient list items, and one
@@ -104,19 +112,40 @@ image-related content in the source file.
   joined as a newline-separated string
 
 #### Scenario: Optional fields are absent
-- **WHEN** a recipe element has no `.cm-notes` section and no `.cm-layout` element
-- **THEN** the system produces a candidate recipe with empty notes and the standard
-  layout template
+- **WHEN** a recipe element has no `.cm-notes` section, no `.cm-layout` element, no
+  `.cm-ingredient-columns` element, no `.cm-ingredient-qty-align` element, and no
+  `.cm-image-aspect-ratio` element
+- **THEN** the system produces a candidate recipe with empty notes and each of the
+  standard layout template, ingredient column count, ingredient quantity alignment,
+  and image aspect ratio
 
 #### Scenario: Instructions provided as paragraphs instead of a list
 - **WHEN** a recipe element's `.cm-instructions` section contains `<p>` elements
   instead of `<li>` elements
 - **THEN** the system extracts one instruction step per paragraph
 
-#### Scenario: Imported recipes never carry an image
-- **WHEN** any recipe is successfully extracted and imported
-- **THEN** the resulting recipe's image field is null, regardless of the source file's
-  content
+#### Scenario: Recipe element carries a well-formed image
+- **WHEN** a recipe element has a `.cm-image` element whose `src` is a well-formed
+  `data:` URI
+- **THEN** the system decodes it and produces a candidate recipe whose image matches
+  the encoded bytes
+
+#### Scenario: Recipe element has no image
+- **WHEN** a recipe element has no `.cm-image` element
+- **THEN** the system produces a candidate recipe with a null image, as before
+
+#### Scenario: Recipe element carries a malformed image
+- **WHEN** a recipe element has a `.cm-image` element whose `src` is not a
+  well-formed `data:` URI, or whose payload fails to decode
+- **THEN** the system produces a candidate recipe with a null image rather than
+  failing to import the recipe
+
+#### Scenario: Recipe element carries an unrecognized display-setting value
+- **WHEN** a recipe element's `.cm-ingredient-columns`, `.cm-ingredient-qty-align`,
+  or `.cm-image-aspect-ratio` element has a `content` value the system does not
+  recognize
+- **THEN** the system falls back to the corresponding standard default for that
+  setting, as if the element were absent
 
 ### Requirement: Per-Recipe Field Validation
 The system SHALL apply the same required-field validation used when manually creating
