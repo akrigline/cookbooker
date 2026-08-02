@@ -1,8 +1,14 @@
 <script setup>
 import { ref } from 'vue'
-import { exportDatabase, restoreDatabase } from '../js/backup'
+import {
+  exportDatabase,
+  restoreDatabase,
+  inspectBackupFile,
+  currentDatabaseCounts,
+} from '../js/backup'
 import { useRecipesStore } from '../stores/recipes'
 import { useProjectsStore } from '../stores/projects'
+import Modal from '../components/Modal.vue'
 
 const recipesStore = useRecipesStore()
 const projectsStore = useProjectsStore()
@@ -12,15 +18,43 @@ const error = ref(null)
 const success = ref(null)
 const fileInput = ref(null)
 
+// Restore wipes every table before writing, so it is gated behind an explicit
+// confirmation that names what is at stake - the file's contents are already
+// parsed for validation, so the counts cost nothing extra.
+const pendingRestore = ref(null)
+
+const TABLE_LABELS = {
+  recipes: 'Recipes',
+  projects: 'Cookbooks',
+  chapters: 'Chapters',
+  project_recipes: 'Recipe placements',
+}
+const labelFor = (name) => TABLE_LABELS[name] ?? name
+
+// A restore runs two passes over the data - the pre-restore snapshot, then the
+// import - so the row counter climbs, resets, and climbs again. backup.js tags
+// each report with its phase; without the label the reset looks like a fault.
+const PHASE_LABELS = {
+  export: 'Exporting your data…',
+  backup: 'Backing up current data…',
+  restore: 'Restoring…',
+}
+
 function onProgress(prog) {
-  progress.value = prog
+  // dexie-export-import reports `completedRows`/`totalRows`; `done` is a
+  // boolean flag, not a count.
+  progress.value = {
+    done: prog.completedRows ?? 0,
+    total: prog.totalRows ?? 0,
+    label: PHASE_LABELS[prog.phase] ?? 'Working…',
+  }
   return true
 }
 
 async function handleExport() {
   error.value = null
   success.value = null
-  progress.value = { done: 0, total: 0 }
+  progress.value = { done: 0, total: 0, label: PHASE_LABELS.export }
   try {
     const blob = await exportDatabase(onProgress)
     const url = URL.createObjectURL(blob)
@@ -49,7 +83,43 @@ async function handleFileChange(event) {
 
   error.value = null
   success.value = null
-  progress.value = { done: 0, total: 0 }
+  try {
+    const [incoming, current] = await Promise.all([
+      inspectBackupFile(file),
+      currentDatabaseCounts(),
+    ])
+    const currentByName = new Map(current.tables.map((t) => [t.name, t.rowCount]))
+    const incomingByName = new Map(incoming.tables.map((t) => [t.name, t.rowCount]))
+    const names = [...new Set([...currentByName.keys(), ...incomingByName.keys()])]
+    pendingRestore.value = {
+      file,
+      fileName: file.name,
+      rows: names.map((name) => ({
+        name,
+        label: labelFor(name),
+        current: currentByName.get(name) ?? 0,
+        incoming: incomingByName.get(name) ?? 0,
+      })),
+      currentTotal: current.totalRows,
+      incomingTotal: incoming.totalRows,
+    }
+  } catch (err) {
+    error.value = `That file could not be read as a backup: ${err.message}. Your existing data was left untouched.`
+  }
+}
+
+function cancelRestore() {
+  pendingRestore.value = null
+}
+
+async function confirmRestore() {
+  const file = pendingRestore.value?.file
+  if (!file) return
+  pendingRestore.value = null
+
+  error.value = null
+  success.value = null
+  progress.value = { done: 0, total: 0, label: PHASE_LABELS.backup }
   try {
     await restoreDatabase(file, onProgress)
     await Promise.all([recipesStore.load(), projectsStore.load()])
@@ -106,10 +176,54 @@ async function handleFileChange(event) {
         />
       </div>
 
-      <p v-if="progress" class="status-msg" aria-live="polite">Working... {{ progress.done }}/{{ progress.total || '?' }}</p>
+      <p v-if="progress" class="status-msg" aria-live="polite">{{ progress.label }} {{ progress.done }}/{{ progress.total || '?' }}</p>
       <p v-if="success" class="status-msg success" aria-live="polite">{{ success }}</p>
       <p v-if="error" class="status-msg error" aria-live="assertive">{{ error }}</p>
     </section>
+
+    <Modal
+      v-if="pendingRestore"
+      role="alertdialog"
+      title-id="restore-confirm-title"
+      @close="cancelRestore"
+    >
+      <h2 id="restore-confirm-title" class="modal-title">Replace all your data?</h2>
+      <p class="modal-body">
+        Restoring <strong>{{ pendingRestore.fileName }}</strong> erases everything currently
+        in this library and replaces it with the contents of the backup. This cannot be undone.
+      </p>
+
+      <table class="restore-table">
+        <thead>
+          <tr>
+            <th scope="col">Data</th>
+            <th scope="col">Now</th>
+            <th scope="col">After restore</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in pendingRestore.rows" :key="row.name">
+            <th scope="row">{{ row.label }}</th>
+            <td>{{ row.current }}</td>
+            <td>{{ row.incoming }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row">Total records</th>
+            <td>{{ pendingRestore.currentTotal }}</td>
+            <td>{{ pendingRestore.incomingTotal }}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" @click="cancelRestore">Cancel</button>
+        <button type="button" class="btn-danger" @click="confirmRestore">
+          Erase and restore
+        </button>
+      </div>
+    </Modal>
   </main>
 </template>
 
@@ -219,5 +333,82 @@ async function handleFileChange(event) {
 .success {
   color: oklch(40% 0.12 145);
   font-weight: 600;
+}
+
+.modal-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 21px;
+  font-weight: 600;
+  margin: 0 0 10px;
+  color: oklch(20% 0.015 75);
+}
+
+.modal-body {
+  margin: 0 0 18px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: oklch(38% 0.01 75);
+}
+
+.restore-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 22px;
+}
+
+.restore-table th,
+.restore-table td {
+  padding: 7px 10px;
+  text-align: right;
+  border-bottom: 1px solid oklch(91% 0.006 75);
+}
+
+.restore-table thead th {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: oklch(50% 0.01 75);
+}
+
+.restore-table th[scope='row'],
+.restore-table thead th:first-child {
+  text-align: left;
+  font-weight: 600;
+  color: oklch(28% 0.012 75);
+}
+
+.restore-table tfoot th,
+.restore-table tfoot td {
+  border-bottom: none;
+  border-top: 1px solid oklch(84% 0.008 75);
+  font-weight: 600;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-danger {
+  background: oklch(45% 0.14 25);
+  color: oklch(98% 0.004 75);
+  border: none;
+  border-radius: 8px;
+  padding: 11px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-danger:hover {
+  background: oklch(39% 0.14 25);
+}
+
+.btn-danger:focus-visible {
+  outline: 2px solid oklch(52% 0.16 250);
+  outline-offset: 2px;
 }
 </style>

@@ -32,6 +32,9 @@ const modal = ref(null)            // null | {type:'create'} | {type:'edit',id} 
 const form = ref({ title: '', subtitle: '', accentId: 'terracotta', layoutId: 'classic' })
 const titleTouched = ref(false)
 const submitting = ref(false)
+// Persistence failures (a cookbook deleted in another tab) surface here rather
+// than as an unhandled rejection behind a dialog stuck in its busy state.
+const error = ref(null)
 const lastTrigger = ref(null)
 const firstFieldEl = ref(null)
 
@@ -132,6 +135,7 @@ function openDelete(project, e) {
 
 function closeModal() {
   modal.value = null
+  error.value = null
   nextTick(() => {
     if (lastTrigger.value?.focus) lastTrigger.value.focus()
     lastTrigger.value = null
@@ -148,6 +152,7 @@ async function handleFormSubmit() {
   titleTouched.value = true
   if (!form.value.title.trim() || submitting.value) return
   submitting.value = true
+  error.value = null
   try {
     const payload = {
       title:         form.value.title.trim(),
@@ -163,6 +168,11 @@ async function handleFormSubmit() {
       await projectsStore.editProject(modal.value.id, payload)
       closeModal()
     }
+  } catch (err) {
+    // `editProject` rejects when the cookbook is already gone (deleted in
+    // another tab). Without this the dialog stays open, never leaves its
+    // "Saving…" state, and the rejection is only visible in the console.
+    error.value = `Could not save this cookbook: ${err.message}`
   } finally {
     submitting.value = false
   }
@@ -171,9 +181,16 @@ async function handleFormSubmit() {
 async function confirmDelete() {
   if (!deleteTarget.value || submitting.value) return
   submitting.value = true
+  error.value = null
   try {
     await projectsStore.removeProject(modal.value.id)
     closeModal()
+  } catch (err) {
+    // Not a live path today: `db.deleteProject` only issues plain Dexie
+    // `delete()` calls, which resolve rather than reject for a row that's
+    // already gone. Kept for a genuine write failure (storage/quota) - the
+    // dialog stays open, since "Delete cookbook" is still the correct retry.
+    error.value = `Could not delete this cookbook: ${err.message}`
   } finally {
     submitting.value = false
   }
@@ -353,6 +370,8 @@ function handleModalKeyDown(e) {
 
           </div>
 
+          <p v-if="error" role="alert" style="margin:20px 0 0; font-size:14px; font-weight:600; color:oklch(45% 0.14 25);">{{ error }}</p>
+
           <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:26px;">
             <button type="button" @click="closeModal" class="btn-cancel">Cancel</button>
             <button type="submit" class="btn-submit" :disabled="submitting">{{ formSubmitLabel }}</button>
@@ -370,6 +389,8 @@ function handleModalKeyDown(e) {
         <p id="cm-delete-desc" style="margin:0 0 22px; font-size:14px; color:oklch(40% 0.01 75); line-height:1.5;">
           This removes the cookbook project and its chapters. Its recipes stay in the Global Recipe Library and in any other cookbooks that use them. This can't be undone.
         </p>
+        <p v-if="error" role="alert" style="margin:0 0 18px; font-size:14px; font-weight:600; color:oklch(45% 0.14 25);">{{ error }}</p>
+
         <div style="display:flex; justify-content:flex-end; gap:10px;">
           <button ref="firstFieldEl" type="button" @click="closeModal" class="btn-cancel">Cancel</button>
           <button type="button" @click="confirmDelete" class="btn-delete" :disabled="submitting">Delete cookbook</button>

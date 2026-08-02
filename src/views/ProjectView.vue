@@ -58,6 +58,30 @@ function announce(msg) {
 }
 
 // ---------------------------------------------------------------------------
+// Persistence failures
+// ---------------------------------------------------------------------------
+
+// db.js rejects a write whose row is already gone - deleted in another tab, or
+// by a list this view is holding stale. Every write here goes through
+// `persist`, which reports into one shared banner rather than per-handler
+// error state: `modal` already carries five modes' worth of fields, and a
+// stale-row failure is not retryable from the dialog that raised it. So the
+// modal closes on failure and the banner, which sits below the sticky header
+// and outside the scrolling region, says what did not happen.
+const errorMsg = ref('')
+
+async function persist(description, run) {
+  errorMsg.value = ''
+  try {
+    await run()
+    return true
+  } catch (err) {
+    errorMsg.value = `Could not ${description}: ${err.message}`
+    return false
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Task 2.1 — Selection state
 // ---------------------------------------------------------------------------
 
@@ -213,10 +237,12 @@ function editPreviewRecipe() {
 
 async function confirmDeleteChapter() {
   if (modalBusy.value || !modal.deletingChapter) return
+  const { id, name } = modal.deletingChapter
   modalBusy.value = true
   try {
-    await projectsStore.removeChapter(modal.deletingChapter.id)
-    announce(`Chapter "${modal.deletingChapter.name}" deleted.`)
+    if (await persist(`delete "${name}"`, () => projectsStore.removeChapter(id))) {
+      announce(`Chapter "${name}" deleted.`)
+    }
     modal.type = null
   } finally {
     modalBusy.value = false
@@ -227,11 +253,13 @@ async function saveEditCookbook() {
   if (modalBusy.value) return
   modalBusy.value = true
   try {
-    await projectsStore.editProject(projectIdNum.value, {
-      title: modal.editTitle.trim(),
-      subtitle: modal.editSubtitle.trim(),
-      accentColor: modal.editAccent,
-    })
+    await persist('save these cookbook details', () =>
+      projectsStore.editProject(projectIdNum.value, {
+        title: modal.editTitle.trim(),
+        subtitle: modal.editSubtitle.trim(),
+        accentColor: modal.editAccent,
+      }),
+    )
     modal.type = null
   } finally {
     modalBusy.value = false
@@ -239,7 +267,9 @@ async function saveEditCookbook() {
 }
 
 function updateField(field, value) {
-  projectsStore.editProject(projectIdNum.value, { [field]: value })
+  persist('save these cookbook details', () =>
+    projectsStore.editProject(projectIdNum.value, { [field]: value }),
+  )
 }
 
 // Chapter name form submission (shared modal for new/rename/newFromSelection/newFromLibrary)
@@ -247,30 +277,35 @@ async function submitChapterName() {
   if (modalBusy.value) return
   const name = modal.chapterNameValue.trim()
   if (!name) return
+  const mode = modal.chapterNameMode
+  const targetId = modal.chapterNameTargetId
   modalBusy.value = true
   try {
-    const mode = modal.chapterNameMode
-
-    if (mode === 'new') {
-      await projectsStore.createChapter(projectIdNum.value, name)
-      announce(`Chapter "${name}" created.`)
-    } else if (mode === 'rename') {
-      await projectsStore.editChapter(modal.chapterNameTargetId, { name })
-      announce(`Chapter renamed to "${name}".`)
-    } else if (mode === 'newFromSelection') {
-      // Create chapter then bulk move selected recipes into it
-      const chapterId = await projectsStore.createChapter(projectIdNum.value, name)
-      await bulkMoveToChapter(chapterId)
-      announce(`Chapter "${name}" created with ${selectedIds.value.size} recipes.`)
-    } else if (mode === 'newFromLibrary') {
-      // Create chapter then add selected library recipes into it
-      const chapterId = await projectsStore.createChapter(projectIdNum.value, name)
-      const recipeIds = Array.from(libSelectedIds.value)
-      await Promise.all(
-        recipeIds.map((rid) => projectsStore.addRecipeToProject(projectIdNum.value, rid, chapterId)),
+    if (mode === 'rename') {
+      const ok = await persist('rename this chapter', () =>
+        projectsStore.editChapter(targetId, { name }),
       )
-      clearLibSelection()
-      announce(`Chapter "${name}" created with ${recipeIds.length} recipes from library.`)
+      if (ok) announce(`Chapter renamed to "${name}".`)
+    } else {
+      // Creating the chapter and populating it are two transactions, so they
+      // report separately: if the second fails the chapter still exists, and
+      // one combined message would imply nothing had happened.
+      let chapterId = null
+      const created = await persist(`create chapter "${name}"`, async () => {
+        chapterId = await projectsStore.createChapter(projectIdNum.value, name)
+      })
+      if (created && mode === 'new') {
+        announce(`Chapter "${name}" created.`)
+      } else if (created && mode === 'newFromSelection') {
+        // Read before the move, which clears the selection.
+        const count = selectedIds.value.size
+        const moved = await persist(`move the selected recipes into "${name}"`, () =>
+          bulkMoveToChapter(chapterId),
+        )
+        if (moved) announce(`Chapter "${name}" created with ${count} recipes.`)
+      } else if (created && mode === 'newFromLibrary') {
+        await addLibrarySelection(Array.from(libSelectedIds.value), chapterId, name)
+      }
     }
 
     modal.type = null
@@ -285,11 +320,17 @@ async function submitChapterName() {
 
 async function confirmRemoveRecipe() {
   if (modalBusy.value || !modal.removingPr) return
+  const prId = modal.removingPr.id
+  const title = modal.removingTitle
   modalBusy.value = true
   try {
-    await projectsStore.removeProjectRecipe(modal.removingPr.id)
-    selectedIds.value = new Set([...selectedIds.value].filter((id) => id !== modal.removingPr.id))
-    announce(`"${modal.removingTitle}" removed from cookbook.`)
+    const ok = await persist(`remove "${title}"`, () =>
+      projectsStore.removeProjectRecipe(prId),
+    )
+    if (ok) {
+      selectedIds.value = new Set([...selectedIds.value].filter((id) => id !== prId))
+      announce(`"${title}" removed from cookbook.`)
+    }
     modal.type = null
   } finally {
     modalBusy.value = false
@@ -299,10 +340,12 @@ async function confirmRemoveRecipe() {
 async function moveRecipeToChapter(pr, newChapterId) {
   const target = Number(newChapterId)
   if (target === pr.chapterId) return
-  const siblings = projectsStore.projectRecipesForChapter(target)
-  const sequence = nextSequence(siblings)
-  await projectsStore.moveProjectRecipe(pr.id, { chapterId: target, sequence })
-  announce(`Recipe moved to new chapter.`)
+  // db.js derives the sequence inside the same transaction as the write, so
+  // this doesn't recompute one from a possibly stale in-memory chapter.
+  const ok = await persist('move this recipe', () =>
+    projectsStore.moveProjectRecipesToChapter([pr.id], target),
+  )
+  if (ok) announce(`Recipe moved to new chapter.`)
 }
 
 // ---------------------------------------------------------------------------
@@ -310,48 +353,52 @@ async function moveRecipeToChapter(pr, newChapterId) {
 // ---------------------------------------------------------------------------
 
 async function sortChapterAZ(chapterId) {
-  const rows = recipesInChapter(chapterId)
-  const sorted = [...rows].sort((a, b) =>
+  const sorted = [...recipesInChapter(chapterId)].sort((a, b) =>
     (a.recipe.title ?? '').localeCompare(b.recipe.title ?? ''),
   )
-  await Promise.all(
-    sorted.map(({ pr }, i) => projectsStore.moveProjectRecipe(pr.id, { sequence: i })),
+  // One transaction, not N independent writes - a partial failure here would
+  // leave the chapter half-sorted.
+  const ok = await persist('sort this chapter', () =>
+    projectsStore.resequenceProjectRecipes(sorted.map(({ pr }) => pr.id)),
   )
-  announce('Recipes sorted A–Z.')
+  if (ok) announce('Recipes sorted A–Z.')
 }
 
 // ---------------------------------------------------------------------------
 // Task 5.2 — Bulk operations (in-cookbook)
 // ---------------------------------------------------------------------------
 
+// Throws on failure; the two callers wrap it, since one of them (the
+// new-chapter-from-selection flow) has more to report than just this step.
 async function bulkMoveToChapter(chapterId) {
   const ids = Array.from(selectedIds.value)
-  const siblings = projectsStore.projectRecipesForChapter(chapterId)
-  let seq = nextSequence(siblings)
-  await Promise.all(
-    ids.map((prId) =>
-      projectsStore.moveProjectRecipe(prId, { chapterId, sequence: seq++ }),
-    ),
-  )
+  await projectsStore.moveProjectRecipesToChapter(ids, chapterId)
   clearSelection()
 }
 
 const bulkMoveTarget = ref('')
 async function doBulkMove() {
   if (!bulkMoveTarget.value) return
-  await bulkMoveToChapter(Number(bulkMoveTarget.value))
-  announce(`Moved ${selectedIds.value.size} recipes.`)
+  // Both read before the move, which clears the selection and the select.
+  const count = selectedIds.value.size
+  const target = Number(bulkMoveTarget.value)
   bulkMoveTarget.value = ''
+  const ok = await persist('move the selected recipes', () => bulkMoveToChapter(target))
+  if (ok) announce(`Moved ${count} recipe${count !== 1 ? 's' : ''}.`)
 }
 
 async function confirmBulkRemove() {
   if (modalBusy.value) return
+  const ids = Array.from(selectedIds.value)
   modalBusy.value = true
   try {
-    const ids = Array.from(selectedIds.value)
-    await Promise.all(ids.map((prId) => projectsStore.removeProjectRecipe(prId)))
-    clearSelection()
-    announce(`${ids.length} recipe${ids.length !== 1 ? 's' : ''} removed from cookbook.`)
+    const ok = await persist('remove the selected recipes', () =>
+      projectsStore.removeProjectRecipes(ids),
+    )
+    if (ok) {
+      clearSelection()
+      announce(`${ids.length} recipe${ids.length !== 1 ? 's' : ''} removed from cookbook.`)
+    }
     modal.type = null
   } finally {
     modalBusy.value = false
@@ -380,11 +427,43 @@ async function quickAddRecipe(recipe) {
   if (addingRecipeId.value) return
   addingRecipeId.value = recipe.id
   try {
-    await projectsStore.addRecipeToProject(projectIdNum.value, recipe.id)
-    announce(`"${recipe.title}" added to cookbook.`)
+    await persist(`add "${recipe.title}"`, async () => {
+      const prId = await projectsStore.addRecipeToProject(projectIdNum.value, recipe.id)
+      // Same idempotent-add as onRecipeDrop: a recipe already in the cookbook
+      // reconciles to its existing placement (which may not be Miscellaneous,
+      // the implicit target here) rather than adding a second row.
+      const misc = projectsStore.chaptersForProject(projectIdNum.value).find((c) => c.isDefault)
+      const placed = projectsStore.projectRecipes.find((pr) => pr.id === prId)
+      announce(
+        placed?.chapterId === misc?.id
+          ? `"${recipe.title}" added to cookbook.`
+          : `"${recipe.title}" is already in this cookbook.`,
+      )
+    })
   } finally {
     addingRecipeId.value = null
   }
+}
+
+// Both library bulk-adds go through one transactional store call. db.js reports
+// recipes already in the cookbook rather than adding them twice, so the count
+// announced is what was actually written, not what was selected.
+async function addLibrarySelection(recipeIds, chapterId, destination) {
+  const ok = await persist(`add the selected recipes to ${destination}`, async () => {
+    const { added, duplicates } = await projectsStore.addRecipesToProject(
+      projectIdNum.value,
+      recipeIds,
+      chapterId,
+    )
+    clearLibSelection()
+    const skipped = duplicates.length
+      ? ` ${duplicates.length} already in this cookbook.`
+      : ''
+    announce(
+      `${added.length} recipe${added.length !== 1 ? 's' : ''} added to ${destination}.${skipped}`,
+    )
+  })
+  return ok
 }
 
 // Library bulk — "Add to chapter…" select
@@ -392,23 +471,15 @@ const libBulkChapterTarget = ref('')
 async function libBulkAddToChapter() {
   if (!libBulkChapterTarget.value || !libSelectedIds.value.size) return
   const chapterId = Number(libBulkChapterTarget.value)
+  const chapterName = orderedChapters.value.find((c) => c.id === chapterId)?.name ?? 'chapter'
   const recipeIds = Array.from(libSelectedIds.value)
-  await Promise.all(
-    recipeIds.map((rid) => projectsStore.addRecipeToProject(projectIdNum.value, rid, chapterId)),
-  )
-  clearLibSelection()
   libBulkChapterTarget.value = ''
-  announce(`${recipeIds.length} recipe${recipeIds.length !== 1 ? 's' : ''} added to chapter.`)
+  await addLibrarySelection(recipeIds, chapterId, chapterName)
 }
 
 async function libBulkAddToMisc() {
   if (!libSelectedIds.value.size) return
-  const recipeIds = Array.from(libSelectedIds.value)
-  await Promise.all(
-    recipeIds.map((rid) => projectsStore.addRecipeToProject(projectIdNum.value, rid)),
-  )
-  clearLibSelection()
-  announce(`${recipeIds.length} recipe${recipeIds.length !== 1 ? 's' : ''} added to Miscellaneous.`)
+  await addLibrarySelection(Array.from(libSelectedIds.value), null, 'Miscellaneous')
 }
 
 // ---------------------------------------------------------------------------
@@ -448,12 +519,22 @@ async function onChapterDrop(e, targetChapterId) {
   if (!destChapter || destChapter.isDefault) return
   const srcChapter = orderedChapters.value.find((c) => c.id === srcId)
   if (!srcChapter) return
-  // Swap sequences
-  await Promise.all([
-    projectsStore.editChapter(srcId, { sequence: destChapter.sequence }),
-    projectsStore.editChapter(targetChapterId, { sequence: srcChapter.sequence }),
-  ])
-  announce(`Chapter moved.`)
+  // One transaction, not two independent writes - a half-applied swap would
+  // leave both chapters sharing a sequence.
+  const ok = await persist('move this chapter', () =>
+    projectsStore.swapChapterSequences(srcId, targetChapterId),
+  )
+  if (ok) announce(`Chapter moved.`)
+}
+
+// The move up/down buttons; the store call rejects for a chapter another tab
+// deleted, so it can't be bound straight to `@click`.
+async function moveChapter(chapter, direction) {
+  let moved = false
+  const ok = await persist(`move "${chapter.name}"`, async () => {
+    moved = await projectsStore.reorderChapter(chapter.id, direction)
+  })
+  if (ok && moved) announce(`Chapter moved.`)
 }
 
 function onChapterDragEnd() {
@@ -515,8 +596,18 @@ async function onRecipeDrop(e, targetChapterId) {
     dragLibRecipeId.value = null
     const recipe = recipesStore.recipes.find((r) => r.id === rid)
     if (!recipe) return
-    await projectsStore.addRecipeToProject(projectIdNum.value, rid, targetChapterId)
-    announce(`"${recipe.title}" added to chapter.`)
+    await persist(`add "${recipe.title}"`, async () => {
+      const prId = await projectsStore.addRecipeToProject(projectIdNum.value, rid, targetChapterId)
+      // The add is idempotent: a recipe already in the cookbook reconciles to
+      // its existing placement rather than moving here, so the confirmation has
+      // to reflect where it actually is.
+      const placed = projectsStore.projectRecipes.find((pr) => pr.id === prId)
+      announce(
+        placed?.chapterId === targetChapterId
+          ? `"${recipe.title}" added to chapter.`
+          : `"${recipe.title}" is already in this cookbook.`,
+      )
+    })
     return
   }
 
@@ -543,8 +634,10 @@ async function onRecipeDrop(e, targetChapterId) {
       } else {
         newSeq = nextSequence(siblings)
       }
-      await projectsStore.moveProjectRecipe(prId, { sequence: newSeq })
-      announce('Recipe reordered.')
+      const ok = await persist('reorder this recipe', () =>
+        projectsStore.moveProjectRecipe(prId, { sequence: newSeq }),
+      )
+      if (ok) announce('Recipe reordered.')
     } else {
       // Move to different chapter
       await moveRecipeToChapter(pr, targetChapterId)
@@ -637,6 +730,21 @@ onUnmounted(() => {
       </div>
     </header>
 
+    <!-- Shared surface for every failed write in this view; see `persist`.
+         Sits outside the scrolling region so it is visible wherever the
+         failure was triggered from. -->
+    <div v-if="errorMsg" class="pv-error" role="alert">
+      <span class="pv-error__text">{{ errorMsg }}</span>
+      <button
+        type="button"
+        class="pv-error__dismiss"
+        aria-label="Dismiss error"
+        @click="errorMsg = ''"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
     <!-- Content area: main + sidebar -->
     <div class="pv-body">
 
@@ -701,7 +809,7 @@ onUnmounted(() => {
                   type="button"
                   class="chapter-action-btn"
                   :aria-label="`Move chapter '${chapter.name}' up`"
-                  @click="projectsStore.reorderChapter(chapter.id, -1)"
+                  @click="moveChapter(chapter, -1)"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
                 </button>
@@ -709,7 +817,7 @@ onUnmounted(() => {
                   type="button"
                   class="chapter-action-btn"
                   :aria-label="`Move chapter '${chapter.name}' down`"
-                  @click="projectsStore.reorderChapter(chapter.id, 1)"
+                  @click="moveChapter(chapter, 1)"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
@@ -1277,6 +1385,44 @@ onUnmounted(() => {
   background: oklch(93% 0.008 75);
   color: oklch(25% 0.015 75);
 }
+
+/* ================================================================
+   Shared error banner
+   ================================================================ */
+
+.pv-error {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 32px;
+  background: oklch(95% 0.045 25);
+  border-bottom: 1px solid oklch(82% 0.07 25);
+  color: oklch(38% 0.12 25);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pv-error__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.pv-error__dismiss {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.pv-error__dismiss:hover { background: oklch(90% 0.06 25); }
 
 /* ================================================================
    Task 3.1 — Chapter Card

@@ -35,8 +35,31 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `sequence`) that `src/js/db.js` already derived for the same write — read it back from the
   `db.js` call's return value instead. This is an explicit invariant
   (`openspec/changes/archive/2026-07-05-initial-project-tech-setup/design.md` Decision 3: store
-  actions must keep IndexedDB and in-memory state from drifting apart); `db.js`'s exports return
-  whatever the store needs for this (see `addRecipeToProject`'s `{ id, sequence, chapterId }`).
+  actions must keep IndexedDB and in-memory state from drifting apart); every `db.js` write
+  returns whatever the store needs for this (`addRecipeToProject` → `{ id, sequence, chapterId }`,
+  `addChapter` → `{ id, sequence }`, `deleteChapter` → `{ reassigned }`, `createProject` → the
+  created rows, the `swap*Sequences` pair → both new sequences). Two corollaries:
+  - An in-memory cascade must mirror every DB-level cascade. `db.deleteRecipe` deletes the
+    recipe's `project_recipes` rows, so `recipesStore.removeRecipe` calls
+    `projectsStore.pruneRecipeAssociations` — otherwise the projects store keeps rows pointing at
+    a deleted recipe and they get counted when deriving the next sequence.
+  - Writes that are only correct together live in `db.js` inside one `db.transaction`, never as a
+    `Promise.all` of independent store writes — a rejected fan-out commits some rows and not
+    others, with no rollback. This covers the two-row sequence swaps and the N-row batches
+    (`resequenceProjectRecipes`, `moveProjectRecipesToChapter`, `addRecipesToProject`,
+    `removeProjectRecipes`), each of which returns the persisted values for the store to mirror.
+- `db.js` throws typed errors instead of failing silently: `RecordNotFoundError` (Dexie's
+  `Table.update()` resolves with `0` rather than throwing when the key is gone, so every update
+  goes through the `updateOrThrow` helper) and `DuplicateRecipeError` (a recipe appears at most
+  once per cookbook; the projects store treats it as an idempotent no-op). UI code that awaits a
+  store write needs a `catch`, or the rejection only reaches the console while the dialog that
+  raised it sits open in its busy state. `RecipeEditor.save()` is the single-write shape;
+  `ProjectView`'s `persist(description, run)` helper is the shape for a view with many writes —
+  every write there goes through it, reporting into one shared banner and closing whatever modal
+  was open, since a stale-row failure is never retryable from the dialog that raised it.
+- `peakImportFile` from `dexie-export-import` resolves for any parseable JSON, so it is *not* on
+  its own a validity check. `backup.js`'s `inspectBackupFile` verifies the `formatName`/`tables`
+  header and is what both the restore-confirmation UI and `restoreDatabase` call.
 - The AI recipe-import prompt (`src/js/recipeImportPrompt.js`) must ask the LLM for markdown
   emphasis (`**bold**` / `*italic*`), matching what `src/js/richtext.js`'s `renderChefNotes`
   renders. Don't change it back to HTML tags (`<strong>`/`<em>`) — `src/js/recipeImport.js`

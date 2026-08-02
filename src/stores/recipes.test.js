@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import 'fake-indexeddb/auto'
 import { createPinia, setActivePinia } from 'pinia'
 import { useRecipesStore } from './recipes.js'
-import { getAllRecipes, getRecipe } from '../js/db.js'
+import { useProjectsStore } from './projects.js'
+import { getAllRecipes, getProjectRecipes, getRecipe } from '../js/db.js'
 
 beforeEach(() => {
   setActivePinia(createPinia())
@@ -60,5 +61,25 @@ describe('recipes store', () => {
 
     expect(store.recipes.find((r) => r.id === id)).toBeUndefined()
     expect(await getRecipe(id)).toBeUndefined()
+  })
+
+  it('removeRecipe cascades to the projects store, mirroring the DB cascade', async () => {
+    // db.deleteRecipe deletes the recipe's project_recipes rows in the same
+    // transaction. Without the matching in-memory prune, projectsStore kept
+    // associations pointing at a deleted recipe until the next load() - and
+    // those ghost rows were counted when deriving new sequences.
+    const recipesStore = useRecipesStore()
+    const projectsStore = useProjectsStore()
+    await projectsStore.load()
+
+    const projectId = await projectsStore.createProject({ title: 'Cascade' })
+    const id = await recipesStore.createRecipe(makeRecipe({ title: 'Doomed' }))
+    await projectsStore.addRecipeToProject(projectId, id)
+    expect(projectsStore.projectRecipesForProject(projectId)).toHaveLength(1)
+
+    await recipesStore.removeRecipe(id)
+
+    expect(projectsStore.projectRecipesForProject(projectId)).toHaveLength(0)
+    expect(await getProjectRecipes(projectId)).toHaveLength(0)
   })
 })

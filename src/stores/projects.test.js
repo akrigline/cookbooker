@@ -2,7 +2,12 @@ import { describe, expect, it, beforeEach } from 'vitest'
 import 'fake-indexeddb/auto'
 import { createPinia, setActivePinia } from 'pinia'
 import { useProjectsStore } from './projects.js'
-import { db as rawDb, getChaptersForProject, getProjectRecipes } from '../js/db.js'
+import {
+  db as rawDb,
+  getChaptersForProject,
+  getProjectRecipes,
+  RecordNotFoundError,
+} from '../js/db.js'
 
 beforeEach(() => {
   setActivePinia(createPinia())
@@ -73,6 +78,72 @@ describe('projects store / db sequence sync', () => {
 
     expect(inMemory).toEqual(fromDb)
     expect(inMemory.map((pr) => pr.sequence).sort()).toEqual([0, 1, 2])
+  })
+
+  it('matches the DB ordering when a deleted chapter\'s recipes were not added in id order', async () => {
+    // db.js reassigns orphaned rows in primary-key order. The store used to
+    // recompute the same assignment while walking its own array in insertion
+    // order, so seeding rows out of id order made the two disagree.
+    const store = useProjectsStore()
+    await store.load()
+    const projectId = await store.createProject({ title: 'Out of order' })
+    const chapterId = await store.createChapter(projectId, 'Breakfast')
+
+    const older = await rawDb.project_recipes.add({
+      projectId,
+      recipeId: 300,
+      chapterId,
+      sequence: 0,
+    })
+    const newer = await rawDb.project_recipes.add({
+      projectId,
+      recipeId: 301,
+      chapterId,
+      sequence: 1,
+    })
+    // Put the higher-id row first in the store's array, opposite to key order.
+    await store.load()
+    store.projectRecipes.sort((a, b) => b.id - a.id)
+
+    await store.removeChapter(chapterId)
+
+    const inMemory = store.projectRecipes
+      .filter((pr) => pr.projectId === projectId)
+      .map((pr) => ({ id: pr.id, chapterId: pr.chapterId, sequence: pr.sequence }))
+      .sort((a, b) => a.id - b.id)
+
+    setActivePinia(createPinia())
+    const fresh = useProjectsStore()
+    await fresh.load()
+    const fromDb = fresh.projectRecipes
+      .filter((pr) => pr.projectId === projectId)
+      .map((pr) => ({ id: pr.id, chapterId: pr.chapterId, sequence: pr.sequence }))
+      .sort((a, b) => a.id - b.id)
+
+    expect(inMemory).toEqual(fromDb)
+    expect(inMemory.find((pr) => pr.id === older).sequence).toBe(0)
+    expect(inMemory.find((pr) => pr.id === newer).sequence).toBe(1)
+  })
+
+  it('keeps createChapter sequences equal to what the DB assigned', async () => {
+    const store = useProjectsStore()
+    await store.load()
+    const projectId = await store.createProject({ title: 'Chapter sequences' })
+
+    const first = await store.createChapter(projectId, 'One')
+    const second = await store.createChapter(projectId, 'Two')
+
+    const inMemory = store.chaptersForProject(projectId).map((c) => ({
+      id: c.id,
+      sequence: c.sequence,
+    }))
+    const fromDb = (await getChaptersForProject(projectId))
+      .map((c) => ({ id: c.id, sequence: c.sequence }))
+      .sort((a, b) => a.sequence - b.sequence)
+
+    expect(inMemory).toEqual(fromDb)
+    expect(inMemory.find((c) => c.id === first).sequence).toBe(1)
+    expect(inMemory.find((c) => c.id === second).sequence).toBe(2)
   })
 })
 
@@ -198,6 +269,36 @@ describe('projects store', () => {
     expect(dbRows.find((pr) => pr.id === prBId).sequence).toBe(0)
   })
 
+  it('adding a recipe already in the cookbook reconciles instead of duplicating', async () => {
+    const store = useProjectsStore()
+    await store.load()
+    const id = await store.createProject({ title: 'Duplicate Guard' })
+
+    const firstPrId = await store.addRecipeToProject(id, 900)
+    // Simulate a stale UI list offering the recipe a second time.
+    const secondPrId = await store.addRecipeToProject(id, 900)
+
+    expect(secondPrId).toBe(firstPrId)
+    expect(store.projectRecipesForProject(id)).toHaveLength(1)
+    expect(await getProjectRecipes(id)).toHaveLength(1)
+  })
+
+  it('editChapter surfaces a RecordNotFoundError rather than reporting a phantom save', async () => {
+    const store = useProjectsStore()
+    await store.load()
+
+    await expect(store.editChapter(999999, { name: 'ghost' })).rejects.toBeInstanceOf(
+      RecordNotFoundError,
+    )
+  })
+
+  it('removeChapter surfaces a RecordNotFoundError for a chapter another tab deleted', async () => {
+    const store = useProjectsStore()
+    await store.load()
+
+    await expect(store.removeChapter(999999)).rejects.toBeInstanceOf(RecordNotFoundError)
+  })
+
   it('reorderProjectRecipe is a no-op at the chapter boundary', async () => {
     const store = useProjectsStore()
     const id = await store.createProject({ title: 'Recipe Boundary Test' })
@@ -214,5 +315,107 @@ describe('projects store', () => {
     await store.reorderProjectRecipe(prId, -1)
 
     expect(store.projectRecipes.find((pr) => pr.id === prId).sequence).toBe(0)
+  })
+})
+
+// The batch actions replace `Promise.all` fan-outs in ProjectView. Each is one
+// db.js transaction, so the invariant to hold is the same as everywhere else:
+// the store applies what db.js persisted, and a rejected batch mutates neither.
+describe('projects store batch actions', () => {
+  /** In-memory placements for a project, in a shape comparable to a fresh load. */
+  function snapshot(store, projectId) {
+    return store
+      .projectRecipesForProject(projectId)
+      .map((pr) => ({ id: pr.id, chapterId: pr.chapterId, sequence: pr.sequence }))
+      .sort((a, b) => a.id - b.id)
+  }
+
+  async function fromDb(projectId) {
+    setActivePinia(createPinia())
+    const fresh = useProjectsStore()
+    await fresh.load()
+    return snapshot(fresh, projectId)
+  }
+
+  it('resequenceProjectRecipes applies the persisted order in memory and in the DB', async () => {
+    const store = useProjectsStore()
+    await store.load()
+    const projectId = await store.createProject({ title: 'Resequence' })
+    const a = await store.addRecipeToProject(projectId, 1)
+    const b = await store.addRecipeToProject(projectId, 2)
+    const c = await store.addRecipeToProject(projectId, 3)
+
+    await store.resequenceProjectRecipes([c, b, a])
+
+    const seq = (id) => store.projectRecipes.find((pr) => pr.id === id).sequence
+    expect([seq(c), seq(b), seq(a)]).toEqual([0, 1, 2])
+    expect(snapshot(store, projectId)).toEqual(await fromDb(projectId))
+  })
+
+  it('moveProjectRecipesToChapter applies the sequences db.js assigned', async () => {
+    const store = useProjectsStore()
+    await store.load()
+    const projectId = await store.createProject({ title: 'Batch Move' })
+    const miscId = store.chaptersForProject(projectId).find((c) => c.isDefault).id
+    await store.addRecipeToProject(projectId, 1, miscId)
+    const chapterId = await store.createChapter(projectId, 'Breakfast')
+    const a = await store.addRecipeToProject(projectId, 2, chapterId)
+    const b = await store.addRecipeToProject(projectId, 3, chapterId)
+
+    await store.moveProjectRecipesToChapter([a, b], miscId)
+
+    expect(store.projectRecipesForChapter(miscId).map((pr) => pr.sequence)).toEqual([0, 1, 2])
+    expect(store.projectRecipesForChapter(chapterId)).toHaveLength(0)
+    expect(snapshot(store, projectId)).toEqual(await fromDb(projectId))
+  })
+
+  it('moveProjectRecipesToChapter leaves the store untouched when the batch rejects', async () => {
+    const store = useProjectsStore()
+    await store.load()
+    const projectId = await store.createProject({ title: 'Batch Move Fail' })
+    const miscId = store.chaptersForProject(projectId).find((c) => c.isDefault).id
+    const chapterId = await store.createChapter(projectId, 'Breakfast')
+    const prId = await store.addRecipeToProject(projectId, 1, chapterId)
+    const before = snapshot(store, projectId)
+
+    await expect(
+      store.moveProjectRecipesToChapter([prId, 999999], miscId),
+    ).rejects.toBeInstanceOf(RecordNotFoundError)
+
+    expect(snapshot(store, projectId)).toEqual(before)
+    expect(snapshot(store, projectId)).toEqual(await fromDb(projectId))
+  })
+
+  it('addRecipesToProject pushes the added rows and reconciles the duplicates', async () => {
+    const store = useProjectsStore()
+    await store.load()
+    const projectId = await store.createProject({ title: 'Batch Add' })
+    const chapterId = await store.createChapter(projectId, 'Breakfast')
+    await store.addRecipeToProject(projectId, 1, chapterId)
+
+    const { added, duplicates } = await store.addRecipesToProject(
+      projectId,
+      [1, 2, 3],
+      chapterId,
+    )
+
+    expect(added).toHaveLength(2)
+    expect(duplicates.map((d) => d.recipeId)).toEqual([1])
+    expect(store.projectRecipesForChapter(chapterId).map((pr) => pr.recipeId)).toEqual([1, 2, 3])
+    expect(snapshot(store, projectId)).toEqual(await fromDb(projectId))
+  })
+
+  it('removeProjectRecipes drops exactly the given placements', async () => {
+    const store = useProjectsStore()
+    await store.load()
+    const projectId = await store.createProject({ title: 'Batch Remove' })
+    const a = await store.addRecipeToProject(projectId, 1)
+    const b = await store.addRecipeToProject(projectId, 2)
+    const c = await store.addRecipeToProject(projectId, 3)
+
+    await store.removeProjectRecipes([a, c])
+
+    expect(store.projectRecipesForProject(projectId).map((pr) => pr.id)).toEqual([b])
+    expect(snapshot(store, projectId)).toEqual(await fromDb(projectId))
   })
 })

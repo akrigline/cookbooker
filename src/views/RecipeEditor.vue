@@ -34,6 +34,7 @@ const notesTextarea = ref(null)
 const error = ref(null)
 const showDeleteModal = ref(false)
 const deleting = ref(false)
+const saving = ref(false)
 
 onMounted(async () => {
   if (!recipesStore.loaded) await recipesStore.load()
@@ -95,6 +96,7 @@ function wrapNotesSelection(marker) {
 }
 
 async function save() {
+  if (saving.value) return
   error.value = null
   if (!title.value.trim()) {
     error.value = 'Title is required.'
@@ -105,13 +107,23 @@ async function save() {
     return
   }
 
-  let id = props.recipeId ? Number(props.recipeId) : null
-  if (isEditing.value) {
-    await recipesStore.editRecipe(id, previewRecipe.value)
-  } else {
-    id = await recipesStore.createRecipe(previewRecipe.value)
+  // Without this catch a rejected write (a structured-clone failure on a
+  // reactive object, a row deleted in another tab) escapes as an unhandled
+  // rejection: no error, no navigation, an apparently dead form.
+  saving.value = true
+  try {
+    let id = props.recipeId ? Number(props.recipeId) : null
+    if (isEditing.value) {
+      await recipesStore.editRecipe(id, previewRecipe.value)
+    } else {
+      id = await recipesStore.createRecipe(previewRecipe.value)
+    }
+    router.push('/library')
+  } catch (err) {
+    error.value = `Could not save this recipe: ${err.message}`
+  } finally {
+    saving.value = false
   }
-  router.push('/library')
 }
 
 async function confirmDelete() {
@@ -120,6 +132,8 @@ async function confirmDelete() {
   try {
     await recipesStore.removeRecipe(Number(props.recipeId))
     router.push('/library')
+  } catch (err) {
+    error.value = `Could not delete this recipe: ${err.message}`
   } finally {
     deleting.value = false
     showDeleteModal.value = false
@@ -140,7 +154,7 @@ async function handleExport() {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `${slugify(form.title)}.html`
+  a.download = `${slugify(title.value)}.html`
   a.click()
   URL.revokeObjectURL(url)
 }
@@ -254,7 +268,7 @@ function handleCancel() {
           Print recipe
         </button>
         <button type="button" @click="handleCancel" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;">Cancel</button>
-        <button type="button" @click="save" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:oklch(20% 0.015 75); color:oklch(98% 0.004 75); cursor:pointer;">Save</button>
+        <button type="button" :disabled="saving" @click="save" :style="saving ? 'opacity:0.55; cursor:not-allowed;' : 'cursor:pointer;'" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:oklch(20% 0.015 75); color:oklch(98% 0.004 75);">{{ saving ? 'Saving…' : 'Save' }}</button>
       </div>
     </div>
 
