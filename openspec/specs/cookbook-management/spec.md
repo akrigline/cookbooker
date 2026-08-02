@@ -41,13 +41,18 @@ A cookbook project SHALL support a boolean setting to toggle page numbers on or 
 - **THEN** the compiled print layout suppresses page numbers on all pages and completely omits the Table of Contents page.
 
 ### Requirement: Recipe to Project Curation
-The user SHALL be able to associate recipes from the Global Recipe Library with a cookbook project, and remove associated recipes from a cookbook project.
+The user SHALL be able to associate recipes from the Global Recipe Library with a cookbook project, and remove associated recipes from a cookbook project. Recipes added from the library can be placed directly into a specific chapter or into the default Miscellaneous chapter.
 
-#### Scenario: Associating a recipe with a project
-- **WHEN** the user adds "Spaghetti Carbonara" from the Global Recipe Library to "My Summer Recipes"
+#### Scenario: Associating a recipe with a project in a specific chapter
+- **WHEN** the user adds "Spaghetti Carbonara" from the Global Recipe Library to "My Summer Recipes" and selects the "Pasta" chapter
+- **THEN** the system links "Spaghetti Carbonara" to "My Summer Recipes" and places it directly in the "Pasta" chapter.
+
+#### Scenario: Associating a recipe with a project (Miscellaneous)
+- **WHEN** the user adds "Spaghetti Carbonara" from the Global Recipe Library to "My Summer Recipes" without selecting a chapter
 - **THEN** the system links "Spaghetti Carbonara" to "My Summer Recipes" and automatically places it in the "Miscellaneous" chapter.
 
 #### Scenario: Removing a recipe from a project
 - **WHEN** the user removes "Spaghetti Carbonara" from "My Summer Recipes"
 - **THEN** the recipe is unlinked from the project and removed from its chapter, but remains in the Global Recipe Library.
+
 
