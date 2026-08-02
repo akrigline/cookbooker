@@ -142,10 +142,6 @@ async function addRecipeToProject(recipe) {
           <span>Subtitle</span>
           <input :value="project.subtitle" type="text" @change="updateField('subtitle', $event.target.value)" />
         </label>
-        <label class="field">
-          <span>Author</span>
-          <input :value="project.author" type="text" @change="updateField('author', $event.target.value)" />
-        </label>
         <label class="field checkbox">
           <input
             type="checkbox"

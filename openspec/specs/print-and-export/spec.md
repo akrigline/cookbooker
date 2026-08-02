@@ -3,11 +3,9 @@
 ## Purpose
 
 Compiles a project's pages (Title Page, Table of Contents, Chapter Dividers, and Recipe Sheets) into a print-ready HTML document optimized for the browser's native print-to-PDF pipeline, and provides local JSON/Base64 backup export and restore so a user's full library survives a browser data wipe.
-
 ## Requirements
-
 ### Requirement: Document Sequence Compilation
-When compiling a full cookbook for printing, the system SHALL generate pages in the following sequential order: Title Page (Title, Subtitle, Author, Cover Layout, Accent Color), Table of Contents (only if page numbers are enabled), and Chapter sequences. Each Chapter sequence MUST begin with a Chapter Divider Page followed by its associated recipes in their designated order.
+When compiling a full cookbook for printing, the system SHALL generate pages in the following sequential order: Title Page (Title, Subtitle, Cover Layout, Accent Color), Table of Contents (only if page numbers are enabled), and Chapter sequences. Each Chapter sequence MUST begin with a Chapter Divider Page followed by its associated recipes in their designated order.
 
 #### Scenario: Full Book Order with Page Numbers
 - **WHEN** the user triggers a full export with page numbers toggled ON
@@ -51,3 +49,4 @@ The system SHALL allow the user to restore their cookbooks and recipes by upload
 #### Scenario: Restoring from Backup
 - **WHEN** the user uploads a valid backup file
 - **THEN** the system updates the local library with the contents of the backup, recovering all associated recipes and images
+

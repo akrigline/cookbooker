@@ -16,7 +16,6 @@ defineProps({
     <div class="cover-page__frame">
       <h2 class="cover-page__title">{{ project.title }}</h2>
       <p v-if="project.subtitle" class="cover-page__subtitle">{{ project.subtitle }}</p>
-      <p v-if="project.author" class="cover-page__author">{{ project.author }}</p>
     </div>
   </div>
 </template>
@@ -49,11 +48,6 @@ defineProps({
   margin: 0;
   color: var(--text-secondary, #5f5b53);
   font-style: italic;
-}
-
-.cover-page__author {
-  font-size: 1.1rem;
-  margin-top: var(--space-lg);
 }
 
 .cover-page--classic .cover-page__frame {

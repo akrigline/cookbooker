@@ -40,7 +40,6 @@ export const useProjectsStore = defineStore('projects', {
         id: projectId,
         title: '',
         subtitle: '',
-        author: '',
         accentColor: '#d97742',
         coverTemplate: 'classic',
         pageNumbersEnabled: true,

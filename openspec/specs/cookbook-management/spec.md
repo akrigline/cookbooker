@@ -3,9 +3,7 @@
 ## Purpose
 
 Creates and manages multiple independent cookbook projects, including project metadata (title, subtitle, author), cover layout and accent color styling, a global page-number toggle, and curating which recipes from the Global Recipe Library belong to each project.
-
 ## Requirements
-
 ### Requirement: Cookbook Project CRUD
 The system SHALL support creating, listing, updating, and deleting multiple independent cookbook projects. Deleting a cookbook project MUST NOT delete recipes from the Global Recipe Library.
 
@@ -18,10 +16,10 @@ The system SHALL support creating, listing, updating, and deleting multiple inde
 - **THEN** the system deletes the project, its chapters, and project associations from the database, but leaves all associated recipes intact within the Global Recipe Library.
 
 ### Requirement: Cookbook Project Metadata Configuration
-Each cookbook project SHALL store configuration settings containing a Title, an optional Subtitle, and an Author Name.
+Each cookbook project SHALL store configuration settings containing a Title and an optional Subtitle.
 
 #### Scenario: Saving project metadata updates
-- **WHEN** the user updates the title to "Holiday Baking 2026", subtitle to "Sweet Treats", and author to "Chef Andrew"
+- **WHEN** the user updates the title to "Holiday Baking 2026" and subtitle to "Sweet Treats"
 - **THEN** the system persists these settings for the active cookbook project.
 
 ### Requirement: Cookbook Accent Color and Layout Cover Styling
@@ -52,3 +50,4 @@ The user SHALL be able to associate recipes from the Global Recipe Library with 
 #### Scenario: Removing a recipe from a project
 - **WHEN** the user removes "Spaghetti Carbonara" from "My Summer Recipes"
 - **THEN** the recipe is unlinked from the project and removed from its chapter, but remains in the Global Recipe Library.
+

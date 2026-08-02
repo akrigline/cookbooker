@@ -16,7 +16,6 @@ db.on('populate', async () => {
   const projectId = await db.projects.add({
     title: 'My First Cookbook',
     subtitle: '',
-    author: '',
     accentColor: '#d97742',
     coverTemplate: 'classic',
     pageNumbersEnabled: true,
@@ -65,7 +64,6 @@ export const createProject = (project) =>
     const projectId = await db.projects.add({
       title: '',
       subtitle: '',
-      author: '',
       accentColor: '#d97742',
       coverTemplate: 'classic',
       pageNumbersEnabled: true,
