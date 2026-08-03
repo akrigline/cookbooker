@@ -16,11 +16,20 @@ When compiling a full cookbook for printing, the system SHALL generate pages in 
 - **THEN** the print layout compiles: Title Page, Chapter Divider, and Recipe Pages, omitting the Table of Contents
 
 ### Requirement: Single-Page Recipe Layout Constraint
-Every recipe page SHALL be styled to render as a single printed page. Page breaks MUST be enforced to prevent content from spilling across pages.
+Every recipe page SHALL be styled to render as a single printed page. Page breaks MUST be enforced
+to prevent content from spilling across pages. Each recipe page SHALL include an inline QR code
+widget in the bottom-right corner of the recipe article, encoding the recipe's ingredient list for
+easy transfer to a shopping list application (see `recipe-qr-sharing` for the widget's truncation
+and fallback behavior).
 
 #### Scenario: Print Page Break Isolation
 - **WHEN** the cookbook is printed or previewed
 - **THEN** the layout separates each recipe onto its own distinct printed sheet
+
+#### Scenario: Inline QR widget present on recipe page
+- **WHEN** a recipe page is rendered for print preview or printing
+- **THEN** a QR code widget is visible in the bottom-right corner of the recipe article
+- **AND** the widget encodes the recipe title and ingredient list
 
 ### Requirement: Single Recipe Export
 The system SHALL support exporting a single recipe. Individual recipe exports MUST match the margins, template, and accent color of their parent project, and SHALL NOT display page numbers.

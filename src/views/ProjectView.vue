@@ -744,7 +744,7 @@ const bulkActionHandlers = {
 
   <!-- Not-found state -->
   <div v-if="!project" style="padding: 60px 32px; max-width: 1280px; margin: 0 auto;">
-    <p style="color: oklch(45% 0.01 75);">Project not found.</p>
+    <p style="color: var(--gray-46);">Project not found.</p>
   </div>
 
   <!-- Task 1.1 + 1.2: Two-column stack layout with sticky header -->
@@ -956,8 +956,8 @@ const bulkActionHandlers = {
    ================================================================ */
 
 .pv-header {
-  background: oklch(99% 0.003 75);
-  border-bottom: 1px solid oklch(88% 0.008 75);
+  background: var(--gray-99);
+  border-bottom: 1px solid var(--gray-88);
   flex-shrink: 0;
   z-index: 50;
 }
@@ -983,7 +983,7 @@ const bulkActionHandlers = {
   gap: 4px;
   font-size: 13px;
   font-weight: 600;
-  color: oklch(50% 0.01 75);
+  color: var(--gray-52);
   background: none;
   border: none;
   cursor: pointer;
@@ -992,7 +992,7 @@ const bulkActionHandlers = {
   transition: color 0.12s;
 }
 
-.pv-back-btn:hover { color: oklch(25% 0.015 75); }
+.pv-back-btn:hover { color: var(--gray-20); }
 
 .pv-header-title-row {
   display: flex;
@@ -1006,13 +1006,13 @@ const bulkActionHandlers = {
   font-weight: 600;
   margin: 0;
   letter-spacing: -0.01em;
-  color: oklch(18% 0.01 75);
+  color: var(--gray-20);
 }
 
 .pv-header-subtitle {
   margin: 0;
   font-size: 13px;
-  color: oklch(50% 0.01 75);
+  color: var(--gray-52);
 }
 
 .pv-header-actions {
@@ -1025,8 +1025,8 @@ const bulkActionHandlers = {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: oklch(20% 0.015 75);
-  color: oklch(98% 0.004 75);
+  background: var(--gray-20);
+  color: var(--gray-99);
   text-decoration: none;
   padding: 10px 18px;
   border-radius: 8px;
@@ -1035,7 +1035,7 @@ const bulkActionHandlers = {
   transition: background 0.15s;
 }
 
-.pv-btn-primary:hover { background: oklch(28% 0.02 75); }
+.pv-btn-primary:hover { background: var(--gray-30); }
 
 .pv-icon-btn {
   display: inline-flex;
@@ -1044,16 +1044,16 @@ const bulkActionHandlers = {
   width: 30px;
   height: 30px;
   border-radius: 7px;
-  border: 1px solid oklch(86% 0.008 75);
-  background: oklch(97% 0.004 75);
-  color: oklch(45% 0.01 75);
+  border: 1px solid var(--gray-84);
+  background: var(--gray-96);
+  color: var(--gray-46);
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
 }
 
 .pv-icon-btn:hover {
-  background: oklch(93% 0.008 75);
-  color: oklch(25% 0.015 75);
+  background: var(--gray-93);
+  color: var(--gray-20);
 }
 
 /* ================================================================
@@ -1113,7 +1113,7 @@ const bulkActionHandlers = {
 .empty-state {
   padding: 48px 0;
   text-align: center;
-  color: oklch(55% 0.01 75);
+  color: var(--gray-52);
   font-size: 15px;
 }
 

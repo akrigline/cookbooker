@@ -12,17 +12,46 @@ extracts and renders the payload as plain text.
 
 ### Requirement: Generate QR code from recipe ingredient list
 
-The system SHALL generate a scannable QR code encoding a recipe's ingredient list and essential metadata (recipe title, ingredient data) using lz-string compression and URL-fragment encoding. The QR code SHALL be displayable in the recipe view and remain at or below Version 15 (77x77 grid) to ensure reliable scanning by standard smartphone cameras.
+The system SHALL generate a scannable QR code encoding a recipe's title and ingredient list using
+lz-string compression and URL-fragment encoding. The QR code SHALL be rendered inline on the printed
+recipe page — not in a modal or overlay — and remain at or below Version 15 (77×77 grid) to ensure
+reliable scanning by standard smartphone cameras.
 
-#### Scenario: Generate QR code for recipe with small ingredient list
-- **WHEN** user views a recipe with fewer than 500 characters of ingredient data
-- **THEN** system generates and displays a QR code with error correction level 'L'
-- **AND** the resulting QR code is at or below Version 15 (77x77 grid)
+The QR code SHALL be visible in the on-screen print preview as well as in the physical printed
+output, positioned unobtrusively in the bottom-right corner of the recipe article so it does not
+obscure layout content.
 
-#### Scenario: User views recipe with large ingredient list
-- **WHEN** user views a recipe with more than 1500 characters of ingredient data
-- **THEN** system displays a warning that the recipe data is too large for reliable QR scanning
-- **AND** provides an option to view or truncate the ingredient list
+When the full ingredient list would produce a QR code denser than Version 15, the system SHALL
+progressively drop ingredients from the end of the list — largest prefix first — until the remaining
+list fits at or below Version 15, and SHALL label the QR code with how many of the total ingredients
+it encodes. Only when no prefix (down to zero ingredients) fits SHALL the system render a text
+fallback notice instead of a QR canvas.
+
+#### Scenario: QR code renders on recipe print page for a small ingredient list
+- **WHEN** a user opens the print preview for a recipe with fewer than 500 characters of ingredient data
+- **THEN** the system renders a QR code canvas inline within the recipe page layout
+- **AND** the resulting QR code is at or below Version 15 (77×77 grid)
+- **AND** the QR code is positioned in the bottom-right corner of the recipe article
+
+#### Scenario: QR code truncates ingredients to stay scannable
+- **WHEN** a user opens the print preview for a recipe whose full ingredient list would exceed
+  Version 15
+- **THEN** the system encodes the largest prefix of the ingredient list that still fits at or below
+  Version 15
+- **AND** the printed caption discloses how many of the total ingredients are included (e.g. "first
+  12 of 20")
+
+#### Scenario: Recipe page shows fallback notice when even a truncated list won't fit
+- **WHEN** a user opens the print preview for a recipe whose title and metadata alone would exceed
+  Version 15
+- **THEN** the system renders a small text notice in place of the QR canvas (e.g., "Ingredient list
+  too long to encode as QR")
+- **AND** no QR canvas is displayed
+
+#### Scenario: QR code does not appear in a modal or require user interaction to access
+- **WHEN** a user views the print preview
+- **THEN** the QR code is visible directly on the recipe page without clicking any button or opening
+  any dialog
 
 ### Requirement: Compress payload using LZ-String
 

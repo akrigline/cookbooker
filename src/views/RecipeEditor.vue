@@ -172,8 +172,8 @@ function handleCancel() {
 <template>
   <main v-if="loaded && recipeNotFound" id="cm-main" style="max-width:640px; margin:0 auto; padding:100px 32px; text-align:center;">
     <h1 style="font-family:'Newsreader',Georgia,serif; font-size:26px; font-weight:600; margin:0 0 12px;">Recipe not found</h1>
-    <p style="margin:0 0 24px; font-size:15px; color:oklch(45% 0.01 75);">This recipe may have been deleted.</p>
-    <router-link to="/library" class="btn-primary" style="display:inline-flex; align-items:center; background:oklch(20% 0.015 75); color:oklch(98% 0.004 75); border:none; border-radius:8px; padding:11px 20px; font-size:14px; font-weight:600; text-decoration:none;">
+    <p style="margin:0 0 24px; font-size:15px; color:var(--gray-46);">This recipe may have been deleted.</p>
+    <router-link to="/library" class="btn-primary" style="display:inline-flex; align-items:center; background:var(--gray-20); color:var(--gray-99); border:none; border-radius:8px; padding:11px 20px; font-size:14px; font-weight:600; text-decoration:none;">
       Back to Recipe Library
     </router-link>
   </main>
@@ -185,73 +185,73 @@ function handleCancel() {
 
     <div class="cm-grid" style="display:grid; grid-template-columns:minmax(320px, 360px) minmax(0, 1fr); gap:32px; align-items:start;">
       <div class="cm-edit-column" style="display:flex; flex-direction:column; gap:22px; min-width:0;">
-        <p v-if="error" style="color:oklch(45% 0.14 25); font-weight:600; margin:0;">{{ error }}</p>
+        <p v-if="error" style="color:var(--color-danger); font-weight:600; margin:0;">{{ error }}</p>
 
         <div>
-          <label for="cm-title" style="display:block; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin-bottom:6px;">Title <span aria-hidden="true" style="color:oklch(45% 0.05 25);">*</span></label>
-          <input id="cm-title" v-model="title" type="text" required style="width:100%; box-sizing:border-box; font-family:'Newsreader',Georgia,serif; font-size:26px; font-weight:600; padding:10px 12px; border:1px solid oklch(85% 0.008 75); border-radius:8px; background:oklch(99.3% 0.002 75);" />
+          <label for="cm-title" style="display:block; font-size:12px; font-weight:600; color:var(--gray-52); margin-bottom:6px;">Title <span aria-hidden="true" style="color:oklch(45% 0.05 25);">*</span></label>
+          <input id="cm-title" v-model="title" type="text" required style="width:100%; box-sizing:border-box; font-family:'Newsreader',Georgia,serif; font-size:26px; font-weight:600; padding:10px 12px; border:1px solid var(--gray-84); border-radius:8px; background:var(--gray-99);" />
         </div>
 
         <div role="group" aria-label="Layout template">
-          <p style="font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin:0 0 8px;">Layout template</p>
+          <p style="font-size:12px; font-weight:600; color:var(--gray-52); margin:0 0 8px;">Layout template</p>
           <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:8px;">
-            <button v-for="tpl in LAYOUT_TEMPLATES" :key="tpl.id" type="button" :aria-pressed="layoutTemplate === tpl.id" @click="layoutTemplate = tpl.id" :style="layoutTemplate === tpl.id ? 'background:oklch(93% 0.02 250); border:1.5px solid oklch(52% 0.16 250); color:oklch(20% 0.01 75);' : 'background:oklch(97% 0.004 75); border:1.5px solid oklch(85% 0.008 75); color:oklch(20% 0.01 75);'" style="text-align:left; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+            <button v-for="tpl in LAYOUT_TEMPLATES" :key="tpl.id" type="button" :aria-pressed="layoutTemplate === tpl.id" @click="layoutTemplate = tpl.id" :style="layoutTemplate === tpl.id ? 'background:oklch(93% 0.02 250); border:1.5px solid var(--color-focus); color:var(--gray-20);' : 'background:var(--gray-96); border:1.5px solid var(--gray-84); color:var(--gray-20);'" style="text-align:left; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
               {{ tpl.label }}
-              <span style="display:block; font-weight:400; font-size:12px; color:oklch(45% 0.01 75); margin-top:2px;">{{ tpl.description || tpl.label }}</span>
+              <span style="display:block; font-weight:400; font-size:12px; color:var(--gray-46); margin-top:2px;">{{ tpl.description || tpl.label }}</span>
             </button>
           </div>
         </div>
 
         <div role="group" aria-label="Ingredient columns">
-          <p style="font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin:0 0 8px;">Ingredient columns</p>
+          <p style="font-size:12px; font-weight:600; color:var(--gray-52); margin:0 0 8px;">Ingredient columns</p>
           <div style="display:flex; gap:8px;">
-            <button v-for="n in INGREDIENT_COLUMN_OPTIONS" :key="n" type="button" :aria-pressed="ingredientColumns === n" @click="ingredientColumns = n" :style="ingredientColumns === n ? 'background:oklch(93% 0.02 250); border:1.5px solid oklch(52% 0.16 250); color:oklch(20% 0.01 75);' : 'background:oklch(97% 0.004 75); border:1.5px solid oklch(85% 0.008 75); color:oklch(20% 0.01 75);'" style="flex:1; text-align:center; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+            <button v-for="n in INGREDIENT_COLUMN_OPTIONS" :key="n" type="button" :aria-pressed="ingredientColumns === n" @click="ingredientColumns = n" :style="ingredientColumns === n ? 'background:oklch(93% 0.02 250); border:1.5px solid var(--color-focus); color:var(--gray-20);' : 'background:var(--gray-96); border:1.5px solid var(--gray-84); color:var(--gray-20);'" style="flex:1; text-align:center; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
               {{ n }}
             </button>
           </div>
         </div>
 
         <div role="group" aria-label="Ingredient quantity alignment">
-          <p style="font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin:0 0 8px;">Ingredient quantity alignment</p>
+          <p style="font-size:12px; font-weight:600; color:var(--gray-52); margin:0 0 8px;">Ingredient quantity alignment</p>
           <div style="display:flex; gap:8px;">
-            <button v-for="opt in INGREDIENT_QTY_ALIGN_OPTIONS" :key="opt.id" type="button" :aria-pressed="ingredientQtyAlign === opt.id" @click="ingredientQtyAlign = opt.id" :style="ingredientQtyAlign === opt.id ? 'background:oklch(93% 0.02 250); border:1.5px solid oklch(52% 0.16 250); color:oklch(20% 0.01 75);' : 'background:oklch(97% 0.004 75); border:1.5px solid oklch(85% 0.008 75); color:oklch(20% 0.01 75);'" style="flex:1; text-align:center; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+            <button v-for="opt in INGREDIENT_QTY_ALIGN_OPTIONS" :key="opt.id" type="button" :aria-pressed="ingredientQtyAlign === opt.id" @click="ingredientQtyAlign = opt.id" :style="ingredientQtyAlign === opt.id ? 'background:oklch(93% 0.02 250); border:1.5px solid var(--color-focus); color:var(--gray-20);' : 'background:var(--gray-96); border:1.5px solid var(--gray-84); color:var(--gray-20);'" style="flex:1; text-align:center; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
               {{ opt.label }}
             </button>
           </div>
         </div>
 
         <div v-if="showImageAspectControl" role="group" aria-label="Image aspect ratio">
-          <p style="font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin:0 0 8px;">Image aspect ratio</p>
+          <p style="font-size:12px; font-weight:600; color:var(--gray-52); margin:0 0 8px;">Image aspect ratio</p>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button v-for="ratio in IMAGE_ASPECT_RATIOS" :key="ratio.id" type="button" :aria-pressed="imageAspectRatio === ratio.id" @click="imageAspectRatio = ratio.id" :style="imageAspectRatio === ratio.id ? 'background:oklch(93% 0.02 250); border:1.5px solid oklch(52% 0.16 250); color:oklch(20% 0.01 75);' : 'background:oklch(97% 0.004 75); border:1.5px solid oklch(85% 0.008 75); color:oklch(20% 0.01 75);'" style="padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+            <button v-for="ratio in IMAGE_ASPECT_RATIOS" :key="ratio.id" type="button" :aria-pressed="imageAspectRatio === ratio.id" @click="imageAspectRatio = ratio.id" :style="imageAspectRatio === ratio.id ? 'background:oklch(93% 0.02 250); border:1.5px solid var(--color-focus); color:var(--gray-20);' : 'background:var(--gray-96); border:1.5px solid var(--gray-84); color:var(--gray-20);'" style="padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
               {{ ratio.label }}
             </button>
           </div>
         </div>
 
         <div>
-          <label for="cm-ingredients" style="display:block; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin-bottom:6px;">Ingredients <span aria-hidden="true" style="color:oklch(45% 0.05 25);">*</span></label>
-          <p style="margin:0 0 8px; font-size:12px; color:oklch(55% 0.01 75);">One ingredient per line. Parsed and converted automatically.</p>
-          <textarea id="cm-ingredients" v-model="ingredientsText" rows="8" style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:14px; font-family:ui-monospace,monospace; border:1px solid oklch(85% 0.008 75); border-radius:8px; resize:vertical; background:oklch(99.3% 0.002 75);"></textarea>
+          <label for="cm-ingredients" style="display:block; font-size:12px; font-weight:600; color:var(--gray-52); margin-bottom:6px;">Ingredients <span aria-hidden="true" style="color:oklch(45% 0.05 25);">*</span></label>
+          <p style="margin:0 0 8px; font-size:12px; color:var(--gray-52);">One ingredient per line. Parsed and converted automatically.</p>
+          <textarea id="cm-ingredients" v-model="ingredientsText" rows="8" style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:14px; font-family:ui-monospace,monospace; border:1px solid var(--gray-84); border-radius:8px; resize:vertical; background:var(--gray-99);"></textarea>
         </div>
 
         <div>
-          <label for="cm-instructions" style="display:block; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin-bottom:6px;">Instructions <span aria-hidden="true" style="color:oklch(45% 0.05 25);">*</span></label>
-          <p style="margin:0 0 8px; font-size:12px; color:oklch(55% 0.01 75);">One step per line.</p>
-          <textarea id="cm-instructions" v-model="instructionsText" rows="8" style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:14px; font-family:inherit; border:1px solid oklch(85% 0.008 75); border-radius:8px; resize:vertical; background:oklch(99.3% 0.002 75);"></textarea>
+          <label for="cm-instructions" style="display:block; font-size:12px; font-weight:600; color:var(--gray-52); margin-bottom:6px;">Instructions <span aria-hidden="true" style="color:oklch(45% 0.05 25);">*</span></label>
+          <p style="margin:0 0 8px; font-size:12px; color:var(--gray-52);">One step per line.</p>
+          <textarea id="cm-instructions" v-model="instructionsText" rows="8" style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:14px; font-family:inherit; border:1px solid var(--gray-84); border-radius:8px; resize:vertical; background:var(--gray-99);"></textarea>
         </div>
 
         <div>
-          <label for="cm-notes" style="display:block; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin-bottom:6px;">Chef's Notes (optional)</label>
+          <label for="cm-notes" style="display:block; font-size:12px; font-weight:600; color:var(--gray-52); margin-bottom:6px;">Chef's Notes (optional)</label>
           <div style="display:flex; gap:6px; margin-bottom:8px;">
-            <button type="button" aria-label="Bold selected text" @click="wrapNotesSelection('**')" style="width:32px; height:32px; font-weight:700; font-family:Georgia,serif; border:1px solid oklch(85% 0.008 75); border-radius:6px; background:oklch(99.3% 0.002 75); cursor:pointer;">B</button>
-            <button type="button" aria-label="Italicize selected text" @click="wrapNotesSelection('*')" style="width:32px; height:32px; font-weight:600; font-style:italic; font-family:Georgia,serif; border:1px solid oklch(85% 0.008 75); border-radius:6px; background:oklch(99.3% 0.002 75); cursor:pointer;">I</button>
+            <button type="button" aria-label="Bold selected text" @click="wrapNotesSelection('**')" style="width:32px; height:32px; font-weight:700; font-family:Georgia,serif; border:1px solid var(--gray-84); border-radius:6px; background:var(--gray-99); cursor:pointer;">B</button>
+            <button type="button" aria-label="Italicize selected text" @click="wrapNotesSelection('*')" style="width:32px; height:32px; font-weight:600; font-style:italic; font-family:Georgia,serif; border:1px solid var(--gray-84); border-radius:6px; background:var(--gray-99); cursor:pointer;">I</button>
           </div>
-          <textarea id="cm-notes" ref="notesTextarea" v-model="notes" rows="3" placeholder="Add optional notes… use the B/I buttons to add emphasis." style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:14px; font-family:inherit; border:1px solid oklch(85% 0.008 75); border-radius:8px; resize:vertical; background:oklch(99.3% 0.002 75);"></textarea>
+          <textarea id="cm-notes" ref="notesTextarea" v-model="notes" rows="3" placeholder="Add optional notes… use the B/I buttons to add emphasis." style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:14px; font-family:inherit; border:1px solid var(--gray-84); border-radius:8px; resize:vertical; background:var(--gray-99);"></textarea>
         </div>
 
         <div>
-          <label for="cm-image" style="display:block; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); margin-bottom:6px;">Recipe Image (optional)</label>
+          <label for="cm-image" style="display:block; font-size:12px; font-weight:600; color:var(--gray-52); margin-bottom:6px;">Recipe Image (optional)</label>
           <div style="display:flex; align-items:center; gap:16px;">
             <input id="cm-image" type="file" accept="image/*" @change="handleImageChange" style="font-size:14px;" />
           </div>
@@ -259,38 +259,38 @@ function handleCancel() {
       </div>
 
       <div class="cm-preview-column" style="position:sticky; top:24px; min-width:0;">
-        <p class="cm-preview-label" style="margin:0 0 10px; font-size:12px; font-weight:600; color:oklch(50% 0.01 75); text-transform:uppercase; letter-spacing:0.04em;">Live preview</p>
+        <p class="cm-preview-label" style="margin:0 0 10px; font-size:12px; font-weight:600; color:var(--gray-52); text-transform:uppercase; letter-spacing:0.04em;">Live preview</p>
         <PagePreview>
           <RecipeSheet :recipe="previewRecipe" />
         </PagePreview>
       </div>
     </div>
 
-    <div class="cm-action-bar" style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:32px; padding-top:20px; border-top:1px solid oklch(88% 0.008 75); flex-wrap:wrap;">
+    <div class="cm-action-bar" style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:32px; padding-top:20px; border-top:1px solid var(--gray-88); flex-wrap:wrap;">
       <div>
-        <button v-if="isEditing" type="button" @click="showDeleteModal = true" style="padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(85% 0.06 25); background:none; color:oklch(45% 0.12 25); cursor:pointer;">Delete recipe</button>
+        <button v-if="isEditing" type="button" @click="showDeleteModal = true" style="padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--color-danger-border); background:none; color:oklch(45% 0.12 25); cursor:pointer;">Delete recipe</button>
       </div>
       <div style="display:flex; gap:10px;">
-        <button v-if="isEditing" type="button" @click="handleExport" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;">
+        <button v-if="isEditing" type="button" @click="handleExport" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">
           <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Export recipe
         </button>
-        <button v-if="isEditing" type="button" @click="handlePrint" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;">
+        <button v-if="isEditing" type="button" @click="handlePrint" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">
           <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
           Print recipe
         </button>
-        <button type="button" @click="handleCancel" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;">Cancel</button>
-        <button type="button" :disabled="saving" @click="save" :style="saving ? 'opacity:0.55; cursor:not-allowed;' : 'cursor:pointer;'" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:oklch(20% 0.015 75); color:oklch(98% 0.004 75);">{{ saving ? 'Saving…' : 'Save' }}</button>
+        <button type="button" @click="handleCancel" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">Cancel</button>
+        <button type="button" :disabled="saving" @click="save" :style="saving ? 'opacity:0.55; cursor:not-allowed;' : 'cursor:pointer;'" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:var(--gray-20); color:var(--gray-99);">{{ saving ? 'Saving…' : 'Save' }}</button>
       </div>
     </div>
 
     <div v-if="showDeleteModal" @click="showDeleteModal = false" style="position:fixed; inset:0; background:oklch(20% 0.01 75 / 0.45); display:flex; align-items:center; justify-content:center; padding:24px; z-index:200;">
-      <div role="alertdialog" aria-modal="true" aria-labelledby="cm-del-heading" aria-describedby="cm-del-desc" @click.stop style="background:oklch(99.3% 0.002 75); border-radius:14px; width:100%; max-width:420px; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(20% 0.02 75 / 0.25);">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="cm-del-heading" aria-describedby="cm-del-desc" @click.stop style="background:var(--gray-99); border-radius:14px; width:100%; max-width:420px; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(20% 0.02 75 / 0.25);">
         <h2 id="cm-del-heading" style="font-family:'Newsreader',Georgia,serif; font-size:20px; font-weight:600; margin:0 0 10px;">Delete "{{ previewRecipe.title }}"?</h2>
-        <p id="cm-del-desc" style="margin:0 0 22px; font-size:14px; color:oklch(40% 0.01 75); line-height:1.5;">This permanently removes the recipe from the Global Recipe Library and withdraws it from every cookbook that includes it. This can't be undone.</p>
+        <p id="cm-del-desc" style="margin:0 0 22px; font-size:14px; color:var(--gray-42); line-height:1.5;">This permanently removes the recipe from the Global Recipe Library and withdraws it from every cookbook that includes it. This can't be undone.</p>
         <div style="display:flex; justify-content:flex-end; gap:10px;">
-          <button type="button" @click="showDeleteModal = false" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid oklch(82% 0.008 75); background:none; cursor:pointer;">Cancel</button>
-          <button type="button" @click="confirmDelete" :disabled="deleting" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:oklch(45% 0.14 25); color:white; cursor:pointer;">Delete permanently</button>
+          <button type="button" @click="showDeleteModal = false" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">Cancel</button>
+          <button type="button" @click="confirmDelete" :disabled="deleting" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:var(--color-danger); color:white; cursor:pointer;">Delete permanently</button>
         </div>
       </div>
     </div>
@@ -305,9 +305,9 @@ function handleCancel() {
 }
 
 input:focus, textarea:focus, button:focus-visible, a:focus-visible {
-  outline: 2px solid oklch(52% 0.16 250);
+  outline: 2px solid var(--color-focus);
   outline-offset: 1px;
-  border-color: oklch(52% 0.16 250);
+  border-color: var(--color-focus);
 }
 button:hover, a:hover {
   filter: brightness(0.95);

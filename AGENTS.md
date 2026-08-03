@@ -10,6 +10,10 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `openspec-propose`/`openspec-apply-change`/`openspec-archive-change` skills for the workflow.
 - `npm test` runs vitest (happy-dom + fake-indexeddb, see `vitest.config.js`); `npm run build` runs the
   Vite production build. Both must stay green before landing a change.
+- No `@vue/test-utils` (or any component-testing library) is installed, so none of the app's `.vue`
+  files can be mounted in a test today — component logic worth unit-testing needs to live in a plain
+  `.js` module (as `qrShare.js`, `sequence.js`, etc. already do) rather than in a component test that
+  can't exist yet.
 - The router (`src/router/index.js`) uses `createWebHistory()`. A `spaFallback404` plugin in
   `vite.config.js` copies `dist/index.html` to `dist/404.html` after build, so static hosts without a
   rewrite rule (e.g. GitHub Pages) serve the app shell for deep links/hard refreshes instead of a bare
@@ -96,6 +100,19 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   The patch lives in `patches/@magrinj+parse-ingredients+1.0.0.patch` and is auto-applied via
   `"postinstall": "patch-package"` in `package.json`. When the PR merges and a new version is
   published to npm, bump `package.json` to that version and delete the patch file.
+
+- `src/css/tokens.css`'s chrome-palette tokens (`--color-focus`, `--color-danger*`,
+  `--color-success*`, `--gray-*`) came from `DESIGN_TOKENS_PLAN.md`'s literal-to-token migration
+  (2026-08-02) and are deliberately a light-only, minimal set — see that file for the full
+  per-family rationale. Two things a later cleanup pass should not mistake for leftover work:
+  the 11 `--gray-*` stops include one (`--gray-46`) added mid-migration because ~25 call sites
+  sat exactly at the midpoint between two of the original 10 stops (a second addition,
+  `--gray-86`, was later folded back into `--gray-84` once usage showed the two were a
+  view/component naming split rather than a real distinct tone — don't re-add it without new
+  evidence); and plenty of `oklch(...)` literals at hue 25 (danger-adjacent) and hue 250
+  (focus-adjacent) remain in components on purpose — they're hover/disabled/selection-state
+  shades distinct from the exact literal each token captures, and the plan's scope was strictly
+  "replace exact matches," not "generalize every color in the family."
 
 ## Maintaining this file
 

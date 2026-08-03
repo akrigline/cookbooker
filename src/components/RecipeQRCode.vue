@@ -107,7 +107,7 @@ watch(url, renderSVG)
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: oklch(30% 0.01 75);
+  color: var(--gray-30);
   text-align: center;
 }
 
@@ -115,7 +115,7 @@ watch(url, renderSVG)
   margin: 0;
   font-size: 8px;
   line-height: 1.3;
-  color: oklch(40% 0.01 75);
+  color: var(--gray-42);
   text-align: center;
   max-width: 1.25in;
 }
@@ -128,7 +128,7 @@ watch(url, renderSVG)
 .cm-recipe-qr__caption {
   margin: 0;
   font-size: 7px;
-  color: oklch(35% 0.01 75);
+  color: var(--gray-30);
   text-align: center;
   letter-spacing: 0.02em;
   /* Hidden on screen; shown in print */

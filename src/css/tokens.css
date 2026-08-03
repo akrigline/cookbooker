@@ -17,6 +17,28 @@
 
   --transition-base: 200ms ease;
   --sidebar-width: 240px;
+
+  /* Chrome palette (design-token migration) */
+  --color-focus: oklch(52% 0.16 250);
+
+  --color-danger: oklch(45% 0.14 25);
+  --color-danger-bg: oklch(96% 0.03 25);
+  --color-danger-border: oklch(85% 0.06 25);
+
+  --color-success: oklch(35% 0.05 140);
+  --color-success-bg: oklch(96% 0.05 140);
+
+  --gray-99: oklch(99.3% 0.002 75);
+  --gray-96: oklch(96% 0.004 75);
+  --gray-93: oklch(93% 0.006 75);
+  --gray-88: oklch(88% 0.008 75);
+  --gray-84: oklch(84% 0.008 75);   /* consolidated: --gray-86 folded in, was a near-duplicate stop */
+  --gray-78: oklch(80% 0.01 75);
+  --gray-52: oklch(50% 0.01 75);
+  --gray-46: oklch(45% 0.01 75);    /* added: real 25-occurrence cluster, not in original 10 */
+  --gray-42: oklch(40% 0.01 75);
+  --gray-30: oklch(30% 0.01 75);
+  --gray-20: oklch(20% 0.01 75);
 }
 
 /* Printable Recipe Specific Tokens (Light Theme Locked) */

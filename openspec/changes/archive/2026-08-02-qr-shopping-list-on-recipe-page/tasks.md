@@ -22,7 +22,7 @@
 ## 4. Tests
 
 - [x] 4.1 Remove or update existing tests in `qrShare.test.js` that reference the modal interaction (overlay open/close, copy-link, print-QR-code button)
-- [x] 4.2 Add unit tests for `RecipeQRCode.vue`: renders canvas when payload fits; renders fallback text when oversized
+- [x] 4.2 Cover the truncation/fallback logic in `qrShare.test.js` (`maxIngredients`, `isPayloadOversized`) — `RecipeQRCode.vue` itself has no dedicated test file, since `@vue/test-utils` isn't installed and no `.vue` file in this project can be mounted in a test (see `AGENTS.md`)
 - [x] 4.3 Verify `npm test` passes with no regressions
 
 ## 5. Verify

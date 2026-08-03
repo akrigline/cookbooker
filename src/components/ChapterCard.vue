@@ -233,15 +233,15 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
 
 <style scoped>
 .chapter-card {
-  background: oklch(99.2% 0.002 75);
-  border: 1px solid oklch(88% 0.008 75);
+  background: var(--gray-99);
+  border: 1px solid var(--gray-88);
   border-radius: 14px;
   margin-bottom: 20px;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .chapter-card--drag-over {
-  border-color: oklch(52% 0.16 250);
+  border-color: var(--color-focus);
   box-shadow: 0 0 0 3px oklch(75% 0.12 250 / 35%);
 }
 
@@ -251,7 +251,7 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
 
 .chapter-card__header {
   padding: 16px 20px 12px;
-  border-bottom: 1px solid oklch(91% 0.007 75);
+  border-bottom: 1px solid var(--gray-93);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -271,7 +271,7 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
   font-size: 18px;
   font-weight: 600;
   margin: 0;
-  color: oklch(20% 0.015 75);
+  color: var(--gray-20);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -280,9 +280,9 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
 .chapter-badge {
   font-size: 11px;
   font-weight: 600;
-  color: oklch(55% 0.01 75);
-  background: oklch(93% 0.006 75);
-  border: 1px solid oklch(86% 0.008 75);
+  color: var(--gray-52);
+  background: var(--gray-93);
+  border: 1px solid var(--gray-84);
   padding: 2px 8px;
   border-radius: 99px;
   white-space: nowrap;
@@ -300,7 +300,7 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
   align-items: center;
   gap: 5px;
   font-size: 13px;
-  color: oklch(45% 0.01 75);
+  color: var(--gray-46);
   cursor: pointer;
   user-select: none;
 }
@@ -309,17 +309,17 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
   width: 15px;
   height: 15px;
   cursor: pointer;
-  accent-color: oklch(52% 0.16 250);
+  accent-color: var(--color-focus);
 }
 
 .chapter-action-btn {
-  background: oklch(95% 0.005 75);
-  border: 1px solid oklch(86% 0.008 75);
+  background: var(--gray-96);
+  border: 1px solid var(--gray-84);
   border-radius: 7px;
   padding: 5px 10px;
   font-size: 12px;
   font-weight: 600;
-  color: oklch(30% 0.01 75);
+  color: var(--gray-30);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -327,7 +327,7 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
   transition: background 0.12s;
 }
 
-.chapter-action-btn:hover { background: oklch(91% 0.007 75); }
+.chapter-action-btn:hover { background: var(--gray-93); }
 
 .chapter-action-btn--danger {
   background: none;
@@ -350,7 +350,7 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
 
 .recipe-list__empty {
   padding: 16px 0;
-  color: oklch(55% 0.01 75);
+  color: var(--gray-52);
   font-style: italic;
   font-size: 14px;
 }
@@ -360,7 +360,7 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
   align-items: center;
   gap: 10px;
   padding: 10px 0;
-  border-bottom: 1px solid oklch(93% 0.005 75);
+  border-bottom: 1px solid var(--gray-93);
   cursor: grab;
   border-radius: 6px;
   transition: background 0.1s;
@@ -378,13 +378,13 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
   flex-shrink: 0;
   width: 16px;
   height: 16px;
-  accent-color: oklch(52% 0.16 250);
+  accent-color: var(--color-focus);
   cursor: pointer;
 }
 
 .recipe-row__drag {
   flex-shrink: 0;
-  color: oklch(72% 0.008 75);
+  color: var(--gray-78);
   cursor: grab;
 }
 
@@ -405,12 +405,12 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
   border: none;
   border-radius: 3px;
   background: transparent;
-  color: oklch(55% 0.01 75);
+  color: var(--gray-52);
   cursor: pointer;
 }
 
 .recipe-row__move-btn:hover:not(:disabled) {
-  background: oklch(93% 0.006 75);
+  background: var(--gray-93);
 }
 
 .recipe-row__move-btn:disabled {
@@ -431,7 +431,7 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
   flex: 1;
   font-size: 14px;
   font-weight: 600;
-  color: oklch(20% 0.01 75);
+  color: var(--gray-20);
   text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
@@ -456,22 +456,22 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
   border-radius: 7px;
   border: 1px solid transparent;
   background: transparent;
-  color: oklch(55% 0.01 75);
+  color: var(--gray-52);
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s;
 }
 
 .recipe-row__menu-btn:hover {
-  background: oklch(93% 0.006 75);
-  border-color: oklch(86% 0.008 75);
+  background: var(--gray-93);
+  border-color: var(--gray-84);
 }
 
 .overflow-menu {
   position: absolute;
   right: 0;
   top: calc(100% + 4px);
-  background: oklch(99.5% 0.002 75);
-  border: 1px solid oklch(88% 0.008 75);
+  background: var(--gray-99);
+  border: 1px solid var(--gray-88);
   border-radius: 10px;
   padding: 6px;
   min-width: 180px;
@@ -491,7 +491,7 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
-  color: oklch(25% 0.01 75);
+  color: var(--gray-20);
   background: none;
   border: none;
   cursor: pointer;
@@ -501,12 +501,12 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
 
 .overflow-menu button:hover,
 .overflow-menu a:hover {
-  background: oklch(94% 0.006 75);
+  background: var(--gray-93);
 }
 
 .overflow-menu hr {
   border: none;
-  border-top: 1px solid oklch(91% 0.007 75);
+  border-top: 1px solid var(--gray-93);
   margin: 4px 0;
 }
 
@@ -521,7 +521,7 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
 .drag-handle {
   display: inline-flex;
   align-items: center;
-  color: oklch(75% 0.006 75);
+  color: var(--gray-78);
   cursor: grab;
   flex-shrink: 0;
 }

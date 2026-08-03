@@ -1,3 +1,12 @@
+# recipe-export
+
+## Purpose
+
+Lets a user export a single saved recipe as a self-contained `.html` file that
+carries both its content and its display settings, so it can be shared or
+backed up outside the app and later re-imported through the existing
+`recipe-import` entry points with full round-trip fidelity.
+
 ## Requirements
 
 ### Requirement: Export Recipe as Structured HTML

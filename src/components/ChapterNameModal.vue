@@ -50,12 +50,12 @@ const emit = defineEmits(['close', 'submit'])
   font-size: 20px;
   font-weight: 600;
   margin: 0 0 12px;
-  color: oklch(18% 0.01 75);
+  color: var(--gray-20);
 }
 
 .modal-body {
   font-size: 14px;
-  color: oklch(35% 0.01 75);
+  color: var(--gray-30);
   line-height: 1.6;
   margin: 0 0 20px;
 }
@@ -80,19 +80,19 @@ const emit = defineEmits(['close', 'submit'])
 .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .modal-btn--primary {
-  background: oklch(20% 0.015 75);
-  color: oklch(98% 0.004 75);
+  background: var(--gray-20);
+  color: var(--gray-99);
 }
 
-.modal-btn--primary:hover:not(:disabled) { background: oklch(28% 0.02 75); }
+.modal-btn--primary:hover:not(:disabled) { background: var(--gray-30); }
 
 .modal-btn--ghost {
-  background: oklch(93% 0.006 75);
-  color: oklch(25% 0.01 75);
-  border: 1px solid oklch(86% 0.008 75);
+  background: var(--gray-93);
+  color: var(--gray-20);
+  border: 1px solid var(--gray-84);
 }
 
-.modal-btn--ghost:hover:not(:disabled) { background: oklch(88% 0.008 75); }
+.modal-btn--ghost:hover:not(:disabled) { background: var(--gray-88); }
 
 .modal-form {
   display: flex;
@@ -109,7 +109,7 @@ const emit = defineEmits(['close', 'submit'])
 .form-label {
   font-size: 12px;
   font-weight: 700;
-  color: oklch(48% 0.01 75);
+  color: var(--gray-52);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -118,15 +118,15 @@ const emit = defineEmits(['close', 'submit'])
   font: inherit;
   font-size: 14px;
   padding: 9px 12px;
-  border: 1px solid oklch(85% 0.008 75);
+  border: 1px solid var(--gray-84);
   border-radius: 8px;
-  background: oklch(99.3% 0.002 75);
-  color: oklch(18% 0.01 75);
+  background: var(--gray-99);
+  color: var(--gray-20);
 }
 
 .form-input:focus-visible {
-  outline: 2px solid oklch(52% 0.16 250);
+  outline: 2px solid var(--color-focus);
   outline-offset: 1px;
-  border-color: oklch(52% 0.16 250);
+  border-color: var(--color-focus);
 }
 </style>

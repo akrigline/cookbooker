@@ -40,15 +40,15 @@ const emit = defineEmits(['print'])
   font-size: 24px;
   font-weight: 600;
   margin: 0;
-  color: oklch(20% 0.015 75);
+  color: var(--gray-20);
 }
 
 .btn-print {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: oklch(20% 0.015 75);
-  color: oklch(98% 0.004 75);
+  background: var(--gray-20);
+  color: var(--gray-99);
   border: none;
   padding: 10px 18px;
   border-radius: 8px;
@@ -59,11 +59,11 @@ const emit = defineEmits(['print'])
 }
 
 .btn-print:hover {
-  background: oklch(28% 0.02 75);
+  background: var(--gray-30);
 }
 
 .btn-print:focus-visible {
-  outline: 2px solid oklch(52% 0.16 250);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 </style>

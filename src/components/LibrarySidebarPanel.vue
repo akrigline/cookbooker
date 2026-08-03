@@ -114,8 +114,8 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
 
 <style scoped>
 .pv-sidebar {
-  border-left: 1px solid oklch(88% 0.008 75);
-  background: oklch(98.5% 0.003 75);
+  border-left: 1px solid var(--gray-88);
+  background: var(--gray-99);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -138,13 +138,13 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
   font-family: 'Newsreader', Georgia, serif;
   font-size: 15px;
   font-weight: 600;
-  color: oklch(28% 0.015 75);
+  color: var(--gray-30);
   margin: 0 0 10px;
 }
 
 .sidebar-divider {
   height: 1px;
-  background: oklch(89% 0.007 75);
+  background: var(--gray-88);
   margin: 0 16px;
 }
 
@@ -152,8 +152,8 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: oklch(20% 0.015 75);
-  color: oklch(98% 0.004 75);
+  background: var(--gray-20);
+  color: var(--gray-99);
   border: none;
   border-radius: 8px;
   padding: 9px 14px;
@@ -164,7 +164,7 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
   white-space: nowrap;
 }
 
-.sidebar-btn:hover { background: oklch(28% 0.02 75); }
+.sidebar-btn:hover { background: var(--gray-30); }
 
 .sidebar-btn--full { width: 100%; justify-content: center; }
 
@@ -172,16 +172,16 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
   font: inherit;
   font-size: 13px;
   padding: 8px 12px;
-  border: 1px solid oklch(86% 0.008 75);
+  border: 1px solid var(--gray-84);
   border-radius: 8px;
-  background: oklch(99.3% 0.002 75);
-  color: oklch(18% 0.01 75);
+  background: var(--gray-99);
+  color: var(--gray-20);
   width: 100%;
   margin-bottom: 10px;
 }
 
 .sidebar-search:focus-visible {
-  outline: 2px solid oklch(52% 0.16 250);
+  outline: 2px solid var(--color-focus);
   outline-offset: 1px;
 }
 
@@ -198,7 +198,7 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
 .lib-list__empty {
   padding: 16px 0;
   font-size: 13px;
-  color: oklch(50% 0.01 75);
+  color: var(--gray-52);
   font-style: italic;
 }
 
@@ -207,7 +207,7 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
   align-items: center;
   gap: 8px;
   padding: 8px 0;
-  border-bottom: 1px solid oklch(93% 0.005 75);
+  border-bottom: 1px solid var(--gray-93);
   cursor: grab;
 }
 
@@ -219,7 +219,7 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
   width: 15px;
   height: 15px;
   flex-shrink: 0;
-  accent-color: oklch(52% 0.16 250);
+  accent-color: var(--color-focus);
   cursor: pointer;
 }
 
@@ -236,7 +236,7 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
   flex: 1;
   font-size: 13px;
   font-weight: 500;
-  color: oklch(22% 0.01 75);
+  color: var(--gray-20);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -250,15 +250,15 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  border: 1px solid oklch(86% 0.008 75);
-  background: oklch(96% 0.004 75);
-  color: oklch(35% 0.01 75);
+  border: 1px solid var(--gray-84);
+  background: var(--gray-96);
+  color: var(--gray-30);
   cursor: pointer;
   flex-shrink: 0;
   transition: background 0.12s;
 }
 
-.lib-row__add-btn:hover { background: oklch(91% 0.007 75); }
+.lib-row__add-btn:hover { background: var(--gray-93); }
 .lib-row__add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .lib-bulk-bar {
@@ -266,8 +266,8 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
   bottom: 0;
   left: 0;
   right: 0;
-  background: oklch(99% 0.003 75);
-  border-top: 1px solid oklch(88% 0.008 75);
+  background: var(--gray-99);
+  border-top: 1px solid var(--gray-88);
   padding: 10px 14px;
   display: flex;
   flex-direction: column;
@@ -278,7 +278,7 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
 .lib-bulk-bar__count {
   font-size: 12px;
   font-weight: 600;
-  color: oklch(45% 0.01 75);
+  color: var(--gray-46);
 }
 
 .lib-bulk-bar__actions {
@@ -291,7 +291,7 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
 .lib-bulk-label {
   font-size: 12px;
   font-weight: 600;
-  color: oklch(45% 0.01 75);
+  color: var(--gray-46);
   white-space: nowrap;
 }
 
@@ -299,10 +299,10 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
   font: inherit;
   font-size: 12px;
   padding: 6px 8px;
-  border: 1px solid oklch(86% 0.008 75);
+  border: 1px solid var(--gray-84);
   border-radius: 7px;
-  background: oklch(99% 0.003 75);
-  color: oklch(20% 0.01 75);
+  background: var(--gray-99);
+  color: var(--gray-20);
   flex: 1;
 }
 

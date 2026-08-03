@@ -54,8 +54,8 @@ const bulkMoveTarget = defineModel('bulkMoveTarget', { type: [String, Number], d
   bottom: 0;
   left: 0;
   right: 0;
-  background: oklch(20% 0.015 75);
-  color: oklch(97% 0.004 75);
+  background: var(--gray-20);
+  color: var(--gray-96);
   padding: 14px 32px;
   display: flex;
   align-items: center;
@@ -82,7 +82,7 @@ const bulkMoveTarget = defineModel('bulkMoveTarget', { type: [String, Number], d
 .bulk-bar__label {
   font-size: 13px;
   font-weight: 600;
-  color: oklch(80% 0.008 75);
+  color: var(--gray-78);
   white-space: nowrap;
 }
 
@@ -90,10 +90,10 @@ const bulkMoveTarget = defineModel('bulkMoveTarget', { type: [String, Number], d
   font: inherit;
   font-size: 13px;
   padding: 7px 10px;
-  border: 1px solid oklch(50% 0.012 75);
+  border: 1px solid var(--gray-52);
   border-radius: 8px;
-  background: oklch(25% 0.015 75);
-  color: oklch(97% 0.004 75);
+  background: var(--gray-20);
+  color: var(--gray-96);
 }
 
 .bulk-bar__btn {
@@ -104,15 +104,15 @@ const bulkMoveTarget = defineModel('bulkMoveTarget', { type: [String, Number], d
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  border: 1px solid oklch(50% 0.012 75);
-  background: oklch(28% 0.018 75);
-  color: oklch(97% 0.004 75);
+  border: 1px solid var(--gray-52);
+  background: var(--gray-30);
+  color: var(--gray-96);
   cursor: pointer;
   transition: background 0.12s;
   white-space: nowrap;
 }
 
-.bulk-bar__btn:hover { background: oklch(34% 0.018 75); }
+.bulk-bar__btn:hover { background: var(--gray-30); }
 
 .bulk-bar__btn--danger {
   background: none;
@@ -124,11 +124,11 @@ const bulkMoveTarget = defineModel('bulkMoveTarget', { type: [String, Number], d
 
 .bulk-bar__btn--ghost {
   background: none;
-  border-color: oklch(50% 0.01 75);
-  color: oklch(75% 0.008 75);
+  border-color: var(--gray-52);
+  color: var(--gray-78);
 }
 
-.bulk-bar__btn--ghost:hover { background: oklch(28% 0.01 75); }
+.bulk-bar__btn--ghost:hover { background: var(--gray-30); }
 
 .slide-up-enter-active,
 .slide-up-leave-active {
