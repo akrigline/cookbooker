@@ -1,10 +1,10 @@
 import LZString from 'lz-string'
 
-// Decoder is a separate static site (see decoder/README.md); it has no
-// server component and never receives the payload — it's carried entirely
-// in the URL fragment. See openspec/changes/recipe-qr-code-sharing/design.md
-// Decision 3 for why the decoder isn't part of this app.
-export const DECODER_BASE_URL = 'https://recipe-decode.cookbooker.app/'
+// The decoder is the app's own /decode route (see src/views/DecodeRecipe.vue);
+// it has no server component and never receives the payload — it's carried
+// entirely in the URL fragment. Exported so the router can register the same
+// path without the two ever drifting apart.
+export const DECODE_ROUTE_PATH = '/decode'
 
 // Threshold on ingredient text (pre-compression) above which reliable QR
 // scanning is not guaranteed; see design.md Decision 5.
@@ -27,7 +27,7 @@ export function isPayloadOversized(recipe) {
 /**
  * Plain-text payload: title on the first line, one ingredient per line
  * after. Deliberately not JSON/HTML — the decoder only ever needs to split
- * on newlines and render with textContent.
+ * on newlines and render each line as escaped text.
  */
 export function encodeRecipePayload(recipe, { maxIngredients } = {}) {
   const title = (recipe?.title ?? '').trim()
@@ -52,7 +52,7 @@ export function decompressPayload(compressed) {
 
 export function generateQRURL(recipe, options) {
   const payload = encodeRecipePayload(recipe, options)
-  return `${DECODER_BASE_URL}#${compressPayload(payload)}`
+  return `${window.location.origin}${DECODE_ROUTE_PATH}#${compressPayload(payload)}`
 }
 
 export function parseRecipePayload(text) {

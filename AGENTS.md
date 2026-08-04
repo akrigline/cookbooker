@@ -83,13 +83,10 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `reorderChapter` filters siblings to non-default chapters before comparing, but don't assume
   a fresh custom chapter starts at sequence 0 in tests or new code.
 
-- `decoder/index.html` (the QR-sharing decoder, see `decoder/README.md`) is a deliberately
-  separate, dependency-free static page — not part of the Vite app or its module graph. It
-  vendors lz-string inline rather than importing the npm package, so if `lz-string` is ever
-  upgraded in `package.json`, re-vendor the matching version into `decoder/index.html` by hand
-  (comment above the vendored block names the version). `DECODER_BASE_URL` in
-  `src/js/qrShare.js` is a placeholder domain — design.md's Open Question 1 (which real domain
-  to deploy the decoder to) is still unresolved.
+- The QR-sharing decoder is the app's own `/decode` route (`src/views/DecodeRecipe.vue`), not a
+  separately-deployed site — `generateQRURL` in `src/js/qrShare.js` builds the QR link from
+  `window.location.origin` at generation time, so a code generated from a dev server or preview
+  build encodes that origin rather than production.
 
 - `@magrinj/parse-ingredients` is patched via `patch-package`. The upstream package
   mis-parses quantities like `"1 ¼ cups milk"` (integer + space + unicode fraction) because

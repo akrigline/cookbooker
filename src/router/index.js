@@ -7,7 +7,9 @@ import ProjectView from '../views/ProjectView.vue'
 import ProjectPrint from '../views/ProjectPrint.vue'
 import RecipePrint from '../views/RecipePrint.vue'
 import Settings from '../views/Settings.vue'
+import DecodeRecipe from '../views/DecodeRecipe.vue'
 import NotFound from '../views/NotFound.vue'
+import { DECODE_ROUTE_PATH } from '../js/qrShare'
 
 const routes = [
   { path: '/', name: 'dashboard', component: Dashboard },
@@ -24,6 +26,7 @@ const routes = [
     props: true,
   },
   { path: '/settings', name: 'settings', component: Settings },
+  { path: DECODE_ROUTE_PATH, name: 'decode', component: DecodeRecipe },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFound },
 ]
 

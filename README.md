@@ -1,13 +1,47 @@
-# Vue 3 + Vite
+# Cookbook Maker
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Cookbook Maker is a client-side web application for managing recipes and organizing them into custom cookbooks. It runs entirely in the browser using IndexedDB for local data storage, meaning no backend server or user account is required to use the application.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## Features
 
-## Recipe QR sharing
+- **Recipe Library & Editor**: Create, edit, and manage your recipe collection, featuring automatic ingredient parsing and fraction handling.
+- **Cookbook Management**: Group recipes into structured projects or books, complete with chapters, custom ordering, and bulk operations.
+- **Recipe Import**: Import recipes using AI prompts and automated parsing.
+- **Ingredient Conversions**: Automatically parse and scale ingredients.
+- **Recipe QR sharing**: Recipes can be shared to a phone as a scannable QR code ("Share via QR" in the recipe view) — the ingredient list and title are compressed and encoded entirely in the QR code's URL, so no server or account is involved. Scanning opens this app's own `/decode` route to display the recipe.
+- **Print & Export**: Format recipes and cookbooks for printing, and export/import full database backups.
 
-Recipes can be shared to a phone as a scannable QR code ("Share via QR" in
-the recipe view) — the ingredient list and title are compressed and encoded
-entirely in the QR code's URL, so no server or account is involved. Scanning
-opens a small standalone decoder page; see `decoder/README.md` for how that
-page works and how to deploy it.
+## Tech Stack
+
+- **Framework**: Vue 3 (using `<script setup>`)
+- **Build Tool**: Vite
+- **State Management**: Pinia
+- **Database**: Dexie.js (IndexedDB)
+- **Routing**: Vue Router
+
+## Development Setup
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+
+3. **Run tests:**
+   ```bash
+   npm test
+   ```
+
+4. **Build for production:**
+   ```bash
+   npm run build
+   ```
+
+## Project Documentation
+
+- **Specifications**: This project follows spec-driven development using the OpenSpec CLI. All capability specifications are located in the `openspec/specs/` directory.
+- **Architecture & Agent Notes**: Crucial architectural invariants, technical setup instructions (like MCP and Dexie gotchas), and project rules are maintained in `AGENTS.md`. Always refer to `AGENTS.md` when making architectural changes.

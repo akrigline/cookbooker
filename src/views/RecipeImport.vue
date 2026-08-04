@@ -134,8 +134,9 @@ function handleCancelReview() {
 </script>
 
 <template>
-  <main id="cm-main" class="cm-page-main cm-page-main--narrow">
-    <BackButton to="/library">Back to Recipe Library</BackButton>
+  <div class="ri-body" :class="{ 'ri-body--with-sidebar': isInputStage }">
+    <main id="cm-main" class="ri-main">
+      <BackButton to="/library">Back to Recipe Library</BackButton>
 
     <div v-if="success" style="margin-bottom:20px; padding:12px; background:var(--color-success-bg); color:var(--color-success); border:1px solid oklch(85% 0.1 140); border-radius:8px;">
       {{ success }}
@@ -151,18 +152,6 @@ function handleCancelReview() {
         <label for="cm-file-input" style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);">Select recipe HTML file or files</label>
         <input id="cm-file-input" type="file" accept=".html,.htm,text/html" multiple @change="handleFileChange" style="font-size:14px;" />
         <p style="margin:10px 0 0; font-size:12px; color:var(--gray-52);">You can select multiple files at once — each may contain one or more recipes.</p>
-      </section>
-
-      <section aria-labelledby="cm-prompt-heading" style="background:var(--gray-99); border:1px solid var(--gray-88); border-radius:14px; padding:24px; margin-bottom:20px;">
-        <h2 id="cm-prompt-heading" class="text-h2" style="margin:0 0 6px;">Need to transcribe a recipe first?</h2>
-        <p style="margin:0 0 14px; font-size:14px; color:var(--gray-46); line-height:1.5;">Copy this prompt and give it to an LLM along with a recipe (text, a photo, a screenshot) to get back HTML in the recipe/1 format this importer expects.</p>
-        <textarea id="cm-prompt-text" readonly :value="RECIPE_IMPORT_PROMPT" rows="6" style="width:100%; box-sizing:border-box; padding:12px 14px; font-size:12px; font-family:ui-monospace,monospace; color:var(--gray-30); border:1px solid var(--gray-84); border-radius:8px; background:var(--gray-96); resize:vertical;"></textarea>
-        <div style="display:flex; justify-content:flex-end; margin-top:12px;">
-          <button type="button" @click="copyPrompt" class="btn-secondary">
-            <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>
-            {{ promptCopied ? 'Copied!' : 'Copy prompt' }}
-          </button>
-        </div>
       </section>
 
       <section aria-labelledby="cm-paste-heading" style="background:var(--gray-99); border:1px solid var(--gray-88); border-radius:14px; padding:24px;">
@@ -225,10 +214,42 @@ function handleCancelReview() {
         </button>
       </div>
     </template>
-  </main>
+    </main>
+
+    <aside v-if="isInputStage" class="ri-sidebar">
+      <section aria-labelledby="cm-prompt-heading" style="background:var(--gray-99); border:1px solid var(--gray-88); border-radius:14px; padding:24px;">
+        <h2 id="cm-prompt-heading" class="text-h2" style="margin:0 0 6px;">Need to transcribe a recipe first?</h2>
+        <p style="margin:0 0 14px; font-size:14px; color:var(--gray-46); line-height:1.5;">Copy this prompt and give it to an LLM along with a recipe (text, a photo, a screenshot) to get back HTML in the recipe/1 format this importer expects.</p>
+        <textarea id="cm-prompt-text" readonly :value="RECIPE_IMPORT_PROMPT" rows="6" style="width:100%; box-sizing:border-box; padding:12px 14px; font-size:12px; font-family:ui-monospace,monospace; color:var(--gray-30); border:1px solid var(--gray-84); border-radius:8px; background:var(--gray-96); resize:vertical;"></textarea>
+        <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+          <button type="button" @click="copyPrompt" class="btn-secondary">
+            <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>
+            {{ promptCopied ? 'Copied!' : 'Copy prompt' }}
+          </button>
+        </div>
+      </section>
+    </aside>
+  </div>
 </template>
 
 <style scoped>
+.ri-body {
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+.ri-body--with-sidebar {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  align-items: start;
+}
+.ri-main {
+  padding: 40px 32px 80px;
+}
+.ri-sidebar {
+  padding: 40px 32px 80px 0;
+}
+
 .btn-secondary {
   display:flex; align-items:center; gap:8px; background:none; color:var(--gray-20); border:1px solid var(--gray-84); border-radius:8px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer;
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import QRCode from 'qrcode'
 import {
-  DECODER_BASE_URL,
+  DECODE_ROUTE_PATH,
   INGREDIENT_WARNING_LENGTH,
   compressPayload,
   decompressPayload,
@@ -70,11 +70,12 @@ describe('compressPayload / decompressPayload', () => {
 })
 
 describe('generateQRURL', () => {
-  it('builds a URL with the decoder base and a compressed fragment', () => {
+  it('builds a URL from the current origin, the decode route, and a compressed fragment', () => {
     const recipe = { title: 'Soup', ingredients: [{ raw: '1 onion' }] }
     const url = generateQRURL(recipe)
-    expect(url.startsWith(`${DECODER_BASE_URL}#`)) .toBe(true)
-    const fragment = url.slice(`${DECODER_BASE_URL}#`.length)
+    const base = `${window.location.origin}${DECODE_ROUTE_PATH}#`
+    expect(url.startsWith(base)).toBe(true)
+    const fragment = url.slice(base.length)
     expect(decompressPayload(fragment)).toBe(encodeRecipePayload(recipe))
   })
 
@@ -89,6 +90,19 @@ describe('parseRecipePayload', () => {
   it('splits the decoded text back into title and ingredients', () => {
     const parsed = parseRecipePayload('Pancakes\n2 cups flour\n1 egg')
     expect(parsed).toEqual({ title: 'Pancakes', ingredients: ['2 cups flour', '1 egg'] })
+  })
+
+  it('carries markup through as a plain string, unescaped and unstripped', () => {
+    // decodeRecipe.vue is the layer responsible for never rendering this as HTML
+    // (via Vue's default {{ }} escaping) - this just documents that parsing
+    // itself does no sanitization, so a full round trip preserves the raw text.
+    const malicious = '<img src=x onerror=alert(1)>\n<script>alert(2)</script>'
+    const fragment = compressPayload(malicious)
+    const parsed = parseRecipePayload(decompressPayload(fragment))
+    expect(parsed).toEqual({
+      title: '<img src=x onerror=alert(1)>',
+      ingredients: ['<script>alert(2)</script>'],
+    })
   })
 })
 
