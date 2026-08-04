@@ -748,41 +748,40 @@ const bulkActionHandlers = {
     <p style="color: var(--gray-46);">Project not found.</p>
   </div>
 
-  <!-- Task 1.1 + 1.2: Two-column stack layout with sticky header -->
-  <div v-else class="pv-layout">
+  <!-- Task 1.1 + 1.2: Two-column stack layout with inline header -->
+  <main v-else id="cm-main" class="cm-page-main" style="padding-bottom: 140px;">
 
-    <!-- Sticky header bar -->
-    <header class="pv-header" role="banner">
-      <div class="pv-header-inner">
-        <div class="pv-header-left">
-          <BackButton to="/" style="margin-bottom:4px;">Cookbooks</BackButton>
-          <div class="pv-header-title-row">
-            <h1 class="pv-header-title">{{ project.title || 'Untitled Cookbook' }}</h1>
-            <button
-              type="button"
-              class="pv-icon-btn"
-              aria-label="Edit cookbook details"
-              title="Edit cookbook details"
-              @click="openEditCookbook"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-          </div>
-          <p v-if="project.subtitle" class="pv-header-subtitle">{{ project.subtitle }}</p>
+    <!-- Header row -->
+    <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:28px; flex-wrap:wrap;">
+      <div>
+        <BackButton to="/" style="margin-bottom:4px;">Cookbooks</BackButton>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h1 class="text-page-title">{{ project.title || 'Untitled Cookbook' }}</h1>
+          <button
+            type="button"
+            class="btn-icon"
+            style="width: 30px; height: 30px;"
+            aria-label="Edit cookbook details"
+            title="Edit cookbook details"
+            @click="openEditCookbook"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
         </div>
-        <div class="pv-header-actions">
-          <router-link class="pv-btn-primary" :to="`/projects/${project.id}/print`">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
-            Print Preview
-          </router-link>
-        </div>
+        <p v-if="project.subtitle" style="margin:0; font-size:15px; color:var(--gray-46);">{{ project.subtitle }}</p>
       </div>
-    </header>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <router-link class="btn-new" :to="`/projects/${project.id}/print`">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+          Print Preview
+        </router-link>
+      </div>
+    </div>
 
     <!-- Shared surface for every failed write in this view; see `persist`.
          Sits outside the scrolling region so it is visible wherever the
          failure was triggered from. -->
-    <div v-if="errorMsg" class="pv-error" role="alert">
+    <div v-if="errorMsg" class="pv-error" role="alert" style="margin-bottom: 24px; border-radius: 8px;">
       <span class="pv-error__text">{{ errorMsg }}</span>
       <button
         type="button"
@@ -795,11 +794,10 @@ const bulkActionHandlers = {
     </div>
 
     <!-- Content area: main + sidebar -->
-    <div class="pv-body">
+    <div style="display: grid; grid-template-columns: 1fr 340px; gap: 32px; align-items: start;">
 
       <!-- Main content -->
-      <main id="cm-main" class="pv-main">
-
+      <div>
         <!-- Chapters -->
         <ChapterCard
           v-for="chapter in orderedChapters"
@@ -818,7 +816,7 @@ const bulkActionHandlers = {
         <div v-if="orderedChapters.length === 0" class="empty-state">
           <p>No chapters yet. Use the "New Chapter" form in the sidebar to get started.</p>
         </div>
-      </main>
+      </div>
 
       <!-- Recipe Library Sidebar -->
       <LibrarySidebarPanel
@@ -839,7 +837,7 @@ const bulkActionHandlers = {
       :ordered-chapters="orderedChapters"
       :handlers="bulkActionHandlers"
     />
-  </div>
+  </main>
 
   <!-- Delete Chapter modal (double confirmation) -->
   <ConfirmDialog
@@ -921,121 +919,24 @@ const bulkActionHandlers = {
 </template>
 
 <style scoped>
-/* ================================================================
-   Task 1.1 — Two-column layout
-   ================================================================ */
-
-.pv-layout {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 62px); /* subtract App header height */
-  overflow: hidden;
+/* Buttons */
+.btn-new {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--gray-20); color: var(--gray-99);
+  border: none; border-radius: 8px; padding: 12px 20px;
+  font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none;
 }
+.btn-new:hover { background: var(--gray-30); }
+.btn-new:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.btn-new:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.pv-body {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  flex: 1;
-  overflow: hidden;
-  max-width: 1280px; /* matches the app's standard page-content bound, see visual-qa-report.md */
-  margin: 0 auto;
-  width: 100%;
+.btn-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 7px; border: 1px solid var(--gray-84);
+  background: var(--gray-96); color: var(--gray-46);
+  cursor: pointer; transition: background 0.12s, color 0.12s;
 }
-
-.pv-main {
-  overflow-y: auto;
-  padding: 40px 32px 140px; /* bottom pad for bulk bar */
-}
-
-/* ================================================================
-   Task 1.2 — Sticky header
-   ================================================================ */
-
-.pv-header {
-  background: var(--gray-99);
-  border-bottom: 1px solid var(--gray-88);
-  flex-shrink: 0;
-  z-index: 50;
-}
-
-.pv-header-inner {
-  max-width: 1280px; /* matches the app's standard page-content bound, see visual-qa-report.md */
-  margin: 0 auto;
-  padding: 12px 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.pv-header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.pv-header-title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.pv-header-title {
-  font-family: 'Newsreader', Georgia, serif;
-  font-size: 34px;
-  font-weight: 600;
-  margin: 0;
-  letter-spacing: -0.01em;
-  color: var(--gray-20);
-}
-
-.pv-header-subtitle {
-  margin: 0;
-  font-size: 13px;
-  color: var(--gray-52);
-}
-
-.pv-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.pv-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: var(--gray-20);
-  color: var(--gray-99);
-  text-decoration: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  transition: background 0.15s;
-}
-
-.pv-btn-primary:hover { background: var(--gray-30); }
-
-.pv-icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 7px;
-  border: 1px solid var(--gray-84);
-  background: var(--gray-96);
-  color: var(--gray-46);
-  cursor: pointer;
-  transition: background 0.12s, color 0.12s;
-}
-
-.pv-icon-btn:hover {
-  background: var(--gray-93);
-  color: var(--gray-20);
-}
+.btn-icon:hover { background: var(--gray-93); color: var(--gray-20); }
 
 /* ================================================================
    Shared error banner

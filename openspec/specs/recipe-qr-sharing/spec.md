@@ -4,9 +4,8 @@
 
 Lets a user share a recipe's title and ingredient list to a phone as a scannable QR
 code, entirely offline and serverless — the compressed payload lives in the QR
-code's URL fragment, so no backend or account is involved on either end. A
-standalone static decoder page (`decoder/`, deployed separately from this app)
-extracts and renders the payload as plain text.
+code's URL fragment, so no backend or account is involved on either end. The
+app's own `/decode` route extracts and renders the payload as plain text.
 
 ## Requirements
 
@@ -69,7 +68,10 @@ The system SHALL use lz-string's `compressToEncodedURIComponent` method to compr
 
 ### Requirement: URL-fragment-based data transmission
 
-The system SHALL construct QR code URLs using the format `https://[decoder-domain].com/#[compressed-payload]` so that recipe data is transmitted entirely in the URL fragment and processed client-side without server access to the encoded data.
+The system SHALL construct QR code URLs using the format `[app-origin]/decode#[compressed-payload]`,
+where `[app-origin]` is the origin the app is currently running from, so that recipe data is
+transmitted entirely in the URL fragment and processed client-side without server access to the
+encoded data.
 
 #### Scenario: QR code encodes full recipe data
 - **WHEN** system generates a QR code for a recipe
@@ -77,21 +79,22 @@ The system SHALL construct QR code URLs using the format `https://[decoder-domai
 - **AND** no data is sent to any backend or decoder server endpoint
 
 #### Scenario: Scanner opens QR URL with fragment intact
-- **WHEN** a mobile device scans the QR code and opens the decoder URL
+- **WHEN** a mobile device scans the QR code and opens the `/decode` URL
 - **THEN** the URL fragment (compressed payload) is preserved by the browser
-- **AND** the decoder page JavaScript can access and decompress it via `window.location.hash`
+- **AND** the `/decode` route's code can access and decompress it via `window.location.hash`
 
 ### Requirement: Prevent XSS injection from decompressed content
 
-The decoder application SHALL render decompressed recipe data strictly as plain text using `textContent` or `innerText`, never as HTML via `innerHTML`, to prevent XSS injection attacks.
+The system SHALL render decompressed recipe data in a way that never interprets it as HTML markup,
+so a maliciously crafted payload (e.g. containing script tags) is always displayed as inert text.
 
 #### Scenario: Malicious input in compressed payload
 - **WHEN** a maliciously crafted QR code contains script tags or HTML in the compressed payload
-- **THEN** the decoder application renders the payload as plain text
+- **THEN** the `/decode` route renders the payload as plain text
 - **AND** no JavaScript executes and no HTML elements are rendered
 
 #### Scenario: Copy-to-clipboard action preserves plain text
-- **WHEN** user clicks "Copy to Clipboard" on the decoder page
+- **WHEN** user clicks "Copy to Clipboard" on the `/decode` route
 - **THEN** the plain text ingredient data is copied to the clipboard
 - **AND** HTML entities or tags are not interpreted
 

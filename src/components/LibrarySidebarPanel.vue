@@ -114,12 +114,14 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
 
 <style scoped>
 .pv-sidebar {
-  border-left: 1px solid var(--gray-88);
   background: var(--gray-99);
+  border: 1px solid var(--gray-88);
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  /* Add height to ensure sticky scroll if needed, though with cm-page-main this could just be auto */
 }
 
 .sidebar-section {
