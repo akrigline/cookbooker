@@ -1,4 +1,8 @@
 <script setup>
+import { ref } from 'vue'
+import AboutModal from './components/AboutModal.vue'
+
+const showAbout = ref(false)
 </script>
 
 <template>
@@ -17,10 +21,13 @@
           <router-link to="/library" class="nav-link" active-class="nav-active">Recipe Library</router-link>
           <router-link to="/settings" class="nav-link" active-class="nav-active">Settings</router-link>
         </nav>
+        <button type="button" class="nav-link about-link" @click="showAbout = true">About</button>
       </div>
     </header>
 
     <router-view />
+
+    <AboutModal v-if="showAbout" @close="showAbout = false" />
   </div>
 </template>
 
@@ -40,7 +47,14 @@
   background:var(--gray-93);
 }
 .nav-active {
-  background:oklch(93% 0.02 250) !important; 
+  background:oklch(93% 0.02 250) !important;
   color:oklch(30% 0.1 250) !important;
+}
+
+.about-link {
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-family: inherit;
 }
 </style>
