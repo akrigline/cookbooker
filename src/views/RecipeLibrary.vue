@@ -72,10 +72,10 @@ async function confirmDelete() {
 </script>
 
 <template>
-  <main id="cm-main" style="max-width:1280px; margin:0 auto; padding:40px 32px 80px;">
+  <main id="cm-main" class="cm-page-main">
     <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:28px; flex-wrap:wrap;">
       <div>
-        <h1 style="font-family:'Newsreader',Georgia,serif; font-size:34px; font-weight:600; margin:0 0 6px; letter-spacing:-0.01em;">Recipe Library</h1>
+        <h1 class="text-page-title">Recipe Library</h1>
         <p style="margin:0; font-size:15px; color:var(--gray-46);">{{ resultCountLabel }}</p>
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -115,7 +115,7 @@ async function confirmDelete() {
         </div>
 
         <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;">
-          <h2 :id="`cm-rtitle-${recipe.id}`" :title="recipe.title" style="font-family:'Newsreader',Georgia,serif; font-size:17px; font-weight:600; margin:0; letter-spacing:-0.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">{{ recipe.title }}</h2>
+          <h2 :id="`cm-rtitle-${recipe.id}`" :title="recipe.title" class="text-item-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">{{ recipe.title }}</h2>
           <p :title="getIngredientSummary(recipe)" style="margin:0; font-size:13px; color:var(--gray-46); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">{{ getIngredientPreview(recipe) }}</p>
         </div>
 
@@ -140,11 +140,11 @@ async function confirmDelete() {
 
     <div v-if="deleteTarget" @click="deleteTarget = null" style="position:fixed; inset:0; background:oklch(20% 0.01 75 / 0.45); display:flex; align-items:center; justify-content:center; padding:24px; z-index:200;">
       <div role="alertdialog" aria-modal="true" aria-labelledby="cm-del-heading" aria-describedby="cm-del-desc" @click.stop style="background:var(--gray-99); border-radius:14px; width:100%; max-width:420px; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(20% 0.02 75 / 0.25);">
-        <h2 id="cm-del-heading" style="font-family:'Newsreader',Georgia,serif; font-size:20px; font-weight:600; margin:0 0 10px;">Delete "{{ deleteTarget.title }}"?</h2>
+        <h2 id="cm-del-heading" class="text-h2">Delete "{{ deleteTarget.title }}"?</h2>
         <p id="cm-del-desc" style="margin:0 0 22px; font-size:14px; color:var(--gray-42); line-height:1.5;">This permanently removes the recipe from the Global Recipe Library and withdraws it from every cookbook that includes it. This can't be undone.</p>
         <div style="display:flex; justify-content:flex-end; gap:10px;">
-          <button type="button" @click="deleteTarget = null" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">Cancel</button>
-          <button type="button" @click="confirmDelete" :disabled="deletingId === deleteTarget.id" style="padding:10px 18px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:var(--color-danger); color:white; cursor:pointer;">Delete permanently</button>
+          <button type="button" @click="deleteTarget = null" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">Cancel</button>
+          <button type="button" @click="confirmDelete" :disabled="deletingId === deleteTarget.id" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:var(--color-danger); color:white; cursor:pointer;">Delete permanently</button>
         </div>
       </div>
     </div>

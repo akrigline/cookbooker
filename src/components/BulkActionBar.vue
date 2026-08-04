@@ -26,6 +26,9 @@ const bulkMoveTarget = defineModel('bulkMoveTarget', { type: [String, Number], d
           <option value="">Choose chapter…</option>
           <option v-for="c in orderedChapters" :key="c.id" :value="c.id">{{ c.name }}</option>
         </select>
+        <button type="button" class="bulk-bar__btn bulk-bar__btn--ghost" @click="handlers.onClear">
+          Cancel
+        </button>
         <button
           type="button"
           class="bulk-bar__btn"
@@ -39,9 +42,6 @@ const bulkMoveTarget = defineModel('bulkMoveTarget', { type: [String, Number], d
           @click="handlers.onBulkRemove"
         >
           Remove from cookbook
-        </button>
-        <button type="button" class="bulk-bar__btn bulk-bar__btn--ghost" @click="handlers.onClear">
-          Cancel
         </button>
       </div>
     </div>
@@ -100,7 +100,7 @@ const bulkMoveTarget = defineModel('bulkMoveTarget', { type: [String, Number], d
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
+  padding: 8px 16px; /* compact tier: this is a fixed toolbar, not a modal — see visual-qa-report.md */
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;

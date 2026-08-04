@@ -1,4 +1,13 @@
 :root {
+  /* The chrome palette below (--gray-*) is deliberately light-only — no
+     dark variant exists, and content that escapes the app root's inline
+     color (e.g. a Teleport'd modal) falls back to this. Declaring the
+     scheme keeps browsers from auto-dark-theming form controls/scrollbars
+     and, combined with dropping the dark-mode override below, stops
+     `body`'s color/background from flipping under it while every other
+     surface in the app stays locked to light. */
+  color-scheme: light;
+
   --accent-color: #d97742;
   --bg-primary: #ffffff;
   --bg-secondary: #f7f4ef;
@@ -120,14 +129,57 @@
   color: var(--recipe-on-surface);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: #1c1b19;
-    --bg-secondary: #26241f;
-    --text-primary: #f2efe9;
-    --text-secondary: #b7b2a8;
-    --border-color: #3a3833;
-  }
+/* ================================================================
+   App-chrome page layout + typography scale (visual-qa-report.md)
+   ================================================================
+   Three deliberate page-width tiers, not one — collapsing them to a
+   single width would force data-dense pages (library/dashboard) and
+   single-column forms/empty-states to share a width neither wants. */
+.cm-page-main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 40px 32px 80px;
+}
+
+.cm-page-main--narrow {
+  max-width: 840px;
+}
+
+.cm-page-main--compact {
+  max-width: 640px;
+  padding: 100px 32px;
+  text-align: center;
+}
+
+/* Two heading tiers: primary page titles, and item names inside a
+   card/list row (a distinct semantic role, not a smaller page title). */
+.text-page-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 6px;
+}
+
+.text-page-title--compact {
+  font-size: 26px;
+  letter-spacing: normal;
+  margin: 0 0 12px;
+}
+
+.text-h2 {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.text-item-title {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
 }
 
 *,

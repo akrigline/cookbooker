@@ -58,7 +58,7 @@ onBeforeUnmount(() => {
   background: #fff;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.06);
   border-radius: 4px;
-  margin: 0 auto var(--space-lg);
+  margin: 0 auto;
   overflow: hidden;
   color: #232323;
   position: relative;

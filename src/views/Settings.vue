@@ -146,9 +146,9 @@ async function confirmRestore() {
 </script>
 
 <template>
-  <main id="cm-main" style="max-width:1280px; margin:0 auto; padding:40px 32px 80px;">
+  <main id="cm-main" class="cm-page-main">
     <div style="margin-bottom:28px;">
-      <h1 style="font-family:'Newsreader',Georgia,serif; font-size:34px; font-weight:600; margin:0 0 6px; letter-spacing:-0.01em;">Settings</h1>
+      <h1 class="text-page-title">Settings</h1>
       <p style="margin:0; font-size:15px; color:var(--gray-46);">Manage your data, exports, and database backups.</p>
     </div>
 
@@ -242,7 +242,7 @@ async function confirmRestore() {
 
 .card-section h2 {
   font-family: 'Newsreader', Georgia, serif;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   margin: 0 0 8px;
   color: var(--gray-20);
@@ -337,7 +337,7 @@ async function confirmRestore() {
 
 .modal-title {
   font-family: 'Newsreader', Georgia, serif;
-  font-size: 21px;
+  font-size: 20px;
   font-weight: 600;
   margin: 0 0 10px;
   color: var(--gray-20);

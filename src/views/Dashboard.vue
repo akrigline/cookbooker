@@ -205,12 +205,12 @@ function handleModalKeyDown(e) {
 </script>
 
 <template>
-  <main id="cm-main" style="max-width:1280px; margin:0 auto; padding:40px 32px 80px;">
+  <main id="cm-main" class="cm-page-main">
 
     <!-- Header row -->
     <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:32px; flex-wrap:wrap;">
       <div>
-        <h1 style="font-family:'Newsreader',Georgia,serif; font-size:34px; font-weight:600; margin:0 0 6px; letter-spacing:-0.01em;">Cookbooks</h1>
+        <h1 class="text-page-title">Cookbooks</h1>
         <p style="margin:0; font-size:15px; color:var(--gray-46);">{{ projectCountLabel }}</p>
       </div>
       <button type="button" @click="openCreate" class="btn-new" :disabled="submitting">
@@ -235,7 +235,7 @@ function handleModalKeyDown(e) {
           <template v-if="(project.coverTemplate || 'classic') !== 'modern'">
             <div style="height:100%; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px 20px; gap:9px;">
               <div aria-hidden="true" :style="{ width:'34px', height:'2px', background: project.accentColor || '#d97742' }"></div>
-              <h2 :id="`cm-title-${project.id}`" style="font-family:'Newsreader',Georgia,serif; font-size:21px; font-weight:600; margin:0; letter-spacing:-0.01em; overflow-wrap:break-word;">{{ project.title || 'Untitled Cookbook' }}</h2>
+              <h2 :id="`cm-title-${project.id}`" class="text-item-title" style="overflow-wrap:break-word;">{{ project.title || 'Untitled Cookbook' }}</h2>
               <p v-if="project.subtitle" style="margin:0; font-size:13px; font-style:italic; color:var(--gray-46);">{{ project.subtitle }}</p>
               <div aria-hidden="true" :style="{ width:'34px', height:'2px', background: project.accentColor || '#d97742' }"></div>
             </div>
@@ -246,7 +246,7 @@ function handleModalKeyDown(e) {
             <div aria-hidden="true" :style="{ position:'absolute', inset:'10px', border:`1.5px solid ${project.accentColor || '#d97742'}` }"></div>
             <div aria-hidden="true" :style="{ position:'absolute', left:'10px', top:'10px', bottom:'10px', width:'5px', background: project.accentColor || '#d97742' }"></div>
             <div style="position:relative; height:100%; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; padding:26px 30px; gap:7px;">
-              <h2 :id="`cm-title-${project.id}`" style="font-family:'Newsreader',Georgia,serif; font-size:21px; font-weight:600; margin:0; letter-spacing:-0.01em; overflow-wrap:break-word;">{{ project.title || 'Untitled Cookbook' }}</h2>
+              <h2 :id="`cm-title-${project.id}`" class="text-item-title" style="overflow-wrap:break-word;">{{ project.title || 'Untitled Cookbook' }}</h2>
               <p v-if="project.subtitle" style="margin:0; font-size:13px; font-style:italic; color:var(--gray-46);">{{ project.subtitle }}</p>
             </div>
           </template>
@@ -286,7 +286,7 @@ function handleModalKeyDown(e) {
       <div role="dialog" aria-modal="true" aria-labelledby="cm-form-heading" @click.stop class="modal-box">
 
         <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:20px;">
-          <h2 id="cm-form-heading" style="font-family:'Newsreader',Georgia,serif; font-size:22px; font-weight:600; margin:0;">{{ formHeading }}</h2>
+          <h2 id="cm-form-heading" class="text-h2" style="margin:0;">{{ formHeading }}</h2>
           <button type="button" aria-label="Close dialog" @click="closeModal" class="btn-close">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
@@ -377,7 +377,7 @@ function handleModalKeyDown(e) {
   <Teleport to="body">
     <div v-if="showDeleteModal" @click="closeModal" @keydown="handleModalKeyDown" class="modal-backdrop">
       <div role="alertdialog" aria-modal="true" aria-labelledby="cm-delete-heading" aria-describedby="cm-delete-desc" @click.stop class="modal-box modal-box-sm">
-        <h2 id="cm-delete-heading" style="font-family:'Newsreader',Georgia,serif; font-size:20px; font-weight:600; margin:0 0 10px;">Delete "{{ deleteTarget?.title }}"?</h2>
+        <h2 id="cm-delete-heading" class="text-h2">Delete "{{ deleteTarget?.title }}"?</h2>
         <p id="cm-delete-desc" style="margin:0 0 22px; font-size:14px; color:var(--gray-42); line-height:1.5;">
           This removes the cookbook project and its chapters. Its recipes stay in the Global Recipe Library and in any other cookbooks that use them. This can't be undone.
         </p>
@@ -492,7 +492,7 @@ function handleModalKeyDown(e) {
 .btn-layout:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .btn-cancel {
-  padding: 10px 18px; font-size: 14px; font-weight: 600;
+  padding: 10px 20px; font-size: 14px; font-weight: 600;
   border-radius: 8px; border: 1px solid var(--gray-84);
   background: none; cursor: pointer;
 }
@@ -509,7 +509,7 @@ function handleModalKeyDown(e) {
 .btn-submit:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .btn-delete {
-  padding: 10px 18px; font-size: 14px; font-weight: 600;
+  padding: 10px 20px; font-size: 14px; font-weight: 600;
   border-radius: 8px; border: none;
   background: var(--color-danger); color: white; cursor: pointer;
 }

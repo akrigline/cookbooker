@@ -1,6 +1,7 @@
 <script setup>
 import Modal from './Modal.vue'
 import RecipeSheet from './RecipeSheet.vue'
+import PagePreview from './PagePreview.vue'
 
 const props = defineProps({
   recipe: {
@@ -17,13 +18,13 @@ const emit = defineEmits(['close', 'edit'])
 </script>
 
 <template>
-  <Modal box-class="recipe-preview-modal" @close="emit('close')">
+  <Modal box-class="recipe-preview-modal" title-id="modal-title" @close="emit('close')">
     <div class="rpd-container">
       <header class="rpd-header">
-        <h2 id="modal-title" class="sr-only">Preview of {{ recipe.title || 'Recipe' }}</h2>
+        <h2 id="modal-title" class="rpd-title text-h2">{{ recipe.title || 'Recipe' }}</h2>
         <div class="rpd-actions">
-          <button type="button" class="pv-btn-primary" @click="emit('edit')">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <button type="button" class="rpd-edit-btn" @click="emit('edit')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             Edit Recipe
           </button>
           <button type="button" class="rpd-close" aria-label="Close preview" @click="emit('close')">
@@ -32,7 +33,9 @@ const emit = defineEmits(['close', 'edit'])
         </div>
       </header>
       <div class="rpd-content">
-        <RecipeSheet :recipe="recipe" :accent-color="accentColor" />
+        <PagePreview>
+          <RecipeSheet :recipe="recipe" :accent-color="accentColor" />
+        </PagePreview>
       </div>
     </div>
   </Modal>
@@ -41,8 +44,8 @@ const emit = defineEmits(['close', 'edit'])
 <style>
 /* Global class so Modal can use it */
 .modal-box.recipe-preview-modal {
-  max-width: 900px;
-  width: 90vw;
+  width: fit-content;
+  max-width: calc(100vw - 48px);
   padding: 0;
   overflow: hidden;
   display: flex;
@@ -61,23 +64,52 @@ const emit = defineEmits(['close', 'edit'])
 
 .rpd-header {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   padding: 16px 24px;
-  border-bottom: 1px solid oklch(90% 0 0);
-  background: oklch(98% 0 0);
+  border-bottom: 1px solid var(--gray-88);
+  background: var(--gray-99);
+}
+
+.rpd-title {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rpd-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  flex-shrink: 0;
 }
+
+.rpd-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background: var(--gray-20);
+  color: var(--gray-99);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.rpd-edit-btn:hover { background: var(--gray-30); }
+.rpd-edit-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .rpd-close {
   background: none;
   border: none;
   cursor: pointer;
-  color: oklch(40% 0 0);
+  color: var(--gray-42);
   padding: 4px;
   display: flex;
   align-items: center;
@@ -86,22 +118,14 @@ const emit = defineEmits(['close', 'edit'])
 }
 
 .rpd-close:hover {
-  background: oklch(90% 0 0);
-  color: oklch(20% 0 0);
+  background: var(--gray-93);
+  color: var(--gray-20);
 }
+
+.rpd-close:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .rpd-content {
   flex: 1;
   overflow-y: auto;
-  position: relative;
-  /* Add some padding around the sheet for presentation */
-  padding: 32px;
-  background: oklch(95% 0 0);
-}
-
-/* Ensure the sheet has a shadow like paper */
-.rpd-content :deep(.recipe-sheet) {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  margin: 0 auto;
 }
 </style>

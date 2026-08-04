@@ -74,3 +74,16 @@ function printPage() {
     <p>Project not found.</p>
   </main>
 </template>
+
+<style scoped>
+/* PagePreview itself carries no inter-page spacing (a single preview,
+   e.g. RecipePreviewDialog, shouldn't have to cancel out a margin it
+   never wanted). This view stacks many pages on screen, so it owns the
+   gap between them — print already breaks each page via `break-after`,
+   so this is screen-only. */
+@media screen {
+  .print-project :deep(.page-preview) {
+    margin-bottom: var(--space-lg);
+  }
+}
+</style>

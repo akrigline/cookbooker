@@ -10,6 +10,7 @@ import BulkActionBar from '../components/BulkActionBar.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import EditCookbookModal from '../components/EditCookbookModal.vue'
 import ChapterNameModal from '../components/ChapterNameModal.vue'
+import BackButton from '../components/BackButton.vue'
 import { nextSequence } from '../js/sequence'
 
 // ---------------------------------------------------------------------------
@@ -754,15 +755,7 @@ const bulkActionHandlers = {
     <header class="pv-header" role="banner">
       <div class="pv-header-inner">
         <div class="pv-header-left">
-          <button
-            type="button"
-            class="pv-back-btn"
-            aria-label="Back to Cookbooks"
-            @click="router.push('/')"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            Cookbooks
-          </button>
+          <BackButton to="/" style="margin-bottom:4px;">Cookbooks</BackButton>
           <div class="pv-header-title-row">
             <h1 class="pv-header-title">{{ project.title || 'Untitled Cookbook' }}</h1>
             <button
@@ -944,11 +937,14 @@ const bulkActionHandlers = {
   grid-template-columns: 1fr 340px;
   flex: 1;
   overflow: hidden;
+  max-width: 1280px; /* matches the app's standard page-content bound, see visual-qa-report.md */
+  margin: 0 auto;
+  width: 100%;
 }
 
 .pv-main {
   overflow-y: auto;
-  padding: 28px 32px 140px; /* bottom pad for bulk bar */
+  padding: 40px 32px 140px; /* bottom pad for bulk bar */
 }
 
 /* ================================================================
@@ -963,6 +959,8 @@ const bulkActionHandlers = {
 }
 
 .pv-header-inner {
+  max-width: 1280px; /* matches the app's standard page-content bound, see visual-qa-report.md */
+  margin: 0 auto;
   padding: 12px 32px;
   display: flex;
   align-items: center;
@@ -977,23 +975,6 @@ const bulkActionHandlers = {
   gap: 2px;
 }
 
-.pv-back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--gray-52);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin-bottom: 4px;
-  transition: color 0.12s;
-}
-
-.pv-back-btn:hover { color: var(--gray-20); }
-
 .pv-header-title-row {
   display: flex;
   align-items: center;
@@ -1002,7 +983,7 @@ const bulkActionHandlers = {
 
 .pv-header-title {
   font-family: 'Newsreader', Georgia, serif;
-  font-size: 22px;
+  font-size: 34px;
   font-weight: 600;
   margin: 0;
   letter-spacing: -0.01em;

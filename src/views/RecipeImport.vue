@@ -5,6 +5,7 @@ import { parseRecipeImportHtml } from '../js/recipeImport'
 import { RECIPE_IMPORT_PROMPT } from '../js/recipeImportPrompt'
 import RecipeSheet from '../components/RecipeSheet.vue'
 import PagePreview from '../components/PagePreview.vue'
+import BackButton from '../components/BackButton.vue'
 
 const recipesStore = useRecipesStore()
 
@@ -133,22 +134,19 @@ function handleCancelReview() {
 </script>
 
 <template>
-  <main id="cm-main" style="max-width:840px; margin:0 auto; padding:40px 32px 100px;">
-    <router-link to="/library" style="display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:600; text-decoration:none; margin-bottom:18px;">
-      <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-      Back to Recipe Library
-    </router-link>
+  <main id="cm-main" class="cm-page-main cm-page-main--narrow">
+    <BackButton to="/library">Back to Recipe Library</BackButton>
 
     <div v-if="success" style="margin-bottom:20px; padding:12px; background:var(--color-success-bg); color:var(--color-success); border:1px solid oklch(85% 0.1 140); border-radius:8px;">
       {{ success }}
     </div>
 
     <template v-if="isInputStage">
-      <h1 style="font-family:'Newsreader',Georgia,serif; font-size:32px; font-weight:600; margin:0 0 8px; letter-spacing:-0.01em;">Import Recipes</h1>
+      <h1 class="text-page-title" style="margin:0 0 8px;">Import Recipes</h1>
       <p style="margin:0 0 32px; font-size:15px; color:var(--gray-46); line-height:1.5;">Bring in recipes transcribed elsewhere (Drive docs, PDFs, bookmarked pages, screenshots) using the structured recipe/1 HTML format. Nothing is added to your library until you review and confirm.</p>
 
       <section aria-labelledby="cm-file-heading" style="background:var(--gray-99); border:1px solid var(--gray-88); border-radius:14px; padding:24px; margin-bottom:20px;">
-        <h2 id="cm-file-heading" style="font-family:'Newsreader',Georgia,serif; font-size:19px; font-weight:600; margin:0 0 6px;">Select a file</h2>
+        <h2 id="cm-file-heading" class="text-h2" style="margin:0 0 6px;">Select a file</h2>
         <p style="margin:0 0 16px; font-size:14px; color:var(--gray-46);">Choose an .html file containing one or more recipe/1 elements.</p>
         <label for="cm-file-input" style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);">Select recipe HTML file or files</label>
         <input id="cm-file-input" type="file" accept=".html,.htm,text/html" multiple @change="handleFileChange" style="font-size:14px;" />
@@ -156,7 +154,7 @@ function handleCancelReview() {
       </section>
 
       <section aria-labelledby="cm-prompt-heading" style="background:var(--gray-99); border:1px solid var(--gray-88); border-radius:14px; padding:24px; margin-bottom:20px;">
-        <h2 id="cm-prompt-heading" style="font-family:'Newsreader',Georgia,serif; font-size:19px; font-weight:600; margin:0 0 6px;">Need to transcribe a recipe first?</h2>
+        <h2 id="cm-prompt-heading" class="text-h2" style="margin:0 0 6px;">Need to transcribe a recipe first?</h2>
         <p style="margin:0 0 14px; font-size:14px; color:var(--gray-46); line-height:1.5;">Copy this prompt and give it to an LLM along with a recipe (text, a photo, a screenshot) to get back HTML in the recipe/1 format this importer expects.</p>
         <textarea id="cm-prompt-text" readonly :value="RECIPE_IMPORT_PROMPT" rows="6" style="width:100%; box-sizing:border-box; padding:12px 14px; font-size:12px; font-family:ui-monospace,monospace; color:var(--gray-30); border:1px solid var(--gray-84); border-radius:8px; background:var(--gray-96); resize:vertical;"></textarea>
         <div style="display:flex; justify-content:flex-end; margin-top:12px;">
@@ -168,7 +166,7 @@ function handleCancelReview() {
       </section>
 
       <section aria-labelledby="cm-paste-heading" style="background:var(--gray-99); border:1px solid var(--gray-88); border-radius:14px; padding:24px;">
-        <h2 id="cm-paste-heading" style="font-family:'Newsreader',Georgia,serif; font-size:19px; font-weight:600; margin:0 0 6px;">Or paste HTML</h2>
+        <h2 id="cm-paste-heading" class="text-h2" style="margin:0 0 6px;">Or paste HTML</h2>
         <p style="margin:0 0 12px; font-size:14px; color:var(--gray-46);">Paste recipe/1 HTML text directly.</p>
         <textarea id="cm-paste-area" v-model="pastedHtml" rows="8" placeholder="<div data-cm-format=&quot;recipe&quot; data-cm-version=&quot;1&quot;>…</div>" style="width:100%; box-sizing:border-box; padding:12px 14px; font-size:13px; font-family:ui-monospace,monospace; border:1px solid var(--gray-78); border-radius:8px; resize:vertical;"></textarea>
         <div style="display:flex; justify-content:flex-end; margin-top:12px;">
@@ -182,13 +180,13 @@ function handleCancelReview() {
     </template>
 
     <template v-if="isReviewStage">
-      <h1 tabindex="-1" style="font-family:'Newsreader',Georgia,serif; font-size:32px; font-weight:600; margin:0 0 8px; letter-spacing:-0.01em; outline:none;">Review Import</h1>
+      <h1 tabindex="-1" class="text-page-title" style="margin:0 0 8px; outline:none;">Review Import</h1>
       <p style="margin:0 0 28px; font-size:15px; color:var(--gray-46);">
         {{ candidates.length }} recipe{{ candidates.length === 1 ? '' : 's' }} parsed successfully. Review below and confirm to add them to your library.
       </p>
 
       <section v-if="candidates.length">
-        <h2 style="font-family:'Newsreader',Georgia,serif; font-size:18px; font-weight:600; margin:0 0 12px;">Ready to import</h2>
+        <h2 class="text-h2">Ready to import</h2>
         <div style="display:flex; flex-direction:column; gap:20px; margin-bottom:32px;">
           <div v-for="c in candidates" :key="c.key" style="background:var(--gray-99); border:1px solid var(--gray-88); border-radius:12px; overflow:hidden; box-shadow:0 1px 3px oklch(20% 0.02 75 / 0.06);">
             <div style="display:flex; align-items:center; gap:10px; padding:14px 20px; background:var(--gray-96); border-bottom:1px solid var(--gray-88);">
@@ -205,7 +203,7 @@ function handleCancelReview() {
       </section>
 
       <section v-if="failures.length || rejectedSources.length">
-        <h2 style="font-family:'Newsreader',Georgia,serif; font-size:18px; font-weight:600; margin:0 0 12px;">Couldn't be imported</h2>
+        <h2 class="text-h2">Couldn't be imported</h2>
         <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:32px;">
           <div v-for="f in failures" :key="f.key" style="background:oklch(97% 0.02 25); border:1px solid oklch(88% 0.05 25); border-radius:10px; padding:14px 18px;">
             <p style="margin:0 0 4px; font-size:14px; font-weight:600;">{{ f.label }}</p>
@@ -238,14 +236,14 @@ function handleCancelReview() {
 .btn-secondary:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
 
 .btn-primary {
-  background:var(--gray-20); color:var(--gray-99); border:none; border-radius:8px; padding:11px 20px; font-size:14px; font-weight:600; cursor:pointer;
+  background:var(--gray-20); color:var(--gray-99); border:none; border-radius:8px; padding:10px 20px; font-size:14px; font-weight:600; cursor:pointer;
 }
 .btn-primary:hover { background:var(--gray-30); }
 .btn-primary:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-cancel {
-  padding:11px 20px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;
+  padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;
 }
 .btn-cancel:hover { background:var(--gray-93); }
 .btn-cancel:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
