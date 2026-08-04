@@ -134,7 +134,7 @@ function parseRecipeElement(root, index) {
 }
 
 /**
- * Parses cookbook-maker's `recipe/1` structured HTML import format.
+ * Parses cookbooker's `recipe/1` structured HTML import format.
  * Returns { recipes, failures, rejected } - `rejected` is true when the file
  * carries no `data-cm-format="recipe"` marker at all (strict whole-file
  * rejection, per the format's strict-parsing contract), in which case

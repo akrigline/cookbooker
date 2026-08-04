@@ -14,7 +14,7 @@ import { renderChefNotes } from './richtext'
 function wrapDocument(notesHtml) {
   return `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="cookbook-maker-format" content="recipe/1"></head>
+<head><meta charset="utf-8"><meta name="cookbooker-format" content="recipe/1"></head>
 <body>
   <article class="cm-recipe" data-cm-format="recipe" data-cm-version="1">
     <h1 class="cm-title">Test Recipe</h1>

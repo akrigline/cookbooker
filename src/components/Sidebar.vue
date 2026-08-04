@@ -15,7 +15,7 @@ defineEmits(['toggle', 'navigate'])
   </button>
   <div v-if="open" class="scrim" @click="$emit('toggle')" />
   <aside class="sidebar" :class="{ 'sidebar--open': open }">
-    <p class="brand">Cookbook Maker</p>
+    <p class="brand">Cookbooker</p>
     <nav>
       <router-link to="/" @click="$emit('navigate')">Dashboard</router-link>
       <router-link to="/library" @click="$emit('navigate')">Recipe Library</router-link>

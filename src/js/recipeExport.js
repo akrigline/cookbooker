@@ -52,7 +52,7 @@ export async function exportRecipeToHtml(recipe) {
 <head>
   <meta charset="utf-8">
   <title>${titleHtml}</title>
-  <meta name="cookbook-maker-format" content="recipe/1">
+  <meta name="cookbooker-format" content="recipe/1">
 </head>
 <body>
   <article class="cm-recipe" data-cm-format="recipe" data-cm-version="1">

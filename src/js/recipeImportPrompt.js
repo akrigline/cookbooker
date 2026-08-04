@@ -1,9 +1,9 @@
 // Paste-ready LLM instructions for transcribing source material into the
-// cookbook-maker `recipe/1` structured HTML import format. Kept as a plain
+// cookbooker `recipe/1` structured HTML import format. Kept as a plain
 // string (not templated) so what the user copies is exactly what get parsed.
 export const RECIPE_IMPORT_PROMPT = `You are transcribing one or more recipes from messy source material (a document,
 screenshot, PDF, or web page I'll paste or attach) into a specific HTML format so I can
-import it into a recipe app called cookbook-maker. Follow this exactly.
+import it into a recipe app called cookbooker. Follow this exactly.
 
 OUTPUT FORMAT — for EACH recipe, produce one block in this exact shape:
 
@@ -28,8 +28,8 @@ OUTPUT FORMAT — for EACH recipe, produce one block in this exact shape:
     <p>Optional: prep/cook time, servings, tags, storage tips, or any other
     context from the source that doesn't fit above. For emphasis, use markdown
     syntax written as literal text — **bold** (double asterisks) and *italic*
-    (single asterisks) only. Do NOT use HTML tags like &lt;strong&gt; or
-    &lt;em&gt; here; they will be stripped on import and the formatting will be
+    (single asterisks) only. Do NOT use HTML tags like <strong> or
+    <em> here; they will be stripped on import and the formatting will be
     lost.</p>
   </section>
 
@@ -37,7 +37,7 @@ OUTPUT FORMAT — for EACH recipe, produce one block in this exact shape:
 </article>
 
 Wrap the whole thing in a minimal valid HTML document (<!DOCTYPE html>, <head> with
-<meta charset="utf-8"> and <meta name="cookbook-maker-format" content="recipe/1">,
+<meta charset="utf-8"> and <meta name="cookbooker-format" content="recipe/1">,
 <body>). If I gave you MULTIPLE recipes, put multiple <article class="cm-recipe" ...>
 blocks in the SAME <body>, one per recipe — do not create separate files.
 
@@ -47,7 +47,17 @@ RULES:
    best guess in [UNCLEAR: ...], e.g. "[UNCLEAR: 1/2] tsp cinnamon".
 2. Keep ingredient lines as plain text: quantity + unit + ingredient name, in the
    order a person would read them (e.g. "2 tbsp olive oil", not "olive oil - 2 tbsp").
-   Don't split quantity/unit/name into separate elements.
+   Don't split quantity/unit/name into separate elements. If the source writes a
+   numeric quantity as "[QTY] of a [UNIT]" or "[QTY] of an [UNIT]" — filler words
+   sitting between the number and the unit — rewrite it so the unit word immediately
+   follows the quantity with nothing in between: "1/2 of a cup of sugar" becomes
+   "1/2 cup of sugar", and "1/8 of a teaspoon of salt" becomes "1/8 teaspoon of
+   salt". This only applies when the quantity itself is numeric (a number, fraction,
+   or mixed number like "1/2", "2 1/2", "1½") — leave spelled-out quantities ("a
+   quarter of a cup", "a dozen eggs") exactly as written, don't try to convert them
+   to numerals. Also leave alone any line where the unit already directly follows
+   the quantity, such as "2 cups of flour" — that phrasing is already correct and
+   must not be changed.
 3. Break run-on or paragraph-style instructions into individual numbered steps — one
    action per <li>. Don't combine multiple steps into one line.
 4. If the source has prep time, cook time, servings, yield, or tags, put that

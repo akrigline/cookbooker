@@ -4,7 +4,7 @@ import LZString from 'lz-string'
 // server component and never receives the payload — it's carried entirely
 // in the URL fragment. See openspec/changes/recipe-qr-code-sharing/design.md
 // Decision 3 for why the decoder isn't part of this app.
-export const DECODER_BASE_URL = 'https://recipe-decode.cookbook-maker.app/'
+export const DECODER_BASE_URL = 'https://recipe-decode.cookbooker.app/'
 
 // Threshold on ingredient text (pre-compression) above which reliable QR
 // scanning is not guaranteed; see design.md Decision 5.

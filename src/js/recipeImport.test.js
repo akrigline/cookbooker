@@ -4,7 +4,7 @@ import { parseRecipeImportHtml } from './recipeImport'
 function wrapDocument(body) {
   return `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="cookbook-maker-format" content="recipe/1"></head>
+<head><meta charset="utf-8"><meta name="cookbooker-format" content="recipe/1"></head>
 <body>${body}</body>
 </html>`
 }
