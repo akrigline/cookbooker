@@ -17,7 +17,11 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 - The router (`src/router/index.js`) uses `createWebHistory()`. A `spaFallback404` plugin in
   `vite.config.js` copies `dist/index.html` to `dist/404.html` after build, so static hosts without a
   rewrite rule (e.g. GitHub Pages) serve the app shell for deep links/hard refreshes instead of a bare
-  404. No GitHub Pages deploy config exists yet — this only prepares the app for that.
+  404. Deployed via `.github/workflows/deploy.yml` (Actions-based Pages deploy) at
+  `cookbooker.akrigline.com` — `public/CNAME` carries the custom domain into every build (GitHub Pages
+  needs it in the published artifact for Actions-based deploys, since there's no `gh-pages` branch to
+  hold it) and `vite.config.js`'s `base` is `'/'` to match serving from the domain root rather than a
+  `/cookbooker/` project subpath.
 - `chrome-devtools-mcp` is configured and ready. Setup (resolved 2026-08-02):
   - MCP config: `~/.gemini/config/mcp_config.json` (server name: `chrome-devtools`)
   - Shim: `~/.gemini/antigravity-cli/mcp/chrome-devtools-shim.mjs` — injects `--executablePath` and
