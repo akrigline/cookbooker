@@ -52,7 +52,11 @@ export function decompressPayload(compressed) {
 
 export function generateQRURL(recipe, options) {
   const payload = encodeRecipePayload(recipe, options)
-  return `${window.location.origin}${DECODE_ROUTE_PATH}#${compressPayload(payload)}`
+  // BASE_URL is '/' at the domain root (dev, tests) and e.g. '/cookbooker/'
+  // when built for a GitHub Pages project site — strip the trailing slash so
+  // it composes with DECODE_ROUTE_PATH's leading one instead of doubling it.
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+  return `${window.location.origin}${base}${DECODE_ROUTE_PATH}#${compressPayload(payload)}`
 }
 
 export function parseRecipePayload(text) {

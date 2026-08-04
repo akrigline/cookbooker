@@ -22,5 +22,9 @@ function spaFallback404() {
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Served from https://akrigline.github.io/cookbooker/, a subpath, not the
+  // domain root — every built asset URL and the router base need to account
+  // for that.
+  base: '/cookbooker/',
   plugins: [vue(), spaFallback404()],
 })
