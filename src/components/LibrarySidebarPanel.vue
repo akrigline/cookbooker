@@ -120,8 +120,9 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  position: relative;
-  /* Add height to ensure sticky scroll if needed, though with cm-page-main this could just be auto */
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 48px);
 }
 
 .sidebar-section {
@@ -130,6 +131,7 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
 
 .sidebar-section--library {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -193,8 +195,7 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
   padding: 0;
   overflow-y: auto;
   flex: 1;
-  /* bottom padding to ensure last item isn't hidden by bulk bar */
-  padding-bottom: 80px;
+  min-height: 0;
 }
 
 .lib-list__empty {
@@ -264,10 +265,7 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
 .lib-row__add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .lib-bulk-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  flex-shrink: 0;
   background: var(--gray-99);
   border-top: 1px solid var(--gray-88);
   padding: 10px 14px;
