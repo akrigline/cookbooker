@@ -114,15 +114,7 @@ function usWeightFromGrams(grams) {
   return `${formatQuantity(ounces)} oz`
 }
 
-/**
- * Given a parsed ingredient ({ quantity, unit, symbol, ingredient }), returns
- * the dual-unit display parts, or null when the unit is unrecognized/absent
- * (e.g. "2 cloves garlic", "1 pinch salt") and no conversion applies.
- */
-export function convertIngredient({ quantity, symbol, ingredient }) {
-  const qty = quantity == null ? null : Number(quantity)
-  if (qty == null || Number.isNaN(qty) || !symbol) return null
-
+function convertSingleQuantity(qty, symbol, ingredient) {
   if (US_VOLUME_SYMBOLS.has(symbol)) {
     const unit = VOLUME_UNITS[symbol]
     const volMl = qty * unit.ml
@@ -157,6 +149,41 @@ export function convertIngredient({ quantity, symbol, ingredient }) {
 }
 
 /**
+ * Given a parsed ingredient ({ quantity, minQty, maxQty, symbol, ingredient }),
+ * returns the dual-unit display parts, or null when the unit is
+ * unrecognized/absent (e.g. "2 cloves garlic", "1 pinch salt") and no
+ * conversion applies. When minQty/maxQty differ (a quantity range, e.g.
+ * "4 to 4 1/2 cups"), both endpoints are converted and joined with "to".
+ */
+export function convertIngredient({ quantity, minQty, maxQty, symbol, ingredient }) {
+  const min = minQty == null ? (quantity == null ? null : Number(quantity)) : Number(minQty)
+  if (min == null || Number.isNaN(min) || !symbol) return null
+  const maxCandidate = maxQty == null ? min : Number(maxQty)
+  const max = Number.isNaN(maxCandidate) ? min : maxCandidate
+
+  if (max === min) return convertSingleQuantity(min, symbol, ingredient)
+
+  const a = convertSingleQuantity(min, symbol, ingredient)
+  const b = convertSingleQuantity(max, symbol, ingredient)
+  if (!a || !b) return null
+  return { us: `${a.us} to ${b.us}`, metric: `${a.metric} to ${b.metric}`, bypassedWeight: a.bypassedWeight || b.bypassedWeight }
+}
+
+/**
+ * Formats a possibly-ranged quantity (minQty/maxQty from a parsed
+ * ingredient) as display text, e.g. "4" or "4 to 4 1/2". Returns '' when
+ * there's no quantity.
+ */
+export function formatQuantityRange(minQty, maxQty) {
+  const min = minQty == null ? null : Number(minQty)
+  if (min == null || Number.isNaN(min)) return ''
+  const maxCandidate = maxQty == null ? min : Number(maxQty)
+  const max = Number.isNaN(maxCandidate) ? min : maxCandidate
+  if (max === min) return formatQuantity(min)
+  return `${formatQuantity(min)} to ${formatQuantity(max)}`
+}
+
+/**
  * Renders a parsed ingredient line as display text:
  * "[US] ([Metric]) [ingredient]" when a known unit is recognized, otherwise
  * falls back to the raw quantity/unit/ingredient text as typed.
@@ -165,7 +192,7 @@ export function formatIngredientLine(parsed) {
   const converted = convertIngredient(parsed)
   const name = parsed.ingredient ?? ''
   if (!converted) {
-    const qty = parsed.quantity ? formatQuantity(Number(parsed.quantity)) : ''
+    const qty = formatQuantityRange(parsed.minQty ?? parsed.quantity, parsed.maxQty ?? parsed.quantity)
     const unit = parsed.unit ?? ''
     return [qty, unit, name].filter(Boolean).join(' ')
   }

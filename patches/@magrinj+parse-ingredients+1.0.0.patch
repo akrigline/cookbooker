@@ -7,18 +7,35 @@ new mode 100755
 diff --git a/node_modules/@magrinj/parse-ingredients/lib/index.cjs b/node_modules/@magrinj/parse-ingredients/lib/index.cjs
 old mode 100644
 new mode 100755
-index e57e028..00ba1c2
+index e57e028..4cfaccd
 --- a/node_modules/@magrinj/parse-ingredients/lib/index.cjs
 +++ b/node_modules/@magrinj/parse-ingredients/lib/index.cjs
-@@ -60,7 +60,7 @@ function findQuantityAndConvertIfUnicode(ingredientLine, options) {
+@@ -60,8 +60,24 @@ function findQuantityAndConvertIfUnicode(ingredientLine, options) {
  	const numericAndFractionRegex = /(\d+\s\d+\/\d+)|(\d+\/\d+)|(\d+\.\d+)|\d+/g;
  	const prepositions = require_locales.locales[language].prepositions.join("|");
  	const numericRangeWithSpaceRegex = new RegExp(`^(\\d+\\-\\d+)|^(\\d+\\s\\-\\s\\d+)|^(\\d+\\s(${prepositions})\\s\\d+)`, "g");
 -	const unicodeFractionRegex = /\d*[^\u0020-\u007F]+/g;
 +	const unicodeFractionRegex = /\d*\s*[^\u0020-\u007F]+/g;
  	const onlyUnicodeFraction = /[^\u0020-\u007F]+/g;
++	const rangeTokenPattern = `\\d+\\s\\d+\\/\\d+|\\d+\\/\\d+|\\d+\\.\\d+|\\d+\\s*[^\\u0020-\\u007F]+|[^\\u0020-\\u007F]+|\\d+`;
++	const rangeSeparatorPattern = `-|\\s-\\s|\\s(?:${prepositions})\\s`;
++	const fractionalRangeRegex = new RegExp(`^(${rangeTokenPattern})(?:${rangeSeparatorPattern})(${rangeTokenPattern})`);
++	const fractionalRangeMatch = ingredientLine.match(fractionalRangeRegex);
++	if (fractionalRangeMatch) {
++		const [fullMatch, minToken, maxToken] = fractionalRangeMatch;
++		const resolveToken = (token) => {
++			const cleanedToken = removeAccentuation(token);
++			const numericPart = getFirstMatch(cleanedToken, numericAndFractionRegex);
++			const unicodePart = getFirstMatch(cleanedToken, onlyUnicodeFraction);
++			return unicodeObj[unicodePart] ? (numericPart ? `${numericPart} ${unicodeObj[unicodePart]}` : unicodeObj[unicodePart]) : token;
++		};
++		const minQty = convertFromFraction(resolveToken(minToken));
++		const maxQty = convertFromFraction(resolveToken(maxToken));
++		return [`${minQty}-${maxQty}`, ingredientLine.slice(fullMatch.length).trim()];
++	}
  	if (ingredientLine.match(unicodeFractionRegex)) {
  		const numericPart = getFirstMatch(ingredientLine, numericAndFractionRegex);
+ 		const unicodePart = getFirstMatch(ingredientLine, numericPart ? onlyUnicodeFraction : unicodeFractionRegex);
 diff --git a/node_modules/@magrinj/parse-ingredients/lib/index.d.cts b/node_modules/@magrinj/parse-ingredients/lib/index.d.cts
 old mode 100644
 new mode 100755
@@ -28,18 +45,35 @@ new mode 100755
 diff --git a/node_modules/@magrinj/parse-ingredients/lib/index.mjs b/node_modules/@magrinj/parse-ingredients/lib/index.mjs
 old mode 100644
 new mode 100755
-index 9ffb245..cf885d1
+index 9ffb245..f79d72a
 --- a/node_modules/@magrinj/parse-ingredients/lib/index.mjs
 +++ b/node_modules/@magrinj/parse-ingredients/lib/index.mjs
-@@ -56,7 +56,7 @@ function findQuantityAndConvertIfUnicode(ingredientLine, options) {
+@@ -56,8 +56,24 @@ function findQuantityAndConvertIfUnicode(ingredientLine, options) {
  	const numericAndFractionRegex = /(\d+\s\d+\/\d+)|(\d+\/\d+)|(\d+\.\d+)|\d+/g;
  	const prepositions = locales[language].prepositions.join("|");
  	const numericRangeWithSpaceRegex = new RegExp(`^(\\d+\\-\\d+)|^(\\d+\\s\\-\\s\\d+)|^(\\d+\\s(${prepositions})\\s\\d+)`, "g");
 -	const unicodeFractionRegex = /\d*[^\u0020-\u007F]+/g;
 +	const unicodeFractionRegex = /\d*\s*[^\u0020-\u007F]+/g;
  	const onlyUnicodeFraction = /[^\u0020-\u007F]+/g;
++	const rangeTokenPattern = `\\d+\\s\\d+\\/\\d+|\\d+\\/\\d+|\\d+\\.\\d+|\\d+\\s*[^\\u0020-\\u007F]+|[^\\u0020-\\u007F]+|\\d+`;
++	const rangeSeparatorPattern = `-|\\s-\\s|\\s(?:${prepositions})\\s`;
++	const fractionalRangeRegex = new RegExp(`^(${rangeTokenPattern})(?:${rangeSeparatorPattern})(${rangeTokenPattern})`);
++	const fractionalRangeMatch = ingredientLine.match(fractionalRangeRegex);
++	if (fractionalRangeMatch) {
++		const [fullMatch, minToken, maxToken] = fractionalRangeMatch;
++		const resolveToken = (token) => {
++			const cleanedToken = removeAccentuation(token);
++			const numericPart = getFirstMatch(cleanedToken, numericAndFractionRegex);
++			const unicodePart = getFirstMatch(cleanedToken, onlyUnicodeFraction);
++			return unicodeObj[unicodePart] ? (numericPart ? `${numericPart} ${unicodeObj[unicodePart]}` : unicodeObj[unicodePart]) : token;
++		};
++		const minQty = convertFromFraction(resolveToken(minToken));
++		const maxQty = convertFromFraction(resolveToken(maxToken));
++		return [`${minQty}-${maxQty}`, ingredientLine.slice(fullMatch.length).trim()];
++	}
  	if (ingredientLine.match(unicodeFractionRegex)) {
  		const numericPart = getFirstMatch(ingredientLine, numericAndFractionRegex);
+ 		const unicodePart = getFirstMatch(ingredientLine, numericPart ? onlyUnicodeFraction : unicodeFractionRegex);
 diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/de.cjs b/node_modules/@magrinj/parse-ingredients/lib/locale/de.cjs
 old mode 100644
 new mode 100755

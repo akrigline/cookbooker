@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { convertIngredient, formatQuantity } from '../js/conversions'
+import { convertIngredient, formatQuantityRange } from '../js/conversions'
 import RecipeQRCode from './RecipeQRCode.vue'
 
 const props = defineProps({
@@ -27,7 +27,7 @@ function getIngredientParts(parsed) {
   const name = parsed.ingredient ?? ''
   let quantityText = ''
   if (!converted) {
-    const qty = parsed.quantity ? formatQuantity(Number(parsed.quantity)) : ''
+    const qty = formatQuantityRange(parsed.minQty ?? parsed.quantity, parsed.maxQty ?? parsed.quantity)
     const unit = parsed.unit ?? ''
     quantityText = [qty, unit].filter(Boolean).join(' ')
   } else {

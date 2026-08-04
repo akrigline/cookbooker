@@ -3,6 +3,7 @@ import {
   convertIngredient,
   formatIngredientLine,
   formatQuantity,
+  formatQuantityRange,
   parseIngredientsText,
 } from './conversions'
 
@@ -51,6 +52,38 @@ describe('convertIngredient - dual unit display (spec scenarios)', () => {
     expect(result.us).toBe('4 oz')
     expect(result.metric).toBe('113 g')
   })
+
+  it('converts a quantity range (minQty/maxQty) to a dual-unit range', () => {
+    const result = convertIngredient({
+      quantity: '4-4.5',
+      minQty: '4',
+      maxQty: '4.5',
+      symbol: 'c',
+      ingredient: 'flour',
+    })
+    expect(result.us).toBe('4 cup to 4 1/2 cup')
+    expect(result.metric).toMatch(/^\d+ g to \d+ g$/)
+  })
+
+  it('treats an equal minQty/maxQty as a single quantity, not a range', () => {
+    const result = convertIngredient({ quantity: '1', minQty: '1', maxQty: '1', symbol: 'c', ingredient: 'butter' })
+    expect(result.us).toBe('1 cup')
+    expect(result.metric).toBe('227 g')
+  })
+})
+
+describe('formatQuantityRange', () => {
+  it('formats a single quantity', () => {
+    expect(formatQuantityRange('1.5', '1.5')).toBe('1 1/2')
+  })
+
+  it('formats a range as "min to max"', () => {
+    expect(formatQuantityRange('4', '4.5')).toBe('4 to 4 1/2')
+  })
+
+  it('returns empty string when there is no quantity', () => {
+    expect(formatQuantityRange(null, null)).toBe('')
+  })
 })
 
 describe('formatIngredientLine', () => {
@@ -73,5 +106,20 @@ describe('parseIngredientsText', () => {
     expect(result).toHaveLength(2)
     expect(result[0].ingredient).toBe('all-purpose flour')
     expect(result[0].raw).toBe('1 1/2 cups of all-purpose flour')
+  })
+
+  it('parses a quantity range with a unicode-fraction endpoint without corrupting the ingredient name', () => {
+    const [result] = parseIngredientsText('4 to 4 ½ cup flour')
+    expect(result.ingredient).toBe('flour')
+    expect(result.minQty).toBe('4')
+    expect(result.maxQty).toBe('4.5')
+    expect(result.unit).toBe('cups')
+  })
+
+  it('parses a plain-integer quantity range', () => {
+    const [result] = parseIngredientsText('1 to 2 cups flour')
+    expect(result.ingredient).toBe('flour')
+    expect(result.minQty).toBe('1')
+    expect(result.maxQty).toBe('2')
   })
 })
