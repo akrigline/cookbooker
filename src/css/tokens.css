@@ -1,3 +1,12 @@
+/* Reserve the vertical scrollbar's width on every page, even ones short
+   enough to not need it. Without this, the centered app-chrome/main
+   containers (max-width + margin: 0 auto) shift a few px left whenever a
+   route's content grows past the viewport height, since the containing
+   block narrows by the scrollbar's width. */
+html {
+  scrollbar-gutter: stable;
+}
+
 :root {
   /* The chrome palette below (--gray-*) is deliberately light-only — no
      dark variant exists, and content that escapes the app root's inline
