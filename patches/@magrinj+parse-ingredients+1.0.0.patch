@@ -89,6 +89,18 @@ new mode 100755
 diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/en.cjs b/node_modules/@magrinj/parse-ingredients/lib/locale/en.cjs
 old mode 100644
 new mode 100755
+index 6f7e47d..f12a28b
+--- a/node_modules/@magrinj/parse-ingredients/lib/locale/en.cjs
++++ b/node_modules/@magrinj/parse-ingredients/lib/locale/en.cjs
+@@ -45,6 +45,8 @@ var en_default = require("../locales-BbCH1daU.cjs").defineLocale("en", {
+ 			"tbs.",
+ 			"tbsp",
+ 			"tbspn",
++			"tsb",
++			"tsb.",
+ 			"T",
+ 			"T.",
+ 			"tablespoon",
 diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/en.d.cts b/node_modules/@magrinj/parse-ingredients/lib/locale/en.d.cts
 old mode 100644
 new mode 100755
@@ -98,6 +110,18 @@ new mode 100755
 diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/en.mjs b/node_modules/@magrinj/parse-ingredients/lib/locale/en.mjs
 old mode 100644
 new mode 100755
+index 95e6cf1..77b2ed2
+--- a/node_modules/@magrinj/parse-ingredients/lib/locale/en.mjs
++++ b/node_modules/@magrinj/parse-ingredients/lib/locale/en.mjs
+@@ -46,6 +46,8 @@ var en_default = defineLocale("en", {
+ 			"tbs.",
+ 			"tbsp",
+ 			"tbspn",
++			"tsb",
++			"tsb.",
+ 			"T",
+ 			"T.",
+ 			"tablespoon",
 diff --git a/node_modules/@magrinj/parse-ingredients/lib/locale/es.cjs b/node_modules/@magrinj/parse-ingredients/lib/locale/es.cjs
 old mode 100644
 new mode 100755

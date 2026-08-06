@@ -117,6 +117,19 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `"gallon"`). Don't simplify that guard away as dead code; it's the only thing standing between
   this module and getting tree-shaken again.
 
+- `@magrinj/parse-ingredients` matches unit abbreviations against its locale data
+  case-sensitively, so real-world casing like `"1 Tbsp"`/`"2 TBSP"`/`"1 CUP"` failed to match and
+  got swallowed into the ingredient name instead of being recognized as a unit. `conversions.js`'s
+  `parseIngredientsText` fixes this the simple way: it lowercases each line before handing it to
+  `parseIngredientLine`, and keeps the original-case line in the returned `raw` field for display.
+  Accepted tradeoff: the classic capital-`T` (tablespoon) vs. lowercase-`t` (teaspoon) convention
+  no longer works post-lowercasing (`"T"` reads as teaspoon) - not worth preserving given how rare
+  that bare single-letter form is in real recipe text. Separately, `"tsb"`/`"tsb."` (a letter
+  transposition of `"tbs"` that shows up often enough in real imports to special-case) were added
+  as tablespoon aliases in the patched `patches/@magrinj+parse-ingredients+1.0.0.patch` locale
+  data (`lib/locale/en.{cjs,mjs}`) - a genuinely unrecognized abbreviation, not a casing problem,
+  so lowercasing alone doesn't fix it.
+
 - `src/css/tokens.css`'s chrome-palette tokens (`--color-focus`, `--color-danger*`,
   `--color-success*`, `--gray-*`) came from `DESIGN_TOKENS_PLAN.md`'s literal-to-token migration
   (2026-08-02) and are deliberately a light-only, minimal set — see that file for the full

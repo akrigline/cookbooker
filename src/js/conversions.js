@@ -213,6 +213,13 @@ export function formatIngredientLine(parsed) {
 /**
  * Parses freeform recipe ingredient text (one ingredient per line) into
  * structured records, ready for storage on the recipe's `ingredients` field.
+ *
+ * The line is lowercased before parsing because @magrinj/parse-ingredients
+ * matches unit abbreviations case-sensitively against its (lowercase) locale
+ * data - real recipe text commonly has units cased as "Tbsp"/"TBSP"/"Tsp",
+ * which would otherwise fail to match and get swallowed into the ingredient
+ * name instead of being recognized as a unit. `raw` keeps the original
+ * casing for display.
  */
 export function parseIngredientsText(text) {
   return (text ?? '')
@@ -220,7 +227,7 @@ export function parseIngredientsText(text) {
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => {
-      const parsed = parseIngredientLine(line)
+      const parsed = parseIngredientLine(line.toLowerCase())
       return { ...parsed, raw: line }
     })
 }

@@ -122,4 +122,33 @@ describe('parseIngredientsText', () => {
     expect(result.minQty).toBe('1')
     expect(result.maxQty).toBe('2')
   })
+
+  it('recognizes units regardless of case, e.g. "Tbsp"/"TBSP"/"Tsp"/"CUP"', () => {
+    const [tbsp] = parseIngredientsText('1 Tbsp flour')
+    expect(tbsp.symbol).toBe('tbs')
+    expect(tbsp.ingredient).toBe('flour')
+
+    const [tbspAllCaps] = parseIngredientsText('2 TBSP sugar')
+    expect(tbspAllCaps.symbol).toBe('tbs')
+    expect(tbspAllCaps.ingredient).toBe('sugar')
+
+    const [tsp] = parseIngredientsText('1 Tsp salt')
+    expect(tsp.symbol).toBe('tsp')
+    expect(tsp.ingredient).toBe('salt')
+
+    const [cup] = parseIngredientsText('1 CUP milk')
+    expect(cup.symbol).toBe('c')
+    expect(cup.ingredient).toBe('milk')
+  })
+
+  it('recognizes "tsb"/"TSB" as a common tablespoon typo', () => {
+    const [result] = parseIngredientsText('1 TSB flour')
+    expect(result.symbol).toBe('tbs')
+    expect(result.ingredient).toBe('flour')
+  })
+
+  it('keeps the original casing in raw even though parsing lowercases', () => {
+    const [result] = parseIngredientsText('1 Tbsp Fresh Basil')
+    expect(result.raw).toBe('1 Tbsp Fresh Basil')
+  })
 })
