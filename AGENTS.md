@@ -102,6 +102,21 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `"postinstall": "patch-package"` in `package.json`. When the PR merges and a new version is
   published to npm, bump `package.json` to that version and delete the patch file.
 
+- `@magrinj/parse-ingredients` also declares `"sideEffects": false`, which makes production
+  tree-shaking (`npm run build`, Rollup/Rolldown - `npm run dev` and `npm test` never tree-shake,
+  so neither one catches this) drop *any* side-effect-only import of its locale submodules,
+  including a bare `import '@magrinj/parse-ingredients/locale/en'` that binds no name. Without
+  that registration, every `parseIngredientLine()` call throws `Error: One of the locale you have
+  provided is not supported.` at runtime - only in the built bundle, not in dev/test. The fix in
+  `src/js/conversions.js` imports the locale module's default export (`defineLocale()`'s return
+  value, which is always `undefined` - the registration is a side effect, not the export) and
+  references it in a live `if (ENGLISH_LOCALE !== undefined) throw ...` branch. This isn't
+  decorative: a `void`-only reference to the same binding still gets eliminated (the bundler can
+  prove it has no observable effect), while an actual conditional branch survives - verified
+  empirically by rebuilding and grepping `dist/assets/*.js` for locale-only content (e.g.
+  `"gallon"`). Don't simplify that guard away as dead code; it's the only thing standing between
+  this module and getting tree-shaken again.
+
 - `src/css/tokens.css`'s chrome-palette tokens (`--color-focus`, `--color-danger*`,
   `--color-success*`, `--gray-*`) came from `DESIGN_TOKENS_PLAN.md`'s literal-to-token migration
   (2026-08-02) and are deliberately a light-only, minimal set — see that file for the full

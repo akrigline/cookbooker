@@ -1,11 +1,22 @@
 import Fraction from 'fraction.js'
 import parseIngredientLine from '@magrinj/parse-ingredients'
 // @magrinj/parse-ingredients incorrectly declares "sideEffects": false, so
-// bundlers (Vite/Rollup) can tree-shake its internal locale registration
-// import and leave the "en" locale unregistered. Importing it directly here
-// (our own code isn't side-effect-free) forces it to run.
-import '@magrinj/parse-ingredients/locale/en'
+// production tree-shaking (Rollup/Rolldown) drops a bare
+// `import '@magrinj/parse-ingredients/locale/en'` outright, since nothing is
+// bound from it - the "en" locale never registers and every
+// parseIngredientLine() call throws "locale ... is not supported" in the
+// built bundle (dev/test never tree-shake, so this only breaks `npm run
+// build`). A `void`-only reference to the default export still gets
+// eliminated (the bundler proves it has no observable effect); a live
+// conditional that actually branches on the binding does not. defineLocale()
+// (which runs when this module evaluates) always returns undefined, so this
+// only ever throws if that upstream contract changes.
+import ENGLISH_LOCALE from '@magrinj/parse-ingredients/locale/en'
 import { converter } from '@dailykit/food-units-converter'
+
+if (ENGLISH_LOCALE !== undefined) {
+  throw new Error('@magrinj/parse-ingredients locale/en default export changed - update this workaround')
+}
 
 // Standard US "nutrition label" rounded volume conversions (cup = 240 ml,
 // tbsp = 15 ml, tsp = 5 ml) rather than the precise physical equivalents -
