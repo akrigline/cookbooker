@@ -31,10 +31,34 @@ describe('convertIngredient - dual unit display (spec scenarios)', () => {
     expect(result.metric).toBe('240 ml')
   })
 
-  it('bypasses weight conversion below a quarter cup ("2 tsp (10 ml) flour")', () => {
+  it('converts weight even for small quantities with known density ("2 tsp (5 g) flour")', () => {
     const result = convertIngredient({ quantity: '2', symbol: 'tsp', ingredient: 'flour' })
     expect(result.us).toBe('2 tsp')
-    expect(result.metric).toBe('10 ml')
+    expect(result.metric).toBe('5 g')
+  })
+
+  it('converts small quantities of brown sugar to grams instead of ml ("3 tbsp brown sugar")', () => {
+    const result = convertIngredient({ quantity: '3', symbol: 'tbs', ingredient: 'brown sugar' })
+    expect(result.us).toBe('3 tbsp')
+    expect(result.metric).toBe('41 g')
+  })
+
+  it('converts yeast volume to weight ("2 1/4 tsp yeast")', () => {
+    const result = convertIngredient({ quantity: '2.25', symbol: 'tsp', ingredient: 'yeast' })
+    expect(result.us).toBe('2 1/4 tsp')
+    expect(result.metric).toBe('7 g')
+  })
+
+  it('never converts water to weight, rendering plain ml at cup scale ("1 cup water")', () => {
+    const result = convertIngredient({ quantity: '1', symbol: 'c', ingredient: 'warm water' })
+    expect(result.us).toBe('1 cup')
+    expect(result.metric).toBe('240 ml')
+  })
+
+  it('never converts water to weight, rendering liters at quart scale ("4 qt water")', () => {
+    const result = convertIngredient({ quantity: '4', symbol: 'qt', ingredient: 'water' })
+    expect(result.us).toBe('4 qt')
+    expect(result.metric).toBe('3 7/8 L')
   })
 
   it('matches density keyword substrings, e.g. "organic cake flour" -> flour rules', () => {
@@ -53,7 +77,7 @@ describe('convertIngredient - dual unit display (spec scenarios)', () => {
     expect(result.metric).toBe('113 g')
   })
 
-  it('converts a quantity range (minQty/maxQty) to a dual-unit range', () => {
+  it('converts a quantity range (minQty/maxQty) to a dual-unit range, sharing one trailing unit', () => {
     const result = convertIngredient({
       quantity: '4-4.5',
       minQty: '4',
@@ -61,8 +85,8 @@ describe('convertIngredient - dual unit display (spec scenarios)', () => {
       symbol: 'c',
       ingredient: 'flour',
     })
-    expect(result.us).toBe('4 cup to 4 1/2 cup')
-    expect(result.metric).toMatch(/^\d+ g to \d+ g$/)
+    expect(result.us).toBe('4-4 1/2 cup')
+    expect(result.metric).toMatch(/^\d+-\d+ g$/)
   })
 
   it('treats an equal minQty/maxQty as a single quantity, not a range', () => {
@@ -77,8 +101,8 @@ describe('formatQuantityRange', () => {
     expect(formatQuantityRange('1.5', '1.5')).toBe('1 1/2')
   })
 
-  it('formats a range as "min to max"', () => {
-    expect(formatQuantityRange('4', '4.5')).toBe('4 to 4 1/2')
+  it('formats a range as "min-max"', () => {
+    expect(formatQuantityRange('4', '4.5')).toBe('4-4 1/2')
   })
 
   it('returns empty string when there is no quantity', () => {

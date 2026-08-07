@@ -23,7 +23,6 @@ if (ENGLISH_LOCALE !== undefined) {
 // this matches common recipe-conversion convention and keeps kitchen-scale
 // numbers clean (e.g. "2 tsp (10 ml)" instead of "9.86 ml").
 const ML_PER_CUP = 240
-export const QUARTER_CUP_ML = ML_PER_CUP / 4 // 60 ml
 
 const VOLUME_UNITS = {
   tsp: { ml: 5, label: 'tsp' },
@@ -71,7 +70,6 @@ const DENSITY_TABLE = [
   ['oil', 218],
   ['honey', 340],
   ['milk', 240],
-  ['water', 237],
   ['cocoa powder', 84],
   ['cornstarch', 120],
   ['rice', 185],
@@ -79,6 +77,7 @@ const DENSITY_TABLE = [
   ['baking soda', 220],
   ['baking powder', 192],
   ['salt', 292],
+  ['yeast', 150],
 ]
 
 export function findDensity(ingredientName) {
@@ -99,17 +98,31 @@ export function formatQuantity(value) {
   return new Fraction(snapped).toFraction(true)
 }
 
+// The four unit-picking helpers below return { qty, unit } rather than a
+// formatted string, so a quantity range (see joinRangePart) can merge two
+// endpoints that land on the same unit into "1-2 tbsp" instead of repeating
+// the unit as "1 tbsp-2 tbsp".
 function formatMetricWeight(grams) {
   if (grams >= 1000) {
-    return `${formatQuantity(converter(grams).from('g').to('kg').value)} kg`
+    return { qty: formatQuantity(converter(grams).from('g').to('kg').value), unit: 'kg' }
   }
-  return `${Math.round(grams)} g`
+  return { qty: String(Math.round(grams)), unit: 'g' }
 }
 
 function usVolumeFromMl(ml) {
-  if (ml >= ML_PER_CUP * 0.5) return `${formatQuantity(ml / VOLUME_UNITS.c.ml)} cup`
-  if (ml >= VOLUME_UNITS.tbs.ml * 1.5) return `${formatQuantity(ml / VOLUME_UNITS.tbs.ml)} tbsp`
-  return `${formatQuantity(ml / VOLUME_UNITS.tsp.ml)} tsp`
+  if (ml >= ML_PER_CUP * 0.5) return { qty: formatQuantity(ml / VOLUME_UNITS.c.ml), unit: 'cup' }
+  if (ml >= VOLUME_UNITS.tbs.ml * 1.5) return { qty: formatQuantity(ml / VOLUME_UNITS.tbs.ml), unit: 'tbsp' }
+  return { qty: formatQuantity(ml / VOLUME_UNITS.tsp.ml), unit: 'tsp' }
+}
+
+// Renders a plain (no known density) volume fallback: liters above 1000 ml
+// (e.g. "4 qt water" -> "3 7/8 L" rather than the unreadable "3840 ml"),
+// otherwise ml - mirrors formatMetricWeight's g/kg threshold split below.
+function metricVolumeFromMl(ml) {
+  if (ml >= 1000) {
+    return { qty: formatQuantity(converter(ml).from('ml').to('l').value), unit: 'L' }
+  }
+  return { qty: String(Math.round(ml)), unit: 'ml' }
 }
 
 // @dailykit/food-units-converter only knows g/mg/kg/oz (not lb), so a pound
@@ -121,8 +134,22 @@ function weightToGrams(qty, symbol) {
 
 function usWeightFromGrams(grams) {
   const ounces = converter(grams).from('g').to('oz').value
-  if (ounces >= 16) return `${formatQuantity(ounces / 16)} lb`
-  return `${formatQuantity(ounces)} oz`
+  if (ounces >= 16) return { qty: formatQuantity(ounces / 16), unit: 'lb' }
+  return { qty: formatQuantity(ounces), unit: 'oz' }
+}
+
+function joinPart({ qty, unit }) {
+  return `${qty} ${unit}`
+}
+
+// Merges two range endpoints that landed on the same unit into "1-2 tbsp"
+// rather than repeating the unit ("1 tbsp-2 tbsp"). Falls back to the
+// per-endpoint form, still hyphen-joined, when the endpoints' auto-picked
+// units differ (e.g. a fallback volume range that crosses the tsp/tbsp/cup
+// threshold).
+function joinRangePart(a, b) {
+  if (a.unit === b.unit) return `${a.qty}-${b.qty} ${a.unit}`
+  return `${joinPart(a)}-${joinPart(b)}`
 }
 
 function convertSingleQuantity(qty, symbol, ingredient) {
@@ -130,30 +157,30 @@ function convertSingleQuantity(qty, symbol, ingredient) {
     const unit = VOLUME_UNITS[symbol]
     const volMl = qty * unit.ml
     const density = findDensity(ingredient)
-    const us = `${formatQuantity(qty)} ${unit.label}`
-    if (density && volMl >= QUARTER_CUP_ML) {
-      const grams = converter(volMl).from({ unit: 'ml', bulkDensity: density / ML_PER_CUP }).to('g').value
-      return { us, metric: formatMetricWeight(grams), bypassedWeight: false }
+    const usPart = { qty: formatQuantity(qty), unit: unit.label }
+    const grams = density ? converter(volMl).from({ unit: 'ml', bulkDensity: density / ML_PER_CUP }).to('g').value : null
+    if (density && Math.round(grams) >= 1) {
+      return { usPart, metricPart: formatMetricWeight(grams), bypassedWeight: false }
     }
-    return { us, metric: `${Math.round(volMl)} ml`, bypassedWeight: Boolean(density) }
+    return { usPart, metricPart: metricVolumeFromMl(volMl), bypassedWeight: Boolean(density) }
   }
 
   if (METRIC_VOLUME_SYMBOLS.has(symbol)) {
     const unit = VOLUME_UNITS[symbol]
     const volMl = qty * unit.ml
-    return { us: usVolumeFromMl(volMl), metric: `${formatQuantity(qty)} ${unit.label}` }
+    return { usPart: usVolumeFromMl(volMl), metricPart: { qty: formatQuantity(qty), unit: unit.label } }
   }
 
   if (US_WEIGHT_SYMBOLS.has(symbol)) {
     const unit = WEIGHT_UNITS[symbol]
     const grams = weightToGrams(qty, symbol)
-    return { us: `${formatQuantity(qty)} ${unit.label}`, metric: formatMetricWeight(grams) }
+    return { usPart: { qty: formatQuantity(qty), unit: unit.label }, metricPart: formatMetricWeight(grams) }
   }
 
   if (METRIC_WEIGHT_SYMBOLS.has(symbol)) {
     const unit = WEIGHT_UNITS[symbol]
     const grams = weightToGrams(qty, symbol)
-    return { us: usWeightFromGrams(grams), metric: `${formatQuantity(qty)} ${unit.label}` }
+    return { usPart: usWeightFromGrams(grams), metricPart: { qty: formatQuantity(qty), unit: unit.label } }
   }
 
   return null
@@ -164,7 +191,9 @@ function convertSingleQuantity(qty, symbol, ingredient) {
  * returns the dual-unit display parts, or null when the unit is
  * unrecognized/absent (e.g. "2 cloves garlic", "1 pinch salt") and no
  * conversion applies. When minQty/maxQty differ (a quantity range, e.g.
- * "4 to 4 1/2 cups"), both endpoints are converted and joined with "to".
+ * "4-4 1/2 cups"), both endpoints are converted and merged into one
+ * hyphen-joined range, sharing a single trailing unit when both endpoints
+ * land on the same one (e.g. "1-2 tbsp (18-37 g)").
  */
 export function convertIngredient({ quantity, minQty, maxQty, symbol, ingredient }) {
   const min = minQty == null ? (quantity == null ? null : Number(quantity)) : Number(minQty)
@@ -172,17 +201,25 @@ export function convertIngredient({ quantity, minQty, maxQty, symbol, ingredient
   const maxCandidate = maxQty == null ? min : Number(maxQty)
   const max = Number.isNaN(maxCandidate) ? min : maxCandidate
 
-  if (max === min) return convertSingleQuantity(min, symbol, ingredient)
+  if (max === min) {
+    const single = convertSingleQuantity(min, symbol, ingredient)
+    if (!single) return null
+    return { us: joinPart(single.usPart), metric: joinPart(single.metricPart), bypassedWeight: single.bypassedWeight }
+  }
 
   const a = convertSingleQuantity(min, symbol, ingredient)
   const b = convertSingleQuantity(max, symbol, ingredient)
   if (!a || !b) return null
-  return { us: `${a.us} to ${b.us}`, metric: `${a.metric} to ${b.metric}`, bypassedWeight: a.bypassedWeight || b.bypassedWeight }
+  return {
+    us: joinRangePart(a.usPart, b.usPart),
+    metric: joinRangePart(a.metricPart, b.metricPart),
+    bypassedWeight: a.bypassedWeight || b.bypassedWeight,
+  }
 }
 
 /**
  * Formats a possibly-ranged quantity (minQty/maxQty from a parsed
- * ingredient) as display text, e.g. "4" or "4 to 4 1/2". Returns '' when
+ * ingredient) as display text, e.g. "4" or "4-4 1/2". Returns '' when
  * there's no quantity.
  */
 export function formatQuantityRange(minQty, maxQty) {
@@ -191,7 +228,7 @@ export function formatQuantityRange(minQty, maxQty) {
   const maxCandidate = maxQty == null ? min : Number(maxQty)
   const max = Number.isNaN(maxCandidate) ? min : maxCandidate
   if (max === min) return formatQuantity(min)
-  return `${formatQuantity(min)} to ${formatQuantity(max)}`
+  return `${formatQuantity(min)}-${formatQuantity(max)}`
 }
 
 /**

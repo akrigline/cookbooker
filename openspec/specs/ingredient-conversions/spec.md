@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Parses freeform ingredient textarea input in real time into structured quantity/unit/name data, and formats each ingredient as a dual-unit (US/Metric) display line using density-based volume-to-weight conversion rules, falling back to volume-to-volume conversion for unrecognized ingredients or small quantities.
+Parses freeform ingredient textarea input in real time into structured quantity/unit/name data, and formats each ingredient as a dual-unit (US/Metric) display line using density-based volume-to-weight conversion rules, falling back to volume-to-volume conversion for unrecognized ingredients or dust-sized (sub-1-gram) quantities.
 
 ## Requirements
 
@@ -35,9 +35,9 @@ The system SHALL format and display ingredients in a dual-unit system: `[US Meas
 - **WHEN** the user views a recipe containing "1 cup" of a custom ingredient "magic spice" not in the recognized list
 - **THEN** the system falls back to volume-to-volume and renders "1 cup (240 ml) magic spice"
 
-### Requirement: Quarter-Cup Volume Conversion Rule
-For volume measurements less than a quarter-cup (1/4 cup, or 4 tablespoons), the system SHALL bypass weight conversions and format using standard volume-to-volume conversions.
+### Requirement: Minimum-Gram Weight-Conversion Floor
+Whenever a matching density is found, the system SHALL convert the volume to weight regardless of quantity size, UNLESS the computed weight rounds to less than 1 gram (a dust-sized amount), in which case the system SHALL bypass weight conversion and format using standard volume-to-volume conversion instead.
 
-#### Scenario: Bypassing weight conversion for small quantities
+#### Scenario: Converting a small quantity with known density to weight
 - **WHEN** the user views a recipe containing "2 tsp" of "flour"
-- **THEN** the system bypasses weight conversions and renders "2 tsp (10 ml) flour"
+- **THEN** the system converts the volume to weight and renders "2 tsp (5 g) flour"
