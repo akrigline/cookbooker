@@ -9,16 +9,16 @@ defineProps({
 })
 
 // Fixed page height clips overflowing content with no other visual sign
-// anything was cut off. Compare the natural content height against the
-// available (margin-adjusted) height and surface a warning when it doesn't
-// fit — screen only, since print switches to height:auto and never clips.
-const marginEl = ref(null)
+// anything was cut off. .page-preview__content is itself height-clamped
+// (max-height: 100% + overflow: hidden, below), so its own scrollHeight vs
+// clientHeight is a direct self-overflow check - screen only, since print
+// switches to height:auto and never clips.
 const contentEl = ref(null)
 const isOverflowing = ref(false)
 
 function checkOverflow() {
-  if (!marginEl.value || !contentEl.value) return
-  isOverflowing.value = contentEl.value.scrollHeight > marginEl.value.clientHeight
+  if (!contentEl.value) return
+  isOverflowing.value = contentEl.value.scrollHeight > contentEl.value.clientHeight
 }
 
 let observer = null
@@ -38,7 +38,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="page-preview" :class="named ? `page--${named}` : null">
-    <div class="page-preview__margin" ref="marginEl">
+    <div class="page-preview__margin">
       <div class="page-preview__content" ref="contentEl">
         <slot />
       </div>
