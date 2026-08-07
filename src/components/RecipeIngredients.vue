@@ -91,8 +91,9 @@ const parsedIngredients = computed(() => props.ingredients.map(getIngredientPart
 }
 
 .ingredient-qty {
-  flex: 0 0 25%;
+  flex: 0 0 33%;
   padding-right: 0.5rem;
+  white-space: nowrap;
 }
 
 .qty-primary {
@@ -112,6 +113,5 @@ const parsedIngredients = computed(() => props.ingredients.map(getIngredientPart
 .qr-item {
   display: flex;
   justify-content: center;
-  margin-top: 1rem;
 }
 </style>

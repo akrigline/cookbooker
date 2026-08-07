@@ -14,10 +14,6 @@ defineProps({
 </template>
 
 <style scoped>
-.recipe-title-container {
-  margin-bottom: var(--recipe-element-stack);
-}
-
 .text-recipe-title {
   margin: 0;
   color: var(--recipe-primary); /* Overrides global text-recipe-title if needed, or just sets margin */

@@ -109,7 +109,7 @@ html {
 .text-instruction-step {
   font-family: var(--font-recipe-body);
   font-size: 14px;
-  line-height: 22px;
+  line-height: 1.2;
   font-weight: 400;
   color: var(--recipe-on-surface);
 }
@@ -133,7 +133,7 @@ html {
 .text-ingredient-list {
   font-family: var(--font-recipe-body);
   font-size: 14px;
-  line-height: 22px;
+  line-height: 1.2;
   font-weight: 400;
   color: var(--recipe-on-surface);
 }

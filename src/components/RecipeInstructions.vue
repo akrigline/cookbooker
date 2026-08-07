@@ -64,6 +64,7 @@ function formatStepNumber(num) {
 .step-number {
   color: var(--recipe-primary);
   border-right: 1px solid var(--recipe-outline-variant);
+  width: calc(2ch + 1rem);
   padding-right: 1rem;
   height: fit-content;
   flex-shrink: 0;

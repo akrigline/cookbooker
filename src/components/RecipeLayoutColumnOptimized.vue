@@ -17,11 +17,11 @@ defineProps({
   <div class="layout-column-optimized">
     <RecipeTitle :title="recipe.title" />
     <div class="layout-column-optimized__split">
-      <div class="layout-column-optimized__col">
+      <div class="layout-column-optimized__col layout-column-optimized__col--narrow">
         <RecipeNotes v-if="recipe.notes" :notes="recipe.notes" />
         <RecipeIngredients :recipe="recipe" :ingredients="recipe.ingredients" :columns="recipe.ingredientColumns" :qty-align="recipe.ingredientQtyAlign" />
       </div>
-      <div class="layout-column-optimized__col">
+      <div class="layout-column-optimized__col layout-column-optimized__col--wide">
         <RecipeImage :image="recipe.image" :aspect-ratio="recipe.imageAspectRatio" :title="recipe.title" />
         <RecipeInstructions :instructions="recipe.instructions" />
       </div>
@@ -45,10 +45,17 @@ defineProps({
 }
 
 .layout-column-optimized__col {
-  flex: 1 1 50%;
   display: flex;
   flex-direction: column;
   gap: var(--recipe-element-stack);
   min-width: 0;
+}
+
+.layout-column-optimized__col--narrow {
+  flex: 0 0 33%;
+}
+
+.layout-column-optimized__col--wide {
+  flex: 1 1 67%;
 }
 </style>

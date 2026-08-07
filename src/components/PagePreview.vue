@@ -68,7 +68,14 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  padding: 0.75in;
+  padding: 0.5in;
+  outline: 1px dashed oklch(65% 0.18 25 / 0.35);
+  outline-offset: -0.5in;
+}
+
+.page-preview__content {
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .page-preview__overflow-warning {
@@ -94,6 +101,10 @@ onBeforeUnmount(() => {
     width: auto;
     height: auto;
     break-after: page;
+  }
+
+  .page-preview__margin {
+    outline: none;
   }
 
   .page-preview:last-child {

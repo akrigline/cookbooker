@@ -4,7 +4,7 @@
 
 @page {
   size: 8.5in 11in;
-  margin: 0.75in;
+  margin: 0.5in;
 
   @bottom-right {
     content: counter(page);
