@@ -25,15 +25,14 @@ const props = defineProps({
 function getIngredientParts(parsed) {
   const converted = convertIngredient(parsed)
   const name = parsed.ingredient ?? ''
-  let quantityText = ''
   if (!converted) {
     const qty = formatQuantityRange(parsed.minQty ?? parsed.quantity, parsed.maxQty ?? parsed.quantity)
     const unit = parsed.unit ?? ''
-    quantityText = [qty, unit].filter(Boolean).join(' ')
-  } else {
-    quantityText = `${converted.us} (${converted.metric})`
+    const primary = [qty, unit].filter(Boolean).join(' ')
+    return { primary, secondary: '', name }
   }
-  return { quantity: quantityText, name }
+  const secondary = converted.metric ? `(${converted.metric})` : ''
+  return { primary: converted.us, secondary, name }
 }
 
 const parsedIngredients = computed(() => props.ingredients.map(getIngredientParts))
@@ -52,7 +51,10 @@ const parsedIngredients = computed(() => props.ingredients.map(getIngredientPart
         :key="idx"
         class="ingredient-item"
       >
-        <div class="ingredient-qty" :style="{ textAlign: qtyAlign }">{{ parts.quantity }}</div>
+        <div class="ingredient-qty" :style="{ textAlign: qtyAlign }">
+          <div class="qty-primary">{{ parts.primary }}</div>
+          <div v-if="parts.secondary" class="qty-secondary">{{ parts.secondary }}</div>
+        </div>
         <div class="ingredient-name">{{ parts.name }}</div>
       </li>
       <li v-if="recipe" class="ingredient-item qr-item">
@@ -84,14 +86,23 @@ const parsedIngredients = computed(() => props.ingredients.map(getIngredientPart
 .ingredient-item {
   display: flex;
   align-items: flex-start;
-  padding: 0.375rem 0;
+  padding: 0.25rem 0;
   break-inside: avoid;
 }
 
 .ingredient-qty {
   flex: 0 0 25%;
-  font-weight: 700;
   padding-right: 0.5rem;
+}
+
+.qty-primary {
+  font-weight: 700;
+}
+
+.qty-secondary {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--recipe-on-surface-variant);
 }
 
 .ingredient-name {
