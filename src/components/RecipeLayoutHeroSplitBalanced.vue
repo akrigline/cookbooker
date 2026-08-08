@@ -26,7 +26,6 @@ defineProps({
         :recipe="recipe"
         :ingredients="recipe.ingredients"
         :columns="recipe.ingredientColumns"
-        :qty-align="recipe.ingredientQtyAlign"
       />
       <RecipeInstructions class="layout-hero-split-balanced__col" :instructions="recipe.instructions" />
     </div>

@@ -8,10 +8,14 @@ import {
 } from '../js/backup'
 import { useRecipesStore } from '../stores/recipes'
 import { useProjectsStore } from '../stores/projects'
+import { useSettingsStore } from '../stores/settings'
+import { INGREDIENT_QTY_ALIGN_OPTIONS } from '../js/templates'
 import Modal from '../components/Modal.vue'
 
 const recipesStore = useRecipesStore()
 const projectsStore = useProjectsStore()
+const settingsStore = useSettingsStore()
+settingsStore.load()
 
 const progress = ref(null)
 const error = ref(null)
@@ -28,8 +32,21 @@ const TABLE_LABELS = {
   projects: 'Cookbooks',
   chapters: 'Chapters',
   project_recipes: 'Recipe placements',
+  settings: 'App settings',
 }
 const labelFor = (name) => TABLE_LABELS[name] ?? name
+
+// Per CLAUDE.md: an un-caught store write only reaches the console, leaving
+// the toggle looking like it worked. Routed into the same `error` banner the
+// backup/restore actions below use.
+async function setIngredientQtyAlign(value) {
+  error.value = null
+  try {
+    await settingsStore.setIngredientQtyAlign(value)
+  } catch (err) {
+    error.value = `Could not save this setting: ${err.message}`
+  }
+}
 
 // A restore runs two passes over the data - the pre-restore snapshot, then the
 // import - so the row counter climbs, resets, and climbs again. backup.js tags
@@ -122,7 +139,7 @@ async function confirmRestore() {
   progress.value = { done: 0, total: 0, label: PHASE_LABELS.backup }
   try {
     await restoreDatabase(file, onProgress)
-    await Promise.all([recipesStore.load(), projectsStore.load()])
+    await Promise.all([recipesStore.load(), projectsStore.load(), settingsStore.reload()])
     success.value = 'Backup restored.'
   } catch (err) {
     if (err.preRestoreSnapshot) {
@@ -151,6 +168,28 @@ async function confirmRestore() {
       <h1 class="text-page-title">Settings</h1>
       <p style="margin:0; font-size:15px; color:var(--gray-46);">Manage your data, exports, and database backups.</p>
     </div>
+
+    <section class="card-section" style="margin-bottom:24px;">
+      <h2>Recipe defaults</h2>
+      <p class="section-desc">
+        Applies to every recipe across the app - the editor, print, and cookbook print. There is
+        no per-recipe override.
+      </p>
+
+      <div role="group" aria-label="Ingredient quantity alignment" class="actions">
+        <button
+          v-for="opt in INGREDIENT_QTY_ALIGN_OPTIONS"
+          :key="opt.id"
+          type="button"
+          class="btn-secondary"
+          :aria-pressed="settingsStore.ingredientQtyAlign === opt.id"
+          :style="settingsStore.ingredientQtyAlign === opt.id ? 'background:oklch(93% 0.02 250); border:1.5px solid var(--color-focus); color:var(--gray-20);' : ''"
+          @click="setIngredientQtyAlign(opt.id)"
+        >
+          Ingredient quantities: {{ opt.label }}
+        </button>
+      </div>
+    </section>
 
     <section class="card-section">
       <h2>Backup &amp; Restore</h2>

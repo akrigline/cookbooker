@@ -19,7 +19,7 @@ defineProps({
     <div class="layout-column-optimized__split">
       <div class="layout-column-optimized__col layout-column-optimized__col--narrow">
         <RecipeNotes v-if="recipe.notes" :notes="recipe.notes" />
-        <RecipeIngredients :recipe="recipe" :ingredients="recipe.ingredients" :columns="recipe.ingredientColumns" :qty-align="recipe.ingredientQtyAlign" />
+        <RecipeIngredients :recipe="recipe" :ingredients="recipe.ingredients" :columns="recipe.ingredientColumns" />
       </div>
       <div class="layout-column-optimized__col layout-column-optimized__col--wide">
         <RecipeImage :image="recipe.image" :aspect-ratio="recipe.imageAspectRatio" :title="recipe.title" />

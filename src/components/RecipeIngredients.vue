@@ -16,10 +16,6 @@ const props = defineProps({
     type: Number,
     default: 1,
   },
-  qtyAlign: {
-    type: String,
-    default: 'right',
-  },
 })
 
 function getIngredientParts(parsed) {
@@ -51,7 +47,7 @@ const parsedIngredients = computed(() => props.ingredients.map(getIngredientPart
         :key="idx"
         class="ingredient-item"
       >
-        <div class="ingredient-qty" :style="{ textAlign: qtyAlign }">
+        <div class="ingredient-qty">
           <div class="qty-primary">{{ parts.primary }}</div>
           <div v-if="parts.secondary" class="qty-secondary">{{ parts.secondary }}</div>
         </div>
@@ -94,6 +90,7 @@ const parsedIngredients = computed(() => props.ingredients.map(getIngredientPart
   flex: 0 0 33%;
   padding-right: 0.5rem;
   white-space: nowrap;
+  text-align: var(--recipe-qty-align, right);
 }
 
 .qty-primary {

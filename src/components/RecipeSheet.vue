@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { DEFAULT_LAYOUT_TEMPLATE } from '../js/templates'
+import { useSettingsStore } from '../stores/settings'
 import RecipeLayoutHeroSplitBalanced from './RecipeLayoutHeroSplitBalanced.vue'
 import RecipeLayoutHeroSplitAsymmetric from './RecipeLayoutHeroSplitAsymmetric.vue'
 import RecipeLayoutAsymmetricSidebar from './RecipeLayoutAsymmetricSidebar.vue'
@@ -28,15 +29,29 @@ const props = defineProps({
     type: String,
     default: '#d97742',
   },
+  // Not required: undefined lets the app-wide default through. Kept as a prop
+  // (rather than reading the store directly in the leaf) so a future
+  // per-cookbook override stays a one-line change at call sites that hold a
+  // project, with no re-threading through the layout wrappers.
+  qtyAlign: {
+    type: String,
+    default: undefined,
+  },
 })
+
+const settingsStore = useSettingsStore()
 
 const activeLayout = computed(
   () => LAYOUT_COMPONENTS[props.recipe.layoutTemplate] ?? LAYOUT_COMPONENTS[DEFAULT_LAYOUT_TEMPLATE],
 )
+const resolvedQtyAlign = computed(() => props.qtyAlign ?? settingsStore.ingredientQtyAlign)
 </script>
 
 <template>
-  <article class="recipe-sheet" :style="{ '--recipe-accent': accentColor }">
+  <article
+    class="recipe-sheet"
+    :style="{ '--recipe-accent': accentColor, '--recipe-qty-align': resolvedQtyAlign }"
+  >
     <component :is="activeLayout" :recipe="recipe" />
   </article>
 </template>

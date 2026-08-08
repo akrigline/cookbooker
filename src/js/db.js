@@ -1,5 +1,6 @@
 import Dexie from 'dexie'
 import { nextSequence } from './sequence'
+import { INGREDIENT_QTY_ALIGN_OPTIONS, DEFAULT_INGREDIENT_QTY_ALIGN } from './templates'
 
 export const MISC_CHAPTER_NAME = 'Miscellaneous'
 
@@ -11,6 +12,20 @@ db.version(1).stores({
   chapters: '++id, projectId',
   project_recipes: '++id, projectId, recipeId, chapterId',
 })
+
+// Retired fields. Present on rows written before the version noted, never read,
+// deliberately not stripped: a `modify()` pass rewrites every recipe row -
+// image Blobs included - inside the blocking upgrade transaction. Note these do
+// NOT drain over time: `db.updateRecipe` uses `Table.update`, which MERGES, so
+// re-saving a recipe leaves the old value in place. Don't reuse these names with
+// different semantics; old rows still carry old values.
+//   recipes.ingredientQtyAlign  (v2) → settings.ingredientQtyAlign
+export const RETIRED_RECIPE_FIELDS = { ingredientQtyAlign: 'v2 → settings.ingredientQtyAlign' }
+
+// No .upgrade() callback: this creates the object store and writes zero rows,
+// the safest possible version-change transaction. A missing settings row is
+// handled as the normal case by getSettings/updateSettings below, not seeded.
+db.version(2).stores({ settings: 'key' })
 
 db.on('populate', async () => {
   const projectId = await db.projects.add({
@@ -80,6 +95,42 @@ const updateOrThrow = async (table, kind, id, changes) => {
   if (!updated) throw new RecordNotFoundError(kind, id)
   return updated
 }
+
+// ---------------------------------------------------------------------------
+// Settings (singleton row, key 'app')
+// ---------------------------------------------------------------------------
+export const DEFAULT_SETTINGS = { ingredientQtyAlign: DEFAULT_INGREDIENT_QTY_ALIGN }
+const SETTINGS_KEY = 'app'
+const KNOWN_QTY_ALIGNS = new Set(INGREDIENT_QTY_ALIGN_OPTIONS.map((o) => o.id))
+
+// Validates, rather than only spreading defaults: a hand-edited backup can carry
+// `ingredientQtyAlign: 'centre'`. recipe-import already requires "unrecognized
+// value -> standard default" on its import path; this isn't weaker than that.
+const normalizeSettings = (row) => ({
+  ...DEFAULT_SETTINGS,
+  ...row,
+  ingredientQtyAlign: KNOWN_QTY_ALIGNS.has(row?.ingredientQtyAlign)
+    ? row.ingredientQtyAlign
+    : DEFAULT_INGREDIENT_QTY_ALIGN,
+})
+
+export const getSettings = async () => normalizeSettings(await db.settings.get(SETTINGS_KEY))
+
+// Read-modify-write in ONE transaction, per CLAUDE.md's db.js invariant and matching
+// addChapter above: IndexedDB serializes readwrite transactions on the same object
+// store across same-origin tabs, so the read-then-write can't interleave. Upserts
+// rather than updating, because a missing row is legitimate (fresh install, or a
+// pre-v2 restore that clears `settings`). Reads the RAW row - not getSettings()'s
+// merged object - so defaults are never materialized into storage, which would
+// erase the distinction between "never set" and "explicitly set to the default".
+// Returns the persisted row, because Table.put() resolves with the KEY, not the row.
+export const updateSettings = (patch) =>
+  db.transaction('rw', db.settings, async () => {
+    const current = (await db.settings.get(SETTINGS_KEY)) ?? {}
+    const row = normalizeSettings({ ...current, ...patch, key: SETTINGS_KEY })
+    await db.settings.put(row)
+    return row
+  })
 
 // ---------------------------------------------------------------------------
 // Recipes

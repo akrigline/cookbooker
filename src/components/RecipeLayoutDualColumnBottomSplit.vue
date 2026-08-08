@@ -16,7 +16,7 @@ defineProps({
 <template>
   <div class="layout-dual-column-bottom-split">
     <RecipeTitle class="layout-dual-column-bottom-split__title" :title="recipe.title" />
-    <RecipeIngredients :recipe="recipe" :ingredients="recipe.ingredients" :columns="recipe.ingredientColumns" :qty-align="recipe.ingredientQtyAlign" />
+    <RecipeIngredients :recipe="recipe" :ingredients="recipe.ingredients" :columns="recipe.ingredientColumns" />
     <div class="layout-dual-column-bottom-split__split">
       <div class="layout-dual-column-bottom-split__col">
         <RecipeImage :image="recipe.image" :aspect-ratio="recipe.imageAspectRatio" :title="recipe.title" />

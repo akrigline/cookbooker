@@ -21,7 +21,7 @@ defineProps({
       <RecipeNotes v-if="recipe.notes" :notes="recipe.notes" />
     </div>
     <div class="layout-asymmetric-sidebar__main">
-      <RecipeIngredients :recipe="recipe" :ingredients="recipe.ingredients" :columns="recipe.ingredientColumns" :qty-align="recipe.ingredientQtyAlign" />
+      <RecipeIngredients :recipe="recipe" :ingredients="recipe.ingredients" :columns="recipe.ingredientColumns" />
       <RecipeInstructions :instructions="recipe.instructions" />
     </div>
   </div>
