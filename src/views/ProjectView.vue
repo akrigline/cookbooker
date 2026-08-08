@@ -1,6 +1,6 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useProjectsStore } from '../stores/projects'
 import { useRecipesStore } from '../stores/recipes'
 import RecipePreviewDialog from '../components/RecipePreviewDialog.vue'
@@ -23,13 +23,36 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const route = useRoute()
 const projectsStore = useProjectsStore()
 const recipesStore = useRecipesStore()
 
 onMounted(async () => {
   if (!projectsStore.loaded) await projectsStore.load()
   if (!recipesStore.loaded) await recipesStore.load()
+  checkReopenRecipe()
 })
+
+// The recipe editor's "Back to Cookbook"/save-return path appends
+// ?reopenRecipe=<id> (see RecipeEditor.vue's returnContext). Reopen that
+// recipe's preview once chapters/recipes are loaded, then strip the param so
+// a copied/bookmarked URL doesn't retrigger it.
+watch(() => route.query.reopenRecipe, () => checkReopenRecipe())
+
+function checkReopenRecipe() {
+  const reopenId = route.query.reopenRecipe
+  if (!reopenId) return
+  const targetId = Number(reopenId)
+  for (const chapter of orderedChapters.value) {
+    const entry = recipesInChapter(chapter.id).find((e) => e.recipe.id === targetId)
+    if (entry) {
+      openPreview(entry.recipe, chapter.id)
+      break
+    }
+  }
+  const { reopenRecipe, ...rest } = route.query
+  router.replace({ path: route.path, query: rest })
+}
 
 // ---------------------------------------------------------------------------
 // Derived data
@@ -275,7 +298,10 @@ function navigatePreview(delta) {
 function editPreviewRecipe() {
   const r = previewRecipe.value
   if (r) {
-    router.push(`/library/${r.id}`)
+    router.push({
+      path: `/library/${r.id}`,
+      query: { returnToProject: project.value.id, returnToRecipe: r.id },
+    })
   }
 }
 

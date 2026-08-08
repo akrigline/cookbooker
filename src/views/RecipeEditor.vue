@@ -1,10 +1,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
 import { parseIngredientsText } from '../js/conversions'
 import { exportRecipeToHtml } from '../js/recipeExport'
 import { LAYOUT_TEMPLATES, DEFAULT_LAYOUT_TEMPLATE, INGREDIENT_COLUMN_OPTIONS, IMAGE_ASPECT_RATIOS } from '../js/templates'
+import { computeReturnContext, returnContextBackTo } from '../js/returnContext'
 import RecipeSheet from '../components/RecipeSheet.vue'
 import PagePreview from '../components/PagePreview.vue'
 import BackButton from '../components/BackButton.vue'
@@ -17,9 +18,19 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const route = useRoute()
 const recipesStore = useRecipesStore()
 
 const isEditing = computed(() => props.recipeId != null)
+
+// Present when the editor was opened from a cookbook recipe preview's "Edit
+// Recipe" button (see RecipePreviewDialog.vue / ProjectView.vue). Drives the
+// back-button label and where "Cancel"/Save return to instead of the library.
+const returnContext = computed(() => computeReturnContext(route.query))
+
+const backLabel = computed(() => (returnContext.value ? 'Back to Cookbook' : 'Back to Recipe Library'))
+
+const backTo = computed(() => returnContextBackTo(returnContext.value))
 
 const title = ref('Untitled Recipe')
 const instructionsText = ref('')
@@ -121,7 +132,7 @@ async function save() {
     } else {
       id = await recipesStore.createRecipe(previewRecipe.value)
     }
-    router.push('/library')
+    router.push(backTo.value)
   } catch (err) {
     error.value = `Could not save this recipe: ${err.message}`
   } finally {
@@ -134,7 +145,7 @@ async function confirmDelete() {
   deleting.value = true
   try {
     await recipesStore.removeRecipe(Number(props.recipeId))
-    router.push('/library')
+    router.push(returnContext.value ? `/projects/${returnContext.value.projectId}` : '/library')
   } catch (err) {
     error.value = `Could not delete this recipe: ${err.message}`
   } finally {
@@ -163,7 +174,7 @@ async function handleExport() {
 }
 
 function handleCancel() {
-  router.push('/library')
+  router.push(backTo.value)
 }
 </script>
 
@@ -176,7 +187,7 @@ function handleCancel() {
     </router-link>
   </main>
   <main v-else id="cm-main" class="cm-page-main">
-    <BackButton to="/library">Back to Recipe Library</BackButton>
+    <BackButton :to="backTo">{{ backLabel }}</BackButton>
 
     <div class="cm-grid" style="display:grid; grid-template-columns:minmax(320px, 360px) minmax(0, 1fr); gap:32px; align-items:start;">
       <div class="cm-edit-column" style="display:flex; flex-direction:column; gap:22px; min-width:0;">
