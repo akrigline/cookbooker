@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import 'fake-indexeddb/auto'
 import { createPinia, setActivePinia } from 'pinia'
 import { useSettingsStore } from './settings.js'
+import * as db_ from '../js/db.js'
 import { getSettings, db } from '../js/db.js'
 
 beforeEach(async () => {
@@ -22,9 +23,17 @@ describe('settings store', () => {
   })
 
   it('load is memoized: concurrent callers share one read', async () => {
+    // Asserting on promise identity (`store.load() === store.load()`) can't
+    // fail here regardless of memoization: Pinia's action wrapper returns a
+    // fresh promise from every call, and load() itself resolves to
+    // `undefined` both times either way. What memoization actually buys is
+    // read deduplication - one db.getSettings() call for N concurrent
+    // load()s - so assert that directly via call count.
+    const spy = vi.spyOn(db_, 'getSettings')
     const store = useSettingsStore()
-    const [a, b] = await Promise.all([store.load(), store.load()])
-    expect(a).toBe(b)
+    await Promise.all([store.load(), store.load(), store.load()])
+    expect(spy).toHaveBeenCalledTimes(1)
+    spy.mockRestore()
   })
 
   it('setIngredientQtyAlign writes via db.updateSettings and mirrors the persisted return value', async () => {

@@ -4,8 +4,11 @@ import {
   MISC_CHAPTER_NAME,
   DuplicateRecipeError,
   RecordNotFoundError,
+  RETIRED_RECIPE_FIELDS,
   createProject,
   getMiscChapter,
+  addRecipe,
+  getRecipe,
   addRecipeToProject,
   addRecipesToProject,
   deleteChapter,
@@ -281,5 +284,16 @@ describe('db.js batch placement writes', () => {
 
     const rows = await getProjectRecipes(projectId)
     expect(rows.map((pr) => pr.id)).toEqual([b])
+  })
+
+  // Gives RETIRED_RECIPE_FIELDS a real consumer: a name only ever documented
+  // in a comment can drift silently if a later change reuses it. This fails
+  // loudly the moment any write path starts emitting a retired name again.
+  it('no write path injects a retired field name into a new recipe row', async () => {
+    const id = await addRecipe({ title: 'Retired Field Check', instructions: 'Mix.', ingredients: [] })
+    const row = await getRecipe(id)
+    for (const field of Object.keys(RETIRED_RECIPE_FIELDS)) {
+      expect(row).not.toHaveProperty(field)
+    }
   })
 })

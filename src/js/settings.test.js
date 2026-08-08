@@ -40,4 +40,27 @@ describe('settings', () => {
     const row = await updateSettings({})
     expect(row.ingredientQtyAlign).toBe('left')
   })
+
+  // Regression: normalizeSettings previously spread DEFAULT_SETTINGS
+  // unconditionally, so a patch that never mentioned ingredientQtyAlign still
+  // wrote the default into storage - erasing "never set" vs. "explicitly set
+  // to the default" the moment a second setting existed.
+  it('updateSettings does not materialize a default for a key the patch never mentioned', async () => {
+    await db.settings.clear()
+    await updateSettings({ someFutureSetting: 7 })
+    const stored = await db.settings.get('app')
+    expect(stored).not.toHaveProperty('ingredientQtyAlign')
+    expect(stored.someFutureSetting).toBe(7)
+  })
+
+  it('getSettings returns the same shape whether or not a row exists (no leaked `key`)', async () => {
+    await db.settings.clear()
+    const withoutRow = await getSettings()
+    expect(withoutRow).not.toHaveProperty('key')
+
+    await updateSettings({ ingredientQtyAlign: 'left' })
+    const withRow = await getSettings()
+    expect(withRow).not.toHaveProperty('key')
+    expect(Object.keys(withRow)).toEqual(Object.keys(withoutRow))
+  })
 })

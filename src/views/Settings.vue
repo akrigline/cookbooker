@@ -15,12 +15,18 @@ import Modal from '../components/Modal.vue'
 const recipesStore = useRecipesStore()
 const projectsStore = useProjectsStore()
 const settingsStore = useSettingsStore()
-settingsStore.load()
 
 const progress = ref(null)
 const error = ref(null)
 const success = ref(null)
 const fileInput = ref(null)
+
+// Unawaited: this view doesn't gate its render on settings being loaded (the
+// toggle just shows the in-flight default until this resolves), but a
+// rejection still needs a home or it only reaches the console.
+settingsStore.load().catch((err) => {
+  error.value = `Could not load settings: ${err.message}`
+})
 
 // Restore wipes every table before writing, so it is gated behind an explicit
 // confirmation that names what is at stake - the file's contents are already

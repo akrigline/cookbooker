@@ -49,7 +49,6 @@ db.on('populate', async () => {
     notes: '',
     layoutTemplate: 'hero-split-balanced',
     ingredientColumns: 1,
-    ingredientQtyAlign: 'right',
     imageAspectRatio: 'auto',
   })
   await db.project_recipes.add({ projectId, chapterId, recipeId, sequence: 0 })
@@ -106,28 +105,42 @@ const KNOWN_QTY_ALIGNS = new Set(INGREDIENT_QTY_ALIGN_OPTIONS.map((o) => o.id))
 // Validates, rather than only spreading defaults: a hand-edited backup can carry
 // `ingredientQtyAlign: 'centre'`. recipe-import already requires "unrecognized
 // value -> standard default" on its import path; this isn't weaker than that.
-const normalizeSettings = (row) => ({
-  ...DEFAULT_SETTINGS,
-  ...row,
-  ingredientQtyAlign: KNOWN_QTY_ALIGNS.has(row?.ingredientQtyAlign)
-    ? row.ingredientQtyAlign
-    : DEFAULT_INGREDIENT_QTY_ALIGN,
-})
+// Coerces only keys already present on `row` - never injects a default for a
+// key that's absent. That distinction matters for updateSettings below: a
+// patch that omits `ingredientQtyAlign` must not materialize the default into
+// storage, which would erase the difference between "never set" and
+// "explicitly set to the default" (see updateSettings' own comment).
+const validateSettings = (row) => {
+  const validated = { ...row }
+  if ('ingredientQtyAlign' in validated && !KNOWN_QTY_ALIGNS.has(validated.ingredientQtyAlign)) {
+    validated.ingredientQtyAlign = DEFAULT_INGREDIENT_QTY_ALIGN
+  }
+  return validated
+}
 
-export const getSettings = async () => normalizeSettings(await db.settings.get(SETTINGS_KEY))
+// Always the same shape regardless of whether a row exists yet - `key` is a
+// storage-layer detail (the Dexie primary key), not a setting, so it never
+// leaks into the returned object; defaults are merged in for the caller but,
+// unlike updateSettings, this never writes anything back.
+export const getSettings = async () => {
+  const row = await db.settings.get(SETTINGS_KEY)
+  const { key, ...validated } = validateSettings(row ?? {})
+  return { ...DEFAULT_SETTINGS, ...validated }
+}
 
 // Read-modify-write in ONE transaction, per CLAUDE.md's db.js invariant and matching
 // addChapter above: IndexedDB serializes readwrite transactions on the same object
 // store across same-origin tabs, so the read-then-write can't interleave. Upserts
 // rather than updating, because a missing row is legitimate (fresh install, or a
 // pre-v2 restore that clears `settings`). Reads the RAW row - not getSettings()'s
-// merged object - so defaults are never materialized into storage, which would
-// erase the distinction between "never set" and "explicitly set to the default".
-// Returns the persisted row, because Table.put() resolves with the KEY, not the row.
+// defaults-merged object - and validateSettings only coerces keys already present,
+// so defaults are never materialized into storage (see validateSettings above).
+// Returns the persisted row (key included), because Table.put() resolves with the
+// KEY, not the row.
 export const updateSettings = (patch) =>
   db.transaction('rw', db.settings, async () => {
     const current = (await db.settings.get(SETTINGS_KEY)) ?? {}
-    const row = normalizeSettings({ ...current, ...patch, key: SETTINGS_KEY })
+    const row = validateSettings({ ...current, ...patch, key: SETTINGS_KEY })
     await db.settings.put(row)
     return row
   })

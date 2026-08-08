@@ -17,12 +17,19 @@ export const useSettingsStore = defineStore('settings', {
   }),
   actions: {
     // Memoized so any caller can `await` it without an `if (!loaded)` dance
-    // and without triggering a duplicate read from concurrent callers.
+    // and without triggering a duplicate read from concurrent callers. Clears
+    // the memo on rejection - otherwise a transient getSettings() failure
+    // (e.g. a blocked IndexedDB connection) caches the rejected promise
+    // permanently, and every future load() call replays the same failure
+    // with no way to recover except reload().
     load() {
       if (!this.loadPromise) {
         this.loadPromise = db.getSettings().then((settings) => {
           this.ingredientQtyAlign = settings.ingredientQtyAlign
           this.loaded = true
+        }).catch((err) => {
+          this.loadPromise = null
+          throw err
         })
       }
       return this.loadPromise

@@ -114,4 +114,41 @@ describe('backup.js', () => {
     const titles = (await getAllRecipes()).map((r) => r.title)
     expect(titles).toContain('Should also survive')
   })
+
+  // Regression for the flag that actually does the work: without
+  // `acceptVersionDiff: true` on the `importInto` call, dexie-export-import
+  // throws "Database version differs" on a backup made by an older schema
+  // (every backup exported before this table existed), and no other test in
+  // this suite exercises that success path.
+  it('restores a v1-shaped backup (older version, no settings table) via acceptVersionDiff', async () => {
+    await addRecipe({
+      title: 'From The Past',
+      instructions: '',
+      ingredients: [],
+      image: null,
+      notes: '',
+      layoutTemplate: 'hero-split-balanced',
+    })
+    const blob = await exportDatabase()
+    const json = JSON.parse(await blob.text())
+    json.data.databaseVersion = 1
+    json.data.tables = json.data.tables.filter((t) => t.name !== 'settings')
+    json.data.data = json.data.data.filter((t) => t.tableName !== 'settings')
+    const file = new File([JSON.stringify(json)], 'v1-backup.json', { type: 'application/json' })
+
+    await addRecipe({
+      title: 'Added after the "v1" export',
+      instructions: '',
+      ingredients: [],
+      image: null,
+      notes: '',
+      layoutTemplate: 'hero-split-balanced',
+    })
+
+    await restoreDatabase(file)
+
+    const titles = (await getAllRecipes()).map((r) => r.title)
+    expect(titles).toContain('From The Past')
+    expect(titles).not.toContain('Added after the "v1" export')
+  })
 })
