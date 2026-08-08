@@ -174,7 +174,7 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
           <RecipeThumbnail :image="recipe.image" :title="recipe.title" />
         </div>
         <!-- Title -->
-        <a href="#" class="recipe-row__title" @click.prevent="handlers.onOpenPreview(recipe)">
+        <a href="#" class="recipe-row__title" @click.prevent="handlers.onOpenPreview(recipe, chapter.id)">
           {{ recipe.title }}
         </a>
         <!-- Overflow menu -->

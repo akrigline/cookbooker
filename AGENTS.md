@@ -170,6 +170,16 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   shades distinct from the exact literal each token captures, and the plan's scope was strictly
   "replace exact matches," not "generalize every color in the family."
 
+- `RecipePreviewDialog.vue` (opened from `ProjectView.vue`'s chapter recipe rows) stays a `Modal`
+  dialog, not a slide-out panel or dedicated route — decided when adding prev/next navigation
+  (`openspec/changes/archive/.../cookbook-recipe-preview-navigation` once archived). It has no
+  focusable/selectable content besides the Edit/Close/nav buttons, so arrow-key shortcuts don't
+  conflict with text selection, and the dialog already has room for nav controls in its header.
+  `ProjectView.vue` owns navigation state (`previewChapterId`/`previewIndex`, derived from
+  `recipesInChapter()`) and passes `hasPrev`/`hasNext` + a `recipe` prop down; the dialog only
+  emits `navigate(delta)`. Any future preview-reopen flow (e.g. from the recipe editor) should
+  target this same dialog, not a route.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
