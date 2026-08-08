@@ -26,7 +26,6 @@ describe('exportRecipeToHtml and parseRecipeImportHtml', () => {
       notes: 'Some notes.\nWith *markdown*.',
       layoutTemplate: 'column-optimized',
       ingredientColumns: 2,
-      ingredientQtyAlign: 'left',
       imageAspectRatio: '1:1',
       image: imageBlob
     }
@@ -46,11 +45,19 @@ describe('exportRecipeToHtml and parseRecipeImportHtml', () => {
     expect(parsed.notes).toBe(recipe.notes)
     expect(parsed.layoutTemplate).toBe(recipe.layoutTemplate)
     expect(parsed.ingredientColumns).toBe(recipe.ingredientColumns)
-    expect(parsed.ingredientQtyAlign).toBe(recipe.ingredientQtyAlign)
     expect(parsed.imageAspectRatio).toBe(recipe.imageAspectRatio)
 
     expect(parsed.image).not.toBeNull()
     const parsedText = await parsed.image.text()
     expect(parsedText).toBe(text)
+  })
+
+  it('does not emit an ingredient-alignment meta element', async () => {
+    const html = await exportRecipeToHtml({
+      title: 'No Alignment',
+      ingredients: [],
+      instructions: 'Step one.',
+    })
+    expect(html).not.toContain('cm-ingredient-qty-align')
   })
 })

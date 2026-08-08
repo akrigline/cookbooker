@@ -1,13 +1,12 @@
 import { parseIngredientsText } from './conversions'
 import {
   LAYOUT_TEMPLATES, DEFAULT_LAYOUT_TEMPLATE,
-  INGREDIENT_COLUMN_OPTIONS, INGREDIENT_QTY_ALIGN_OPTIONS,
-  IMAGE_ASPECT_RATIOS, DEFAULT_INGREDIENT_QTY_ALIGN
+  INGREDIENT_COLUMN_OPTIONS,
+  IMAGE_ASPECT_RATIOS
 } from './templates'
 
 const KNOWN_LAYOUT_IDS = new Set(LAYOUT_TEMPLATES.map((tpl) => tpl.id))
 const KNOWN_COLUMNS = new Set(INGREDIENT_COLUMN_OPTIONS.map(String))
-const KNOWN_QTY_ALIGNS = new Set(INGREDIENT_QTY_ALIGN_OPTIONS.map((o) => o.id))
 const KNOWN_ASPECT_RATIOS = new Set(IMAGE_ASPECT_RATIOS.map((o) => o.id))
 
 export function dataUriToBlob(dataUri) {
@@ -78,11 +77,6 @@ function extractIngredientColumns(root) {
   return KNOWN_COLUMNS.has(content) ? Number(content) : 1
 }
 
-function extractIngredientQtyAlign(root) {
-  const content = root.querySelector('.cm-ingredient-qty-align')?.getAttribute('content')
-  return KNOWN_QTY_ALIGNS.has(content) ? content : DEFAULT_INGREDIENT_QTY_ALIGN
-}
-
 function extractImageAspectRatio(root) {
   const content = root.querySelector('.cm-image-aspect-ratio')?.getAttribute('content')
   return KNOWN_ASPECT_RATIOS.has(content) ? content : 'auto'
@@ -108,7 +102,6 @@ function parseRecipeElement(root, index) {
   const layoutTemplate = extractLayoutTemplate(root)
   const image = extractImage(root)
   const ingredientColumns = extractIngredientColumns(root)
-  const ingredientQtyAlign = extractIngredientQtyAlign(root)
   const imageAspectRatio = extractImageAspectRatio(root)
 
   if (!title) {
@@ -127,7 +120,6 @@ function parseRecipeElement(root, index) {
       layoutTemplate,
       image,
       ingredientColumns,
-      ingredientQtyAlign,
       imageAspectRatio,
     },
   }

@@ -65,8 +65,8 @@ describe('parseRecipeImportHtml', () => {
     expect(recipe.layoutTemplate).toBe('text-only')
     expect(recipe.image).toBeNull()
     expect(recipe.ingredientColumns).toBe(1)
-    expect(recipe.ingredientQtyAlign).toBe('right')
     expect(recipe.imageAspectRatio).toBe('auto')
+    expect(recipe.ingredientQtyAlign).toBeUndefined()
   })
 
   it('parses a well-formed batch file with multiple recipes', () => {
@@ -80,6 +80,22 @@ describe('parseRecipeImportHtml', () => {
   it('defaults layoutTemplate to the registry default when omitted', () => {
     const { recipes } = parseRecipeImportHtml(BATCH_RECIPES)
     expect(recipes[0].layoutTemplate).toBe('hero-split-balanced')
+  })
+
+  it('ignores a legacy cm-ingredient-qty-align meta element from a file exported before this change', () => {
+    const html = wrapDocument(`
+      <article class="cm-recipe" data-cm-format="recipe" data-cm-version="1">
+        <h1 class="cm-title">Legacy Export</h1>
+        <section class="cm-ingredients"><ul><li>2 cups flour</li></ul></section>
+        <section class="cm-instructions"><ol><li>Mix and bake.</li></ol></section>
+        <meta class="cm-ingredient-qty-align" content="left">
+      </article>
+    `)
+    const { recipes, failures, rejected } = parseRecipeImportHtml(html)
+    expect(rejected).toBe(false)
+    expect(failures).toHaveLength(0)
+    expect(recipes).toHaveLength(1)
+    expect(recipes[0].ingredientQtyAlign).toBeUndefined()
   })
 
   it('rejects a file missing the required data-cm-format marker', () => {

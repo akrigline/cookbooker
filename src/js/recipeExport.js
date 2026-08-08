@@ -37,7 +37,6 @@ export async function exportRecipeToHtml(recipe) {
 
   const layout = escapeHtml(recipe.layoutTemplate || 'hero-split-balanced');
   const cols = escapeHtml(recipe.ingredientColumns || '1');
-  const align = escapeHtml(recipe.ingredientQtyAlign || 'right');
   const aspect = escapeHtml(recipe.imageAspectRatio || 'auto');
 
   let imageHtml = '';
@@ -58,8 +57,7 @@ export async function exportRecipeToHtml(recipe) {
   <article class="cm-recipe" data-cm-format="recipe" data-cm-version="1">
     <h1 class="cm-title">${titleHtml}</h1>
     <meta class="cm-layout" content="${layout}">
-    <meta class="cm-ingredient-columns" content="${cols}">
-    <meta class="cm-ingredient-qty-align" content="${align}">${imageHtml}
+    <meta class="cm-ingredient-columns" content="${cols}">${imageHtml}
     
     <h2>Ingredients</h2>
     <ul class="cm-ingredients">
