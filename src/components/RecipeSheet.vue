@@ -50,6 +50,7 @@ const resolvedQtyAlign = computed(() => props.qtyAlign ?? settingsStore.ingredie
 <template>
   <article
     class="recipe-sheet"
+    :data-qty-align="resolvedQtyAlign"
     :style="{ '--recipe-accent': accentColor, '--recipe-qty-align': resolvedQtyAlign }"
   >
     <component :is="activeLayout" :recipe="recipe" />
@@ -65,6 +66,32 @@ const resolvedQtyAlign = computed(() => props.qtyAlign ?? settingsStore.ingredie
   width: 100%;
   height: 100%;
   box-sizing: border-box;
+}
+
+/* Inline flow mode: qty + name run together as normal left-aligned text */
+.recipe-sheet[data-qty-align="inline"] :deep(.ingredient-item) {
+  display: block;
+}
+
+.recipe-sheet[data-qty-align="inline"] :deep(.ingredient-qty) {
+  display: inline;
+  flex: none;
+  padding-right: 0.25em;
+  white-space: normal;
+}
+
+.recipe-sheet[data-qty-align="inline"] :deep(.ingredient-name) {
+  display: inline;
+  flex: none;
+}
+
+.recipe-sheet[data-qty-align="inline"] :deep(.qty-primary) {
+  display: inline;
+}
+
+.recipe-sheet[data-qty-align="inline"] :deep(.qty-secondary) {
+  display: inline;
+  margin-left: 0.2em;
 }
 
 </style>
