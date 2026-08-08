@@ -180,6 +180,21 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   emits `navigate(delta)`. Any future preview-reopen flow (e.g. from the recipe editor) should
   target this same dialog, not a route.
 
+- The cookbook page's "Import Recipes" shortcut (`ProjectView.vue` → `RecipeImport.vue` →
+  back to `ProjectView.vue`, openspec: `cookbook-import-shortcut`) hands off one-shot data via
+  `router.push({ state: {...} })` / `history.state`, not Pinia or query params — `RecipeImport.vue`
+  reads `history.state.returnTo`/`projectId` on setup, and after a confirmed import pushes back to
+  `project` with `state.autoSelectIds` (only the successfully-created recipe IDs). `ProjectView.vue`
+  consumes `history.state.autoSelectIds` in `onMounted`, intersects it against
+  `recipesStore.recipes` (via `src/js/cookbookImportShortcut.js`'s `intersectExistingRecipeIds`,
+  since the route-state IDs could reference a since-deleted recipe) to populate `libSelectedIds`,
+  then immediately `history.replaceState`s the field away so a later back-navigation doesn't
+  re-trigger it. `LibrarySidebarPanel.vue` ("Add Recipes") is always rendered inline, not a
+  toggleable panel — there is no open/close flag to set; "opening" it is just populating
+  `libSelectedIds` (which reveals its bulk-action bar) and scrolling `.pv-sidebar` into view. The
+  library toolbar's own "Import Recipes" entry point (`RecipeLibrary.vue` → `/library/import`,
+  no `returnTo` state) is untouched by this and keeps its original stay-on-page behavior.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.

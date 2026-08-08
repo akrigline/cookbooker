@@ -13,6 +13,7 @@ import ChapterNameModal from '../components/ChapterNameModal.vue'
 import BackButton from '../components/BackButton.vue'
 import { nextSequence } from '../js/sequence'
 import { applyRange } from '../js/rangeSelect'
+import { intersectExistingRecipeIds } from '../js/cookbookImportShortcut'
 
 // ---------------------------------------------------------------------------
 // Props / stores
@@ -31,6 +32,7 @@ onMounted(async () => {
   if (!projectsStore.loaded) await projectsStore.load()
   if (!recipesStore.loaded) await recipesStore.load()
   checkReopenRecipe()
+  applyAutoSelectIds()
 })
 
 // The recipe editor's "Back to Cookbook"/save-return path appends
@@ -52,6 +54,37 @@ function checkReopenRecipe() {
   }
   const { reopenRecipe, ...rest } = route.query
   router.replace({ path: route.path, query: rest })
+}
+
+// ---------------------------------------------------------------------------
+// Cookbook-page import shortcut (openspec: cookbook-import-shortcut)
+// ---------------------------------------------------------------------------
+
+function startCookbookImport() {
+  router.push({
+    name: 'recipe-import',
+    state: { returnTo: 'project', projectId: props.projectId },
+  })
+}
+
+// Consumes `history.state.autoSelectIds` left behind by RecipeImport.vue's
+// post-confirm redirect (see Decision 3 in the change's design.md): populates
+// the library selection so the always-visible "Add Recipes" sidebar shows the
+// newly-imported recipes pre-checked, then clears the state so a later
+// back-navigation to this page doesn't re-trigger the pre-selection.
+function applyAutoSelectIds() {
+  const ids = history.state?.autoSelectIds
+  if (!Array.isArray(ids) || !ids.length) return
+
+  const validIds = intersectExistingRecipeIds(ids, recipesStore.recipes)
+  if (validIds.length) {
+    libSelectedIds.value = new Set(validIds)
+    nextTick(() => {
+      document.querySelector('.pv-sidebar')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }
+
+  history.replaceState({ ...history.state, autoSelectIds: undefined }, '')
 }
 
 // ---------------------------------------------------------------------------
@@ -854,6 +887,10 @@ const bulkActionHandlers = {
         <p v-if="project.subtitle" style="margin:0; font-size:15px; color:var(--gray-46);">{{ project.subtitle }}</p>
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button type="button" class="btn-new" @click="startCookbookImport">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Import Recipes
+        </button>
         <router-link class="btn-new" :to="`/projects/${project.id}/print`">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
           Print Preview

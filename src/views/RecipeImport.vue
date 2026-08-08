@@ -1,5 +1,6 @@
 <script setup>
 import { computed, markRaw, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
 import { parseRecipeImportHtml } from '../js/recipeImport'
 import { RECIPE_IMPORT_PROMPT } from '../js/recipeImportPrompt'
@@ -7,7 +8,14 @@ import RecipeSheet from '../components/RecipeSheet.vue'
 import PagePreview from '../components/PagePreview.vue'
 import BackButton from '../components/BackButton.vue'
 
+const router = useRouter()
 const recipesStore = useRecipesStore()
+
+// Caller context set by ProjectView's "Import Recipes" shortcut
+// (openspec: cookbook-import-shortcut). Absent when opened from the library
+// toolbar, in which case behavior is unchanged.
+const returnTo = history.state?.returnTo ?? null
+const returnProjectId = history.state?.projectId ?? null
 
 const mode = ref('file') // 'file' | 'paste'
 const pastedHtml = ref('')
@@ -102,10 +110,12 @@ async function confirmImport() {
   importing.value = true
   error.value = null
   const importFailures = []
+  const importedIds = []
   try {
     for (const item of toImport) {
       try {
-        await recipesStore.createRecipe(item.recipe)
+        const id = await recipesStore.createRecipe(item.recipe)
+        importedIds.push(id)
         candidates.value = candidates.value.filter((c) => c.key !== item.key)
       } catch (err) {
         importFailures.push(`"${item.recipe.title}": ${err.message}`)
@@ -121,6 +131,14 @@ async function confirmImport() {
     } else {
       failures.value = []
       rejectedSources.value = []
+    }
+
+    if (returnTo === 'project' && importedCount) {
+      router.push({
+        name: 'project',
+        params: { projectId: returnProjectId },
+        state: { autoSelectIds: importedIds },
+      })
     }
   } finally {
     importing.value = false
