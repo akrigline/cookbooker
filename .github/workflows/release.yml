@@ -1,0 +1,76 @@
+name: Test and Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      TZ: America/New_York
+    steps:
+      - name: Compute next date-based tag
+        id: tag
+        run: |
+          TODAY=$(date +%Y.%m.%d)
+          REFS_RAW=$(gh api "repos/${GH_REPO}/git/matching-refs/tags/v${TODAY}" --jq '.[].ref')
+
+          REFS=()
+          if [[ -n "$REFS_RAW" ]]; then
+            mapfile -t REFS <<< "$REFS_RAW"
+          fi
+
+          MAX=0
+          for REF in "${REFS[@]}"; do
+            NAME="${REF#refs/tags/}"
+            if [[ "$NAME" == "v${TODAY}" ]]; then
+              N=1
+            elif [[ "$NAME" =~ ^v${TODAY}-([0-9]+)$ ]]; then
+              N="${BASH_REMATCH[1]}"
+            else
+              continue
+            fi
+            (( N > MAX )) && MAX=$N
+          done
+
+          if (( MAX == 0 )); then
+            TAG="v${TODAY}"
+          else
+            TAG="v${TODAY}-$((MAX + 1))"
+          fi
+
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        run: |
+          gh release create "${{ steps.tag.outputs.tag }}" \
+            --target "${{ github.sha }}" \
+            --title "${{ steps.tag.outputs.tag }}" \
+            --generate-notes
+
+      - name: Trigger Pages deploy
+        run: gh workflow run pages.yml --ref main -f tag="${{ steps.tag.outputs.tag }}"

@@ -17,11 +17,34 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 - The router (`src/router/index.js`) uses `createWebHistory()`. A `spaFallback404` plugin in
   `vite.config.js` copies `dist/index.html` to `dist/404.html` after build, so static hosts without a
   rewrite rule (e.g. GitHub Pages) serve the app shell for deep links/hard refreshes instead of a bare
-  404. Deployed via `.github/workflows/deploy.yml` (Actions-based Pages deploy) at
-  `cookbooker.akrigline.com` — `public/CNAME` carries the custom domain into every build (GitHub Pages
-  needs it in the published artifact for Actions-based deploys, since there's no `gh-pages` branch to
-  hold it) and `vite.config.js`'s `base` is `'/'` to match serving from the domain root rather than a
-  `/cookbooker/` project subpath.
+  404. `public/CNAME` carries the custom domain (`cookbooker.akrigline.com`) into every build (GitHub
+  Pages needs it in the published artifact for Actions-based deploys, since there's no `gh-pages`
+  branch to hold it) and `vite.config.js`'s `base` is `'/'` to match serving from the domain root
+  rather than a `/cookbooker/` project subpath.
+- Release/deploy is a two-workflow chain, deliberately not a single push→deploy workflow: push causes
+  a release, and release creation causes the deploy — not push causing deploy directly. This is set up
+  so release creation can later become a manual, deliberate act (batching commits before shipping)
+  without touching the deploy trigger.
+  - `.github/workflows/release.yml` runs on push to `main`: tests + builds as a validation gate, then
+    computes a date-based tag (`v2026.08.07`, suffixed `-2`/`-3`... for same-day repeats, always in
+    `America/New_York` regardless of the runner's TZ) via the `git/matching-refs` API, creates a
+    GitHub Release with `gh release create --generate-notes`, then explicitly dispatches
+    `pages.yml` via `gh workflow run pages.yml -f tag=...`.
+  - `.github/workflows/pages.yml` runs on `release: published` (or manual `workflow_dispatch` with a
+    `tag` input) and does the actual build + `actions/deploy-pages` publish, checked out at the
+    release's tag.
+  - The explicit dispatch step in `release.yml` exists because actions taken with the default
+    `GITHUB_TOKEN` don't trigger other workflows' event listeners (recursion guard) — `release:
+    published` fired by `gh release create` using `GITHUB_TOKEN` would NOT auto-fire `pages.yml`.
+    `workflow_dispatch`/`repository_dispatch` are the documented exceptions, which is why the dispatch
+    step works. A **human** manually publishing a release (UI or their own `gh` login) is not
+    `GITHUB_TOKEN`-authored, so `release: published` fires normally in that case — meaning a future
+    switch to manual-only releases needs no changes to `pages.yml`, only removing the automated
+    `release` job from `release.yml`.
+  - `release.yml`'s `concurrency: group: release, cancel-in-progress: false` serializes runs (queues
+    rather than cancels) so two near-simultaneous pushes can't both compute the same same-day tag
+    suffix. `pages.yml` keeps `concurrency: group: pages, cancel-in-progress: true` since a stale
+    in-flight deploy should lose to a newer one.
 - `chrome-devtools-mcp` is configured and ready. Setup (resolved 2026-08-02):
   - MCP config: `~/.gemini/config/mcp_config.json` (server name: `chrome-devtools`)
   - Shim: `~/.gemini/antigravity-cli/mcp/chrome-devtools-shim.mjs` — injects `--executablePath` and
