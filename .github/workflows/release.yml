@@ -3,6 +3,10 @@ name: Test and Release
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'brainstorming/**'
+      - 'openspec/**'
+      - 'docs/**'
 
 permissions:
   contents: write
