@@ -4,6 +4,10 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 - Add durable project-specific notes here as they are discovered through real work.
 - Do not adhere to or reference any documents in `brainstorming/` unless specifically mentioned by the user for a specific task.
+- The `superpowers` plugin is a transient exploration/brainstorming tool, not the project's durable convention.
+  OpenSpec is. Any superpowers output (plans, specs, SDD task artifacts) must be directed to
+  `brainstorming/superpowers/` rather than the plugin's default `docs/` location. The `.superpowers/`
+  runtime state directory is gitignored and can stay at the project root.
 - Spec-driven development uses the OpenSpec CLI (`openspec` on PATH). Active change proposals live in
   `openspec/changes/<name>/`, completed ones are moved to `openspec/changes/archive/<date>-<name>/`, and
   the current merged capability specs live in `openspec/specs/<capability>/spec.md`. See the
