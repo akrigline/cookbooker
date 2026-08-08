@@ -1,7 +1,8 @@
 <script setup>
+import { computed } from 'vue'
 import RecipeThumbnail from './RecipeThumbnail.vue'
 
-defineProps({
+const props = defineProps({
   orderedChapters: { type: Array, required: true },
   availableRecipes: { type: Array, required: true },
   libSelectedIds: { type: Set, required: true },
@@ -11,6 +12,12 @@ defineProps({
 
 const librarySearch = defineModel('librarySearch', { type: String, default: '' })
 const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String, Number], default: '' })
+
+const allSelected = computed(
+  () => props.availableRecipes.length > 0
+    && props.availableRecipes.every((r) => props.libSelectedIds.has(r.id)),
+)
+const someSelected = computed(() => props.availableRecipes.some((r) => props.libSelectedIds.has(r.id)))
 </script>
 
 <template>
@@ -30,7 +37,23 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
 
     <!-- Library search -->
     <section class="sidebar-section sidebar-section--library">
-      <h2 class="sidebar-section__heading">Global Recipe Library</h2>
+      <div class="sidebar-section__header">
+        <h2 class="sidebar-section__heading">Global Recipe Library</h2>
+        <label
+          v-if="availableRecipes.length > 0"
+          class="lib-select-all"
+          :title="allSelected ? 'Deselect all' : 'Select all'"
+        >
+          <input
+            type="checkbox"
+            :checked="allSelected"
+            :indeterminate="!allSelected && someSelected"
+            aria-label="Select all visible library recipes"
+            @change="handlers.onLibSelectAll"
+          />
+          <span>Select all</span>
+        </label>
+      </div>
       <input
         v-model="librarySearch"
         type="search"
@@ -143,7 +166,33 @@ const libBulkChapterTarget = defineModel('libBulkChapterTarget', { type: [String
   font-size: 15px;
   font-weight: 600;
   color: var(--gray-30);
-  margin: 0 0 10px;
+  margin: 0;
+}
+
+.sidebar-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.lib-select-all {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--gray-46);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.lib-select-all input[type='checkbox'] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: var(--color-focus);
 }
 
 .sidebar-divider {

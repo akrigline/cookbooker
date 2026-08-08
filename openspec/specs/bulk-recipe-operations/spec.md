@@ -31,3 +31,7 @@ The system SHALL allow users to select multiple recipes from the global recipe l
 #### Scenario: Bulk new chapter from library selection
 - **WHEN** the user selects multiple recipes in the library and chooses "New chapter..."
 - **THEN** the system prompts for a chapter name, and on confirmation creates the chapter and adds all selected recipes to the active cookbook assigned to that new chapter
+
+#### Scenario: Select all visible library recipes
+- **WHEN** the user checks "Select all" in the library sidebar
+- **THEN** every recipe currently visible in the library list — i.e. matching the active search filter and not already in the cookbook — is selected in one action, and unchecking it clears the selection

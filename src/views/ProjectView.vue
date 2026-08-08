@@ -122,6 +122,18 @@ function selectAllInChapter(chapterId) {
   selectedIds.value = s
 }
 
+function selectAllInLibrary() {
+  const ids = availableRecipes.value.map((r) => r.id)
+  const s = new Set(libSelectedIds.value)
+  const allSelected = ids.every((id) => s.has(id))
+  if (allSelected) {
+    ids.forEach((id) => s.delete(id))
+  } else {
+    ids.forEach((id) => s.add(id))
+  }
+  libSelectedIds.value = s
+}
+
 function clearSelection() {
   selectedIds.value = new Set()
 }
@@ -718,6 +730,7 @@ const chapterCardHandlers = {
 const librarySidebarHandlers = {
   onNewChapter: () => openChapterNameModal('new'),
   onToggleLibSelect: toggleLibSelect,
+  onLibSelectAll: selectAllInLibrary,
   onLibRecipeDragStart,
   onRecipeDragEnd,
   onQuickAdd: quickAddRecipe,
