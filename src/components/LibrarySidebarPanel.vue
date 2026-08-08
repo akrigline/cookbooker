@@ -84,7 +84,7 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
             class="lib-row__check"
             :checked="libSelectedIds.has(recipe.id)"
             :aria-label="`Select '${recipe.title}'`"
-            @change="handlers.onToggleLibSelect(recipe.id)"
+            @click="handlers.onToggleLibSelect(recipe.id, $event)"
           />
           <div class="lib-row__thumb">
             <RecipeThumbnail :image="recipe.image" :title="recipe.title" />

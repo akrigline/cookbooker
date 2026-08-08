@@ -21,6 +21,11 @@ The system SHALL allow users to select multiple recipes across various chapters 
 - **WHEN** the user selects multiple recipes across chapters and chooses "New chapter from these"
 - **THEN** the system prompts for a chapter name, and on confirmation creates the chapter and reassigns all selected recipes to it
 
+#### Scenario: Shift+click range-select within a chapter
+- **WHEN** the user clicks a recipe's checkbox, then shift+clicks another recipe's checkbox within the same chapter
+- **THEN** every recipe between the two clicked recipes, inclusive, is set to match the checked state the shift-clicked checkbox is changing to
+- **AND** shift+clicking a checkbox in a different chapter than the last click has no range effect and toggles only that recipe
+
 ### Requirement: Bulk Recipe Actions in Library
 The system SHALL allow users to select multiple recipes from the global recipe library sidebar and add them all to a specific chapter, to the default Miscellaneous chapter, or to a new chapter created from the selection, in one operation.
 
@@ -35,3 +40,7 @@ The system SHALL allow users to select multiple recipes from the global recipe l
 #### Scenario: Select all visible library recipes
 - **WHEN** the user checks "Select all" in the library sidebar
 - **THEN** every recipe currently visible in the library list — i.e. matching the active search filter and not already in the cookbook — is selected in one action, and unchecking it clears the selection
+
+#### Scenario: Shift+click range-select in the library
+- **WHEN** the user clicks a library recipe's checkbox, then shift+clicks another library recipe's checkbox
+- **THEN** every recipe between the two clicked recipes in the currently visible (search-filtered) list, inclusive, is set to match the checked state the shift-clicked checkbox is changing to

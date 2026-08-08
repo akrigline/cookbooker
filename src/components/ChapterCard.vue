@@ -142,7 +142,7 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
           class="recipe-row__check"
           :checked="selectedIds.has(pr.id)"
           :aria-label="`Select '${recipe.title}'`"
-          @change="handlers.onToggleSelect(pr.id)"
+          @click="handlers.onToggleSelect(pr.id, chapter.id, $event)"
         />
         <!-- Drag handle -->
         <span class="drag-handle recipe-row__drag" aria-hidden="true" title="Drag to reorder">

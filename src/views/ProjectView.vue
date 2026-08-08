@@ -12,6 +12,7 @@ import EditCookbookModal from '../components/EditCookbookModal.vue'
 import ChapterNameModal from '../components/ChapterNameModal.vue'
 import BackButton from '../components/BackButton.vue'
 import { nextSequence } from '../js/sequence'
+import { applyRange } from '../js/rangeSelect'
 
 // ---------------------------------------------------------------------------
 // Props / stores
@@ -95,18 +96,45 @@ const selectedIds = ref(new Set())
 // libSelectedIds: Set of recipe.id values for library bulk actions
 const libSelectedIds = ref(new Set())
 
-function toggleSelect(prId) {
+// Shift+click range-select anchors. Chapter ranges are scoped to a single
+// chapter (mirrors "Select all" being per-chapter) - a shift-click against a
+// different chapter, or against an id no longer in the current list (e.g.
+// the library search changed), falls back to a plain toggle.
+const lastClickedPr = ref(null) // { chapterId, prId } | null
+const lastClickedLibId = ref(null)
+
+function toggleSelect(prId, chapterId, event) {
+  if (event?.shiftKey && lastClickedPr.value?.chapterId === chapterId) {
+    const ids = recipesInChapter(chapterId).map((e) => e.pr.id)
+    const ranged = applyRange(selectedIds.value, ids, lastClickedPr.value.prId, prId, !selectedIds.value.has(prId))
+    if (ranged) {
+      selectedIds.value = ranged
+      lastClickedPr.value = { chapterId, prId }
+      return
+    }
+  }
   const s = new Set(selectedIds.value)
   if (s.has(prId)) s.delete(prId)
   else s.add(prId)
   selectedIds.value = s
+  lastClickedPr.value = { chapterId, prId }
 }
 
-function toggleLibSelect(recipeId) {
+function toggleLibSelect(recipeId, event) {
+  if (event?.shiftKey && lastClickedLibId.value !== null) {
+    const ids = availableRecipes.value.map((r) => r.id)
+    const ranged = applyRange(libSelectedIds.value, ids, lastClickedLibId.value, recipeId, !libSelectedIds.value.has(recipeId))
+    if (ranged) {
+      libSelectedIds.value = ranged
+      lastClickedLibId.value = recipeId
+      return
+    }
+  }
   const s = new Set(libSelectedIds.value)
   if (s.has(recipeId)) s.delete(recipeId)
   else s.add(recipeId)
   libSelectedIds.value = s
+  lastClickedLibId.value = recipeId
 }
 
 function selectAllInChapter(chapterId) {
