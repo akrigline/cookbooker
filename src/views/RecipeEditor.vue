@@ -173,9 +173,6 @@ async function handleExport() {
   URL.revokeObjectURL(url)
 }
 
-function handleCancel() {
-  router.push(backTo.value)
-}
 </script>
 
 <template>
@@ -187,11 +184,29 @@ function handleCancel() {
     </router-link>
   </main>
   <main v-else id="cm-main" class="cm-page-main">
-    <BackButton :to="backTo">{{ backLabel }}</BackButton>
+    <!-- Header row: back + title left, actions right -->
+    <div class="cm-action-bar" style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:28px; flex-wrap:wrap;">
+      <div>
+        <BackButton :to="backTo">{{ backLabel }}</BackButton>
+        <h1 class="text-page-title" style="margin-top:4px;">{{ isEditing ? 'Edit Recipe' : 'New Recipe' }}</h1>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <p v-if="error" style="color:var(--color-danger); font-weight:600; margin:0;">{{ error }}</p>
+        <button v-if="isEditing" type="button" @click="showDeleteModal = true" style="padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--color-danger-border); background:none; color:oklch(45% 0.12 25); cursor:pointer;">Delete recipe</button>
+        <button v-if="isEditing" type="button" @click="handleExport" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">
+          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export recipe
+        </button>
+        <button v-if="isEditing" type="button" @click="handlePrint" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">
+          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+          Print recipe
+        </button>
+        <button type="button" :disabled="saving" @click="save" :style="saving ? 'opacity:0.55; cursor:not-allowed;' : 'cursor:pointer;'" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:var(--gray-20); color:var(--gray-99);">{{ saving ? 'Saving…' : 'Save' }}</button>
+      </div>
+    </div>
 
     <div class="cm-grid" style="display:grid; grid-template-columns:minmax(320px, 360px) minmax(0, 1fr); gap:32px; align-items:start;">
       <div class="cm-edit-column" style="display:flex; flex-direction:column; gap:22px; min-width:0;">
-        <p v-if="error" style="color:var(--color-danger); font-weight:600; margin:0;">{{ error }}</p>
 
         <div>
           <label for="cm-title" style="display:block; font-size:12px; font-weight:600; color:var(--gray-52); margin-bottom:6px;">Title <span aria-hidden="true" style="color:oklch(45% 0.05 25);">*</span></label>
@@ -217,14 +232,6 @@ function handleCancel() {
           </div>
         </div>
 
-        <div v-if="showImageAspectControl" role="group" aria-label="Image aspect ratio">
-          <p style="font-size:12px; font-weight:600; color:var(--gray-52); margin:0 0 8px;">Image aspect ratio</p>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button v-for="ratio in IMAGE_ASPECT_RATIOS" :key="ratio.id" type="button" :aria-pressed="imageAspectRatio === ratio.id" @click="imageAspectRatio = ratio.id" :style="imageAspectRatio === ratio.id ? 'background:oklch(93% 0.02 250); border:1.5px solid var(--color-focus); color:var(--gray-20);' : 'background:var(--gray-96); border:1.5px solid var(--gray-84); color:var(--gray-20);'" style="padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
-              {{ ratio.label }}
-            </button>
-          </div>
-        </div>
 
         <div>
           <label for="cm-ingredients" style="display:block; font-size:12px; font-weight:600; color:var(--gray-52); margin-bottom:6px;">Ingredients <span aria-hidden="true" style="color:oklch(45% 0.05 25);">*</span></label>
@@ -252,6 +259,14 @@ function handleCancel() {
           <div style="display:flex; align-items:center; gap:16px;">
             <input id="cm-image" type="file" accept="image/*" @change="handleImageChange" style="font-size:14px;" />
           </div>
+          <div v-if="showImageAspectControl" role="group" aria-label="Image aspect ratio" style="margin-top:12px;">
+            <p style="font-size:12px; font-weight:600; color:var(--gray-52); margin:0 0 8px;">Image aspect ratio</p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button v-for="ratio in IMAGE_ASPECT_RATIOS" :key="ratio.id" type="button" :aria-pressed="imageAspectRatio === ratio.id" @click="imageAspectRatio = ratio.id" :style="imageAspectRatio === ratio.id ? 'background:oklch(93% 0.02 250); border:1.5px solid var(--color-focus); color:var(--gray-20);' : 'background:var(--gray-96); border:1.5px solid var(--gray-84); color:var(--gray-20);'" style="padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+                {{ ratio.label }}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -263,23 +278,6 @@ function handleCancel() {
       </div>
     </div>
 
-    <div class="cm-action-bar" style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:32px; padding-top:20px; border-top:1px solid var(--gray-88); flex-wrap:wrap;">
-      <div>
-        <button v-if="isEditing" type="button" @click="showDeleteModal = true" style="padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--color-danger-border); background:none; color:oklch(45% 0.12 25); cursor:pointer;">Delete recipe</button>
-      </div>
-      <div style="display:flex; gap:10px;">
-        <button v-if="isEditing" type="button" @click="handleExport" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">
-          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Export recipe
-        </button>
-        <button v-if="isEditing" type="button" @click="handlePrint" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">
-          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
-          Print recipe
-        </button>
-        <button type="button" @click="handleCancel" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">Cancel</button>
-        <button type="button" :disabled="saving" @click="save" :style="saving ? 'opacity:0.55; cursor:not-allowed;' : 'cursor:pointer;'" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:var(--gray-20); color:var(--gray-99);">{{ saving ? 'Saving…' : 'Save' }}</button>
-      </div>
-    </div>
 
     <div v-if="showDeleteModal" @click="showDeleteModal = false" style="position:fixed; inset:0; background:oklch(20% 0.01 75 / 0.45); display:flex; align-items:center; justify-content:center; padding:24px; z-index:200;">
       <div role="alertdialog" aria-modal="true" aria-labelledby="cm-del-heading" aria-describedby="cm-del-desc" @click.stop style="background:var(--gray-99); border-radius:14px; width:100%; max-width:420px; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(20% 0.02 75 / 0.25);">

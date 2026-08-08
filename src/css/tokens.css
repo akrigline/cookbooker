@@ -116,8 +116,8 @@ html {
 
 .text-chef-note {
   font-family: var(--font-recipe-title);
-  font-size: 10px;
-  line-height: 14px;
+  font-size: 14px;
+  line-height: 1.2;
   font-weight: 400;
   color: var(--recipe-on-surface-variant);
 }
