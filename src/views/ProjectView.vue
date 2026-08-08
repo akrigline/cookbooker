@@ -246,14 +246,30 @@ function closeModal() {
   modal.type = null
 }
 
-const previewRecipe = ref(null)
+const previewChapterId = ref(null)
+const previewIndex = ref(-1)
 
-function openPreview(recipe) {
-  previewRecipe.value = recipe
+const previewChapterRecipes = computed(() => {
+  if (previewChapterId.value == null) return []
+  return recipesInChapter(previewChapterId.value).map((e) => e.recipe)
+})
+
+const previewRecipe = computed(() => previewChapterRecipes.value[previewIndex.value] ?? null)
+
+function openPreview(recipe, chapterId) {
+  previewChapterId.value = chapterId
+  previewIndex.value = recipesInChapter(chapterId).findIndex((e) => e.recipe.id === recipe.id)
 }
 
 function closePreview() {
-  previewRecipe.value = null
+  previewChapterId.value = null
+  previewIndex.value = -1
+}
+
+function navigatePreview(delta) {
+  const next = previewIndex.value + delta
+  if (next < 0 || next >= previewChapterRecipes.value.length) return
+  previewIndex.value = next
 }
 
 function editPreviewRecipe() {
@@ -954,8 +970,11 @@ const bulkActionHandlers = {
     v-if="previewRecipe"
     :recipe="previewRecipe"
     :accent-color="project?.accentColor"
+    :has-prev="previewIndex > 0"
+    :has-next="previewIndex < previewChapterRecipes.length - 1"
     @close="closePreview"
     @edit="editPreviewRecipe"
+    @navigate="navigatePreview"
   />
 </template>
 
