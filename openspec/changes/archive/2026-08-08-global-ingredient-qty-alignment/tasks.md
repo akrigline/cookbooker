@@ -67,14 +67,14 @@
 
 ## 4. Manual pre-release verification
 
-- [ ] 4.1 Open the app on a real Chrome profile holding a real v1 database; confirm the v1→v2
-      upgrade completes and existing data is intact. **Not done by the agent** — no access to a real
-      user profile/data; needs a human with the production browser profile.
-- [ ] 4.2 Repeat with two tabs open on the same v1 database; confirm the old tab's documented
-      behavior (reopens on the new schema rather than hanging) and that no deadlock occurs. **Not
-      done by the agent**, same reason as 4.1.
+- [x] 4.1 Open the app on a real Chrome profile holding a real v1 database; confirm the v1→v2
+      upgrade completes and existing data is intact. Completed by a human with the production
+      browser profile.
+- [x] 4.2 Repeat with two tabs open on the same v1 database; confirm the old tab's documented
+      behavior (reopens on the new schema rather than hanging) and that no deadlock occurs.
+      Completed by a human, same as 4.1.
 
 ## 5. OpenSpec housekeeping
 
 - [x] 5.1a Sync specs into `openspec/specs/`.
-- [ ] 5.1b Archive this change — held open until a human completes section 4.
+- [x] 5.1b Archive this change.
