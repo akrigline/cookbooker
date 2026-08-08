@@ -28,6 +28,23 @@ export async function inspectBackupFile(file) {
   if (meta?.formatName !== 'dexie' || !Array.isArray(meta?.data?.tables)) {
     throw new Error('this is not a Dexie database backup file')
   }
+  // A backup from a NEWER app version can carry tables this build has no
+  // schema for. dexie-export-import's `acceptMissingTables` does NOT cover
+  // that: db.table() throws InvalidTableError first, and it throws AFTER
+  // clearTablesBeforeImport has already wiped the live tables. Reject here,
+  // before restoreDatabase takes its pre-restore snapshot, while nothing
+  // destructive has happened.
+  if (meta.data.databaseVersion > db.verno) {
+    throw new Error(
+      `this backup was made by a newer version of Cookbooker (database v${meta.data.databaseVersion}, ` +
+        `this app uses v${db.verno}). Reload to get the latest version, then try again`,
+    )
+  }
+  const known = new Set(db.tables.map((t) => t.name))
+  const unknown = meta.data.tables.filter((t) => !known.has(t.name)).map((t) => t.name)
+  if (unknown.length) {
+    throw new Error(`this backup contains data this version doesn't understand (${unknown.join(', ')})`)
+  }
   const tables = meta.data.tables.map((t) => ({
     name: t.name,
     rowCount: t.rowCount ?? 0,
@@ -69,6 +86,15 @@ export async function restoreDatabase(file, progressCallback) {
     await importInto(db, file, {
       clearTablesBeforeImport: true,
       overwriteValues: true,
+      // Needed so an older-shaped backup (e.g. pre-settings-table) restores
+      // instead of throwing on "Database version differs". Deliberately NOT
+      // paired with `acceptMissingTables`: that flag guards the wrong
+      // direction (an export table absent from the live db, not the
+      // reverse), is unreachable dead code in dexie-export-import, and its
+      // failure path runs after clearTablesBeforeImport has already
+      // committed. The forward-incompatible case it would have covered is
+      // instead rejected up front by inspectBackupFile's gate above.
+      acceptVersionDiff: true,
       progressCallback: taggedProgress(progressCallback, 'restore'),
     })
   } catch (err) {

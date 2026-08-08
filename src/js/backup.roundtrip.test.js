@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import 'fake-indexeddb/auto'
-import { exportDatabase, restoreDatabase } from './backup.js'
-import { addRecipe, getAllRecipes } from './db.js'
+import { exportDatabase, restoreDatabase, inspectBackupFile } from './backup.js'
+import { addRecipe, getAllRecipes, db } from './db.js'
 
 // Follows the same fake-indexeddb-per-file precedent as db.test.js: each test
 // file gets its own isolated module registry, so the shared `db` singleton
@@ -75,5 +75,43 @@ describe('backup.js', () => {
     })
 
     expect(called).toBe(true)
+  })
+
+  it('rejects a backup from a newer database version before clearing anything', async () => {
+    await addRecipe({
+      title: 'Should survive',
+      instructions: '',
+      ingredients: [],
+      image: null,
+      notes: '',
+      layoutTemplate: 'hero-split-balanced',
+    })
+    const blob = await exportDatabase()
+    const json = JSON.parse(await blob.text())
+    json.data.databaseVersion = db.verno + 1
+    const file = new File([JSON.stringify(json)], 'future-backup.json', { type: 'application/json' })
+
+    await expect(inspectBackupFile(file)).rejects.toThrow(/newer version/)
+    const titles = (await getAllRecipes()).map((r) => r.title)
+    expect(titles).toContain('Should survive')
+  })
+
+  it('rejects a backup containing an unrecognized table before clearing anything', async () => {
+    await addRecipe({
+      title: 'Should also survive',
+      instructions: '',
+      ingredients: [],
+      image: null,
+      notes: '',
+      layoutTemplate: 'hero-split-balanced',
+    })
+    const blob = await exportDatabase()
+    const json = JSON.parse(await blob.text())
+    json.data.tables.push({ name: 'a_table_from_the_future', schema: '++id', rowCount: 0 })
+    const file = new File([JSON.stringify(json)], 'unknown-table-backup.json', { type: 'application/json' })
+
+    await expect(inspectBackupFile(file)).rejects.toThrow(/doesn't understand/)
+    const titles = (await getAllRecipes()).map((r) => r.title)
+    expect(titles).toContain('Should also survive')
   })
 })
