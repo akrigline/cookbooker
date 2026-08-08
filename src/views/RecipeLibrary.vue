@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
 import RecipeThumbnail from '../components/RecipeThumbnail.vue'
+import RecipeFitWarningBadge from '../components/RecipeFitWarningBadge.vue'
 
 const router = useRouter()
 const recipesStore = useRecipesStore()
@@ -115,7 +116,10 @@ async function confirmDelete() {
         </div>
 
         <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;">
-          <h2 :id="`cm-rtitle-${recipe.id}`" :title="recipe.title" class="text-item-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">{{ recipe.title }}</h2>
+          <h2 :id="`cm-rtitle-${recipe.id}`" :title="recipe.title" class="text-item-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; display:flex; align-items:center; gap:6px;">
+            <span style="overflow:hidden; text-overflow:ellipsis;">{{ recipe.title }}</span>
+            <RecipeFitWarningBadge v-if="recipe.fitsOnPage === false" />
+          </h2>
           <p :title="getIngredientSummary(recipe)" style="margin:0; font-size:13px; color:var(--gray-46); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">{{ getIngredientPreview(recipe) }}</p>
         </div>
 

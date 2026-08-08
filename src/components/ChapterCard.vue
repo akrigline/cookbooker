@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import RecipeThumbnail from './RecipeThumbnail.vue'
+import RecipeFitWarningBadge from './RecipeFitWarningBadge.vue'
 
 const props = defineProps({
   chapter: { type: Object, required: true },
@@ -176,6 +177,7 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
         <!-- Title -->
         <a href="#" class="recipe-row__title" @click.prevent="handlers.onOpenPreview(recipe, chapter.id)">
           {{ recipe.title }}
+          <RecipeFitWarningBadge v-if="recipe.fitsOnPage === false" />
         </a>
         <!-- Overflow menu -->
         <div class="recipe-row__menu-wrap" @click.stop>

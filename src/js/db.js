@@ -27,6 +27,10 @@ export const RETIRED_RECIPE_FIELDS = { ingredientQtyAlign: 'v2 → settings.ingr
 // handled as the normal case by getSettings/updateSettings below, not seeded.
 db.version(2).stores({ settings: 'key' })
 
+// No .stores() call: no index changes, only a data backfill, so nothing needs
+// redeclaring (see the version(2) comment above for the contrasting case).
+db.version(3).upgrade((tx) => tx.table('recipes').toCollection().modify({ fitsOnPage: null }))
+
 db.on('populate', async () => {
   const projectId = await db.projects.add({
     title: 'My First Cookbook',
@@ -50,6 +54,7 @@ db.on('populate', async () => {
     layoutTemplate: 'hero-split-balanced',
     ingredientColumns: 1,
     imageAspectRatio: 'auto',
+    fitsOnPage: null,
   })
   await db.project_recipes.add({ projectId, chapterId, recipeId, sequence: 0 })
 })
@@ -150,7 +155,7 @@ export const updateSettings = (patch) =>
 // ---------------------------------------------------------------------------
 export const getAllRecipes = () => db.recipes.toArray()
 export const getRecipe = (id) => db.recipes.get(id)
-export const addRecipe = (recipe) => db.recipes.add(recipe)
+export const addRecipe = (recipe) => db.recipes.add({ fitsOnPage: null, ...recipe })
 export const updateRecipe = (id, changes) => updateOrThrow(db.recipes, 'recipe', id, changes)
 
 export const deleteRecipe = (id) =>

@@ -195,6 +195,22 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   library toolbar's own "Import Recipes" entry point (`RecipeLibrary.vue` → `/library/import`,
   no `returnTo` state) is untouched by this and keeps its original stay-on-page behavior.
 
+- `openspec validate <change> --strict` requires delta specs at
+  `openspec/changes/<change>/specs/<capability>/spec.md` (a folder per capability), not a flat
+  `specs/<capability>.md` file — a flat file parses as zero deltas and fails validation with no
+  file-level error pointing at the cause. `openspec/changes/cookbook-import-shortcut/specs/` (once
+  archived, check `openspec/changes/archive/`) is a reference example of the folder layout.
+
+- Each recipe's `fitsOnPage` field (nullable boolean; `null` = not yet measured) is computed by
+  `src/js/recipeFitMeasure.js`'s `measureRecipeFit()`, which mounts `RecipeSheet` into a detached,
+  off-screen `div` sized to `PagePreview.vue`'s print-page dimensions (8.5in × 11in, 0.5in padding)
+  and compares `scrollHeight`/`clientHeight`. `src/stores/recipes.js`'s `createRecipe`/`editRecipe`
+  call `triggerFitMeasurement()` after every write (fire-and-forget, `.catch(() => {})`'d so a
+  since-deleted recipe's `RecordNotFoundError` from the persist step never becomes an unhandled
+  rejection) — this is the single choke point recipe-import's bulk create also flows through, so
+  no separate wiring was needed in `RecipeImport.vue`. `RecipeFitWarningBadge.vue` renders only
+  when `fitsOnPage === false`, in both `RecipeLibrary.vue` and `ChapterCard.vue`.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
