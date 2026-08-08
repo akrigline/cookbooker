@@ -22,17 +22,17 @@ The project view already holds the full ordered list of `project_recipes` groupe
 
 ### Decision 1: UI shape — dialog vs. slide-out panel vs. route
 
-**This is an open design decision to be resolved at implementation time.**
-
-Three viable shapes exist:
+**Resolved: extend the current dialog.** See `AGENTS.md` and tasks.md task 1.1 for the recorded
+rationale (no focusable/selectable content besides Edit/Close/nav buttons, so arrow keys don't
+conflict with text selection; the dialog already had header room for nav controls). This choice is
+a stated dependency for the follow-up `cookbook-aware-recipe-editor` change, so the dialog shape
+should be preserved rather than swapped for a panel/route later without a deliberate decision.
 
 | Option | Pros | Cons |
 |--------|------|------|
-| **Extend the current dialog** | Minimal scope change; no routing changes | Dialog width limits comfortable layout; arrow keys conflict with text selection if content is selectable |
+| **Extend the current dialog** (chosen) | Minimal scope change; no routing changes | Dialog width limits comfortable layout; arrow keys conflict with text selection if content is selectable |
 | **Slide-out panel / drawer** | Wide canvas, natural prev/next feel, doesn't occlude the recipe list behind it | Requires new layout component; moderate scope expansion |
 | **Dedicated preview route** | Deeplink-friendly, full-width, browser back/forward works naturally | Larger scope; changes the nature of the preview entirely |
-
-The implementer should evaluate the current dialog component's constraints (width, keyboard handling) before committing to a shape. The spec deliberately leaves this open; whichever shape is chosen, all navigation requirements still apply.
 
 ### Decision 2: Navigation scope is within-chapter only (v1)
 
@@ -58,6 +58,6 @@ Arrow-key navigation (← / →) activates only when the preview is open. The ha
 
 ## Open Questions
 
-1. **UI shape**: Dialog, slide-out panel, or preview route? *(Block on implementer decision — see Decision 1.)*
+1. ~~**UI shape**: Dialog, slide-out panel, or preview route?~~ *(Resolved — see Decision 1: dialog.)*
 2. **Cross-chapter wrapping**: Should next/prev wrap to the start of the next/previous chapter in v1, or stay disabled at chapter boundaries? *(Defaulting to disabled; revisit after v1.)*
 3. **Transition animation**: Should the recipe content animate (slide/fade) on navigation, or update instantly? *(Nice-to-have; implementer's call.)*

@@ -7,7 +7,7 @@ Provides a read-only preview of a recipe directly within the cookbook view conte
 ## Requirements
 
 ### Requirement: Cookbook Recipe Preview Dialog
-The system SHALL present a read-only preview (via dialog, slide-out panel, or dedicated route — to be resolved at implementation time) when a user clicks on a recipe from within a cookbook project view, rather than immediately routing to the recipe editor. The preview SHALL also expose prev/next navigation controls to move between recipes in the same chapter without closing the preview.
+The system SHALL present a read-only preview dialog when a user clicks on a recipe from within a cookbook project view, rather than immediately routing to the recipe editor. The preview SHALL also expose prev/next navigation controls to move between recipes in the same chapter without closing the preview.
 
 #### Scenario: Opening the preview
 - **WHEN** a user clicks on a recipe item in a cookbook chapter
