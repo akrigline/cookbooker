@@ -20,7 +20,7 @@ defineProps({
   font-weight: 600;
   text-decoration: none;
   color: var(--gray-52);
-  margin-bottom: 20px;
+  margin-bottom: 4px;
   transition: color 0.12s;
 }
 

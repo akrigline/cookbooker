@@ -178,6 +178,12 @@ export const useProjectsStore = defineStore('projects', {
         if (chapter) chapter.sequence = sequence
       }
     },
+    /** Arbitrary single-chapter sequence write, for drag-and-drop insertion (not a swap). */
+    async moveChapter(id, changes) {
+      await db.updateChapter(id, changes)
+      const chapter = this.chapters.find((c) => c.id === id)
+      if (chapter) Object.assign(chapter, changes)
+    },
     async reorderProjectRecipe(projectRecipeId, direction) {
       const pr = this.projectRecipes.find((p) => p.id === projectRecipeId)
       if (!pr) return

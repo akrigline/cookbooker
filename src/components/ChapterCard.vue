@@ -12,7 +12,7 @@ const props = defineProps({
   selectedIds: { type: Set, required: true },
   openMenuPrId: { type: [Number, String, null], default: null },
   projectId: { type: [Number, String], required: true },
-  // { dragChapterId, dragOverChapterId, dropChapterId, dropAfterPrId }
+  // { dragChapterId, dropChapterAfterId, dragRecipePrId, dropChapterId, dropAfterPrId }
   dragState: { type: Object, required: true },
   // Grouped callbacks - ProjectView.vue keeps ownership of every store write
   // and the shared error/announce plumbing; this component only forwards
@@ -24,14 +24,36 @@ const allSelected = computed(
   () => props.recipes.length > 0 && props.recipes.every(({ pr }) => props.selectedIds.has(pr.id)),
 )
 const someSelected = computed(() => props.recipes.some(({ pr }) => props.selectedIds.has(pr.id)))
+
+// Chapter reordering shows an insertion line between two existing chapters
+// (rather than highlighting a whole chapter as "the" drop target), matching
+// the recipe-row insertion lines below.
+const customChapters = computed(() => props.orderedChapters.filter((c) => !c.isDefault))
+const isFirstCustomChapter = computed(() => customChapters.value[0]?.id === props.chapter.id)
+const showChapterLineAbove = computed(
+  () => props.dragState.dragChapterId !== null && isFirstCustomChapter.value && props.dragState.dropChapterAfterId === null,
+)
+const showChapterLineBelow = computed(
+  () => props.dragState.dragChapterId !== null && props.dragState.dropChapterAfterId === props.chapter.id,
+)
+
+// Recipe row insertion line: above the first row when dropAfterPrId is null,
+// otherwise below whichever row it names.
+function dropLineAbove(recipeIndex) {
+  return props.dragState.dropChapterId === props.chapter.id && recipeIndex === 0 && props.dragState.dropAfterPrId === null
+}
+function dropLineBelow(pr) {
+  return props.dragState.dropChapterId === props.chapter.id && props.dragState.dropAfterPrId === pr.id
+}
 </script>
 
 <template>
   <div
     class="chapter-card"
     :class="{
-      'chapter-card--drag-over': dragState.dragOverChapterId === chapter.id,
       'chapter-card--dragging': dragState.dragChapterId === chapter.id,
+      'chapter-card--drop-line-above': showChapterLineAbove,
+      'chapter-card--drop-line-below': showChapterLineBelow,
     }"
     :draggable="!chapter.isDefault"
     @dragstart="!chapter.isDefault && handlers.onChapterDragStart($event, chapter.id)"
@@ -131,10 +153,15 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
         v-for="({ pr, recipe }, recipeIndex) in recipes"
         :key="pr.id"
         class="recipe-row"
-        :class="{ 'recipe-row--selected': selectedIds.has(pr.id) }"
+        :class="{
+          'recipe-row--selected': selectedIds.has(pr.id),
+          'recipe-row--dragging': dragState.dragRecipePrId === pr.id,
+          'recipe-row--drop-line-above': dropLineAbove(recipeIndex),
+          'recipe-row--drop-line-below': dropLineBelow(pr),
+        }"
         draggable="true"
         @dragstart="handlers.onRecipeDragStart($event, pr)"
-        @dragover="handlers.onRecipeDragOver($event, chapter.id, pr.id)"
+        @dragover="handlers.onRecipeDragOver($event, chapter.id, pr)"
         @dragend="handlers.onRecipeDragEnd"
       >
         <!-- Checkbox -->
@@ -235,6 +262,7 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
 
 <style scoped>
 .chapter-card {
+  position: relative;
   background: var(--gray-99);
   border: 1px solid var(--gray-88);
   border-radius: 14px;
@@ -242,14 +270,27 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.chapter-card--drag-over {
-  border-color: var(--color-focus);
-  box-shadow: 0 0 0 3px oklch(75% 0.12 250 / 35%);
-}
-
 .chapter-card--dragging {
   opacity: 0.5;
 }
+
+/* Insertion-line indicators for chapter drag-and-drop: a line between two
+   existing chapters, not a highlight around a whole chapter, so it's clear
+   the drop repositions rather than swaps/merges. */
+.chapter-card--drop-line-above::before,
+.chapter-card--drop-line-below::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-focus);
+  border-radius: 2px;
+  z-index: 5;
+}
+
+.chapter-card--drop-line-above::before { top: -12px; }
+.chapter-card--drop-line-below::after { bottom: -12px; }
 
 .chapter-card__header {
   padding: 16px 20px 12px;
@@ -358,6 +399,7 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
 }
 
 .recipe-row {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -374,7 +416,29 @@ const someSelected = computed(() => props.recipes.some(({ pr }) => props.selecte
   background: oklch(95% 0.04 250 / 40%);
 }
 
+.recipe-row--dragging {
+  opacity: 0.5;
+}
+
 .recipe-row:active { cursor: grabbing; }
+
+/* Insertion-line indicators for recipe drag-and-drop, mirroring the chapter
+   ones above: a line between two existing rows, at the exact spot the
+   recipe will be dropped, rather than shading the whole list. */
+.recipe-row--drop-line-above::before,
+.recipe-row--drop-line-below::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-focus);
+  border-radius: 2px;
+  z-index: 2;
+}
+
+.recipe-row--drop-line-above::before { top: -1px; }
+.recipe-row--drop-line-below::after { bottom: -1px; }
 
 .recipe-row__check {
   flex-shrink: 0;

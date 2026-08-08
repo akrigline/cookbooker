@@ -214,6 +214,27 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   no separate wiring was needed in `RecipeImport.vue`. `RecipeFitWarningBadge.vue` renders only
   when `fitsOnPage === false`, in both `RecipeLibrary.vue` and `ChapterCard.vue`.
 
+- `ProjectView.vue`/`ChapterCard.vue`'s drag-and-drop has a nested-`draggable`
+  gotcha: a non-default chapter's card is itself `draggable` (for chapter
+  reordering), and its recipe rows/list are `draggable` too, nested inside
+  it. `dragstart`/`dragover`/`drop` all bubble, so a recipe drag inside a
+  non-default chapter used to also fire the chapter-level handlers (dragging
+  a recipe across chapters would spuriously swap the two chapters'
+  positions) - fixed by `e.stopPropagation()` in every recipe-level drag
+  handler (`onRecipeDragStart`/`onRecipeDragOver`/`onRecipeDrop`/
+  `onRecipeDragEnd`). Any new draggable element nested inside the chapter
+  card needs the same treatment. Both recipe and chapter reordering report a
+  drop as "insert after this id, or null for top" (`src/js/sequence.js`'s
+  `sequenceForInsertAfter`, a single midpoint-sequence write) rather than a
+  two-item position swap, computed from which half of the hovered
+  row/card the pointer is over - `ChapterCard.vue` renders that as an
+  insertion line (`::before`/`::after` on the row/card) between two existing
+  items, not a highlight around a whole drop target. Moving a recipe into a
+  *different* chapter is the one exception that still always appends at the
+  end (matching what `moveRecipeToChapter`/`addRecipeToProject` actually do
+  server-side), so its insertion line is pinned to the end of that chapter's
+  list rather than tracking the pointer.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.

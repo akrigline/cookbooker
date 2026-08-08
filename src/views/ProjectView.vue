@@ -11,7 +11,7 @@ import ConfirmDialog from '../components/ConfirmDialog.vue'
 import EditCookbookModal from '../components/EditCookbookModal.vue'
 import ChapterNameModal from '../components/ChapterNameModal.vue'
 import BackButton from '../components/BackButton.vue'
-import { nextSequence } from '../js/sequence'
+import { sequenceForInsertAfter } from '../js/sequence'
 import { applyRange } from '../js/rangeSelect'
 import { intersectExistingRecipeIds } from '../js/cookbookImportShortcut'
 
@@ -595,7 +595,14 @@ async function libBulkAddToMisc() {
 // ---------------------------------------------------------------------------
 
 const dragChapterId = ref(null)
-const dragOverChapterId = ref(null)
+// id of the custom chapter the dragged chapter would land after; null means
+// "insert before all custom chapters" (there's no drop-between-Miscellaneous
+// since it's always last and never a drag target).
+const dropChapterAfterId = ref(null)
+
+function customChaptersExcluding(excludeId) {
+  return orderedChapters.value.filter((c) => !c.isDefault && c.id !== excludeId)
+}
 
 function onChapterDragStart(e, chapterId) {
   dragChapterId.value = chapterId
@@ -603,34 +610,40 @@ function onChapterDragStart(e, chapterId) {
   e.dataTransfer.setData('text/plain', `chapter:${chapterId}`)
 }
 
+// Reports where the dragged chapter would land relative to `chapterId` -
+// before it or after it, based on which half of the card the pointer is
+// over - so the highlight is an insertion line between two chapters rather
+// than "this whole chapter is the drop target."
 function onChapterDragOver(e, chapterId) {
-  if (dragChapterId.value === null) return
-  const src = dragChapterId.value
+  if (dragChapterId.value === null || chapterId === dragChapterId.value) return
   const destChapter = orderedChapters.value.find((c) => c.id === chapterId)
   if (!destChapter || destChapter.isDefault) return
   e.preventDefault()
   e.dataTransfer.dropEffect = 'move'
-  dragOverChapterId.value = chapterId
+  const rect = e.currentTarget.getBoundingClientRect()
+  const before = e.clientY < rect.top + rect.height / 2
+  const siblings = customChaptersExcluding(dragChapterId.value)
+  const idx = siblings.findIndex((c) => c.id === chapterId)
+  dropChapterAfterId.value = before ? (idx > 0 ? siblings[idx - 1].id : null) : chapterId
 }
 
 function onChapterDragLeave() {
-  dragOverChapterId.value = null
+  dropChapterAfterId.value = null
 }
 
 async function onChapterDrop(e, targetChapterId) {
   e.preventDefault()
   const srcId = dragChapterId.value
+  const afterId = dropChapterAfterId.value
   dragChapterId.value = null
-  dragOverChapterId.value = null
+  dropChapterAfterId.value = null
   if (srcId === null || srcId === targetChapterId) return
   const destChapter = orderedChapters.value.find((c) => c.id === targetChapterId)
   if (!destChapter || destChapter.isDefault) return
-  const srcChapter = orderedChapters.value.find((c) => c.id === srcId)
-  if (!srcChapter) return
-  // One transaction, not two independent writes - a half-applied swap would
-  // leave both chapters sharing a sequence.
+  const siblings = customChaptersExcluding(srcId)
+  const newSequence = sequenceForInsertAfter(siblings, afterId)
   const ok = await persist('move this chapter', () =>
-    projectsStore.swapChapterSequences(srcId, targetChapterId),
+    projectsStore.moveChapter(srcId, { sequence: newSequence }),
   )
   if (ok) announce(`Chapter moved.`)
 }
@@ -656,7 +669,7 @@ async function moveRecipe(pr, recipe, direction) {
 
 function onChapterDragEnd() {
   dragChapterId.value = null
-  dragOverChapterId.value = null
+  dropChapterAfterId.value = null
 }
 
 // ---------------------------------------------------------------------------
@@ -673,6 +686,11 @@ const dropChapterId = ref(null)    // chapter being hovered (for highlighting)
 const dropAfterPrId = ref(null)    // pr.id to insert after (null = top of chapter)
 
 function onRecipeDragStart(e, pr) {
+  // Stop this from bubbling up to the chapter card's own draggable div: a
+  // non-default chapter card is draggable too (for chapter reordering), and
+  // dragstart bubbles, so without this the chapter-level handler would also
+  // fire and treat the recipe drag as a chapter drag.
+  e.stopPropagation()
   dragRecipePrId.value = pr.id
   dragLibRecipeId.value = null
   e.dataTransfer.effectAllowed = 'move'
@@ -686,12 +704,36 @@ function onLibRecipeDragStart(e, recipe) {
   e.dataTransfer.setData('text/plain', `library:${recipe.id}`)
 }
 
-function onRecipeDragOver(e, chapterId, afterPrId = null) {
+// `pr` is the row being hovered, or null when hovering the chapter's list
+// container directly (blank space below the rows, or an empty chapter).
+// Reordering within the recipe's own chapter reports an insertion point
+// (before/after the hovered row, from which half of it the pointer is over);
+// moving into a different chapter always appends at the end (that's what
+// moveRecipeToChapter actually does), so the insertion point there is
+// pinned to "after the last row" rather than tracking the pointer.
+function onRecipeDragOver(e, chapterId, pr = null) {
   if (dragRecipePrId.value === null && dragLibRecipeId.value === null) return
   e.preventDefault()
+  e.stopPropagation()
   e.dataTransfer.dropEffect = dragLibRecipeId.value ? 'copy' : 'move'
   dropChapterId.value = chapterId
-  dropAfterPrId.value = afterPrId
+
+  const siblings = projectsStore
+    .projectRecipesForChapter(chapterId)
+    .filter((p) => p.id !== dragRecipePrId.value)
+  const reordering = dragRecipePrId.value !== null && chapterId === chapterIdOfProjectRecipe(dragRecipePrId.value)
+  if (!reordering || pr === null) {
+    dropAfterPrId.value = siblings.length ? siblings[siblings.length - 1].id : null
+    return
+  }
+  const rect = e.currentTarget.getBoundingClientRect()
+  const before = e.clientY < rect.top + rect.height / 2
+  const idx = siblings.findIndex((p) => p.id === pr.id)
+  dropAfterPrId.value = before ? (idx > 0 ? siblings[idx - 1].id : null) : pr.id
+}
+
+function chapterIdOfProjectRecipe(prId) {
+  return projectsStore.projectRecipes.find((p) => p.id === prId)?.chapterId ?? null
 }
 
 function onChapterAreaDragLeave(e) {
@@ -704,6 +746,8 @@ function onChapterAreaDragLeave(e) {
 
 async function onRecipeDrop(e, targetChapterId) {
   e.preventDefault()
+  e.stopPropagation()
+  const afterId = dropAfterPrId.value
   dropChapterId.value = null
   dropAfterPrId.value = null
 
@@ -735,22 +779,9 @@ async function onRecipeDrop(e, targetChapterId) {
     if (!pr) return
 
     if (pr.chapterId === targetChapterId) {
-      // Reorder within chapter — drop after dropAfterPrId or at top
-      const siblings = projectsStore.projectRecipesForChapter(targetChapterId)
-      const afterId = dropAfterPrId.value
-      const otherPr = afterId ? siblings.find((p) => p.id === afterId) : null
-      // Simple sequence reassignment: put after target
-      let newSeq
-      if (!afterId) {
-        newSeq = (siblings[0]?.sequence ?? 0) - 1
-      } else if (otherPr) {
-        const nextPr = siblings[siblings.indexOf(otherPr) + 1]
-        newSeq = nextPr
-          ? (otherPr.sequence + nextPr.sequence) / 2
-          : otherPr.sequence + 1
-      } else {
-        newSeq = nextSequence(siblings)
-      }
+      // Reorder within chapter — drop after afterId, or at the top if null
+      const siblings = projectsStore.projectRecipesForChapter(targetChapterId).filter((p) => p.id !== prId)
+      const newSeq = sequenceForInsertAfter(siblings, afterId)
       const ok = await persist('reorder this recipe', () =>
         projectsStore.moveProjectRecipe(prId, { sequence: newSeq }),
       )
@@ -762,7 +793,8 @@ async function onRecipeDrop(e, targetChapterId) {
   }
 }
 
-function onRecipeDragEnd() {
+function onRecipeDragEnd(e) {
+  e.stopPropagation()
   dragRecipePrId.value = null
   dragLibRecipeId.value = null
   dropChapterId.value = null
@@ -801,7 +833,8 @@ onUnmounted(() => {
 
 const dragState = computed(() => ({
   dragChapterId: dragChapterId.value,
-  dragOverChapterId: dragOverChapterId.value,
+  dropChapterAfterId: dropChapterAfterId.value,
+  dragRecipePrId: dragRecipePrId.value,
   dropChapterId: dropChapterId.value,
   dropAfterPrId: dropAfterPrId.value,
 }))
