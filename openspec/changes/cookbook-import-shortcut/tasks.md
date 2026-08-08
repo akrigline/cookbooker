@@ -1,14 +1,14 @@
 ## 1. Cookbook Toolbar — Import Action
 
 - [x] 1.1 Add an "Import Recipes" toolbar button to `ProjectView.vue` (alongside the existing toolbar actions)
-- [x] 1.2 Implement the click handler: push to `{ name: 'recipe-import', state: { returnTo: 'project', projectId: <current> } }`
-- [x] 1.3 Verify the button is visible and navigates to the import view with the correct route state
+- [x] 1.2 Implement the click handler: push to `{ name: 'recipe-import', query: { returnToProject: <current> } }` (revised from an initial `state`-only version — see Decision 1 in design.md — to match `RecipeEditor.vue`'s `?returnToProject`/`?returnToRecipe` return-context pattern, so the return path survives a page refresh)
+- [x] 1.3 Verify the button is visible and navigates to the import view with the correct query param
 
 ## 2. RecipeImport — Return-to-Cookbook Context
 
-- [x] 2.1 In `RecipeImport.vue`, read `history.state.returnTo` and `history.state.projectId` on setup
+- [x] 2.1 In `RecipeImport.vue`, derive `returnContext` from `route.query` via `computeImportReturnContext` (`src/js/returnContext.js`)
 - [x] 2.2 Modify `confirmImport()` to collect the IDs of successfully-created recipes (from the resolved `createRecipe` return values)
-- [x] 2.3 After confirm, if `returnTo === 'project'`: push to `{ name: 'project', params: { projectId }, state: { autoSelectIds: [...] } }`; otherwise keep existing behavior (stay on import view after success)
+- [x] 2.3 After confirm, if `returnContext` is present: push to `{ name: 'project', params: { projectId: returnContext.projectId }, state: { autoSelectIds: [...] } }`; otherwise keep existing behavior (stay on import view after success)
 - [x] 2.4 Verify that importing from the library toolbar (no `returnTo` state) still behaves exactly as before
 
 ## 3. ProjectView — Post-Import Pre-Selection

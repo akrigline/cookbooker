@@ -63,7 +63,7 @@ function checkReopenRecipe() {
 function startCookbookImport() {
   router.push({
     name: 'recipe-import',
-    state: { returnTo: 'project', projectId: props.projectId },
+    query: { returnToProject: props.projectId },
   })
 }
 

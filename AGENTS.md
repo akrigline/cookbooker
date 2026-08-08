@@ -181,11 +181,14 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   target this same dialog, not a route.
 
 - The cookbook page's "Import Recipes" shortcut (`ProjectView.vue` → `RecipeImport.vue` →
-  back to `ProjectView.vue`, openspec: `cookbook-import-shortcut`) hands off one-shot data via
-  `router.push({ state: {...} })` / `history.state`, not Pinia or query params — `RecipeImport.vue`
-  reads `history.state.returnTo`/`projectId` on setup, and after a confirmed import pushes back to
-  `project` with `state.autoSelectIds` (only the successfully-created recipe IDs). `ProjectView.vue`
-  consumes `history.state.autoSelectIds` in `onMounted`, intersects it against
+  back to `ProjectView.vue`, openspec: `cookbook-import-shortcut`) carries its return-context the
+  same way `RecipeEditor.vue` does (see the entry above): a `?returnToProject=<id>` query param
+  (`src/js/returnContext.js`'s `computeImportReturnContext`), not `history.state` — so it's a real,
+  bookmarkable URL and survives a page refresh. `RecipeImport.vue` derives `returnContext` from
+  `route.query` and uses it both for the "Back to Cookbook" link and the post-confirm redirect.
+  The one-shot `autoSelectIds` payload (only the successfully-created recipe IDs) still rides
+  `router.push({ state: {...} })` / `history.state`, since it's ephemeral data, not a navigable
+  location. `ProjectView.vue` consumes `history.state.autoSelectIds` in `onMounted`, intersects it against
   `recipesStore.recipes` (via `src/js/cookbookImportShortcut.js`'s `intersectExistingRecipeIds`,
   since the route-state IDs could reference a since-deleted recipe) to populate `libSelectedIds`,
   then immediately `history.replaceState`s the field away so a later back-navigation doesn't

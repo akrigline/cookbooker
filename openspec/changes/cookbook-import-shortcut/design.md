@@ -21,15 +21,18 @@ The router uses `createWebHistory()` with named routes; Vue Router's `router.pus
 
 ## Decisions
 
-### Decision 1: Pass caller context via Vue Router location state, not query params
+### Decision 1: Split the caller context — `?returnToProject` query param for the navigable location, `history.state` for the one-shot payload
 
-**Chosen**: `router.push({ name: 'recipe-import', state: { returnTo: 'project', projectId: ..., autoSelectOnReturn: true } })`
+**Superseded** (see below) — originally chosen as: `router.push({ name: 'recipe-import', state: { returnTo: 'project', projectId: ..., autoSelectOnReturn: true } })`, i.e. everything via route state. Revised after initial ship: the "where do I go back to" half of this context is not actually one-shot/transient the way `autoSelectIds` is — it needs to survive a page refresh and be a real, bookmarkable URL, exactly like `RecipeEditor.vue`'s existing `?returnToProject`/`?returnToRecipe` return-context (`src/js/returnContext.js`). Splitting the two halves onto the mechanism that actually fits each one:
 
-**Rationale**: The `autoSelectIds` payload (an array of recipe IDs) is derived only after import confirms — it can't be encoded in the navigation *to* the import view. The round-trip works as: ProjectView → push to `recipe-import` with `state.returnTo` context → user imports → `RecipeImport.confirmImport()` sees `returnTo` in `history.state`, collects new recipe IDs, and pushes back to `project` with `state.autoSelectIds`. Route state (`history.state`) is the idiomatic Vue Router mechanism for transient, non-URL payloads between pages; it avoids polluting the URL or Pinia with one-shot coordination data.
+- **`?returnToProject=<id>` query param** (`computeImportReturnContext` in `src/js/returnContext.js`) carries the originating cookbook's identity on the way *into* `recipe-import`. `RecipeImport.vue` derives `returnContext` from `route.query` and uses it for both the "Back to Cookbook" link and the post-confirm redirect target. This survives a hard refresh and matches the recipe editor's established pattern instead of introducing a second, divergent mechanism for conceptually the same problem.
+- **`state: { autoSelectIds: [...] }`** (route state) still carries the *result* of the import — the array of newly-created recipe IDs — on the way back to `project`. This payload genuinely can't be known until after import confirms, so it can't live in a URL constructed ahead of time, and it truly is one-shot (consumed and cleared on `ProjectView` mount).
+
+**Rationale**: The round-trip is now: ProjectView → push to `recipe-import` with `?returnToProject=<id>` → user imports → `RecipeImport.confirmImport()` reads `returnContext` from `route.query`, collects new recipe IDs, and pushes back to `project` with `state.autoSelectIds`. Only the part of the payload that is genuinely one-shot uses `history.state`; the part that is a real caller/return location uses a query param, consistent with `RecipeEditor.vue`.
 
 **Alternative considered**: A shared Pinia store "handoff" state. Rejected: it requires clearing on every mount/unmount, leaks across navigations if cleanup fails, and couples two otherwise-independent views via store shape.
 
-**Alternative considered**: Query params. Rejected: array of IDs would be ugly in the URL, the URL is bookmarkable/shareable but the state is one-shot, and Vue Router discourages large payloads in query strings.
+**Alternative considered (original)**: Query params for everything, including `autoSelectIds`. Rejected: an array of IDs would be ugly in the URL, and that half of the payload is genuinely one-shot/derived-after-the-fact, so query params don't fit it the way they fit `returnToProject`.
 
 ### Decision 2: Reuse the existing `/library/import` route and `RecipeImport.vue` component
 
@@ -51,7 +54,7 @@ The existing `createRecipe` store action (called in `confirmImport`) resolves wi
 
 ## Risks / Trade-offs
 
-- **Route state cleared on hard refresh**: `history.state` survives within a SPA session but is lost on a hard page reload. If the user reloads between import-confirm and arriving at the cookbook, the pre-selection is silently skipped — the recipes were still imported, they just won't be pre-checked. This is acceptable given the transient nature of the handoff.
+- **`autoSelectIds` route state cleared on hard refresh**: `history.state` survives within a SPA session but is lost on a hard page reload. If the user reloads between import-confirm and arriving at the cookbook, the pre-selection is silently skipped — the recipes were still imported, they just won't be pre-checked. This is acceptable given the transient nature of that specific payload. (This risk no longer applies to the "which cookbook to return to" half of the context, now a `?returnToProject` query param — see revised Decision 1 — which does survive a hard refresh.)
 
 - **`confirmImport` error path**: If some recipes fail to import, only the successfully-created IDs are included in `autoSelectIds`. The error message already lists failures; the user returns to the cookbook with partial pre-selection, which is correct behavior.
 

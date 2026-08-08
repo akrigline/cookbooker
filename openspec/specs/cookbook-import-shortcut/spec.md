@@ -20,7 +20,15 @@ The cookbook page toolbar SHALL provide an "Import Recipes" action that opens th
 
 #### Scenario: Import action opens the review flow with cookbook context
 - **WHEN** the user selects "Import Recipes" from the cookbook page toolbar
-- **THEN** the system opens the staged recipe-import review flow, preserving the originating cookbook's identity so it can redirect back after import
+- **THEN** the system opens the staged recipe-import review flow, preserving the originating cookbook's identity (via a `?returnToProject` URL query param, the same return-context mechanism the recipe editor uses) so it can redirect back after import
+
+#### Scenario: Cookbook context survives a page refresh
+- **WHEN** the user reloads the import review page after arriving via the cookbook shortcut, before confirming
+- **THEN** the "Back to Cookbook" link and the post-confirm return destination still point at the originating cookbook, because the return context is carried in the URL rather than in-memory route state
+
+#### Scenario: Back link reflects the entry point
+- **WHEN** the recipe-import review flow was opened via the cookbook shortcut
+- **THEN** the back link reads "Back to Cookbook" and returns to the originating cookbook page, instead of the default "Back to Recipe Library" link shown when import is opened from the library toolbar
 
 #### Scenario: Confirming import from the cookbook shortcut navigates back with pre-selection
 - **WHEN** the user confirms an import that was initiated from the cookbook page and one or more recipes were successfully created

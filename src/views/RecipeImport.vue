@@ -1,21 +1,25 @@
 <script setup>
 import { computed, markRaw, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
 import { parseRecipeImportHtml } from '../js/recipeImport'
 import { RECIPE_IMPORT_PROMPT } from '../js/recipeImportPrompt'
+import { computeImportReturnContext } from '../js/returnContext'
 import RecipeSheet from '../components/RecipeSheet.vue'
 import PagePreview from '../components/PagePreview.vue'
 import BackButton from '../components/BackButton.vue'
 
 const router = useRouter()
+const route = useRoute()
 const recipesStore = useRecipesStore()
 
 // Caller context set by ProjectView's "Import Recipes" shortcut
-// (openspec: cookbook-import-shortcut). Absent when opened from the library
-// toolbar, in which case behavior is unchanged.
-const returnTo = history.state?.returnTo ?? null
-const returnProjectId = history.state?.projectId ?? null
+// (openspec: cookbook-import-shortcut), via a `?returnToProject` query param —
+// same mechanism as RecipeEditor.vue's returnContext. Absent when opened from
+// the library toolbar, in which case behavior is unchanged.
+const returnContext = computed(() => computeImportReturnContext(route.query))
+const backTo = computed(() => (returnContext.value ? `/projects/${returnContext.value.projectId}` : '/library'))
+const backLabel = computed(() => (returnContext.value ? 'Back to Cookbook' : 'Back to Recipe Library'))
 
 const mode = ref('file') // 'file' | 'paste'
 const pastedHtml = ref('')
@@ -133,10 +137,10 @@ async function confirmImport() {
       rejectedSources.value = []
     }
 
-    if (returnTo === 'project' && importedCount) {
+    if (returnContext.value && importedCount) {
       router.push({
         name: 'project',
-        params: { projectId: returnProjectId },
+        params: { projectId: returnContext.value.projectId },
         state: { autoSelectIds: importedIds },
       })
     }
@@ -154,7 +158,7 @@ function handleCancelReview() {
 <template>
   <div class="ri-body" :class="{ 'ri-body--with-sidebar': isInputStage }">
     <main id="cm-main" class="ri-main">
-      <BackButton to="/library">Back to Recipe Library</BackButton>
+      <BackButton :to="backTo">{{ backLabel }}</BackButton>
 
     <div v-if="success" style="margin-bottom:20px; padding:12px; background:var(--color-success-bg); color:var(--color-success); border:1px solid oklch(85% 0.1 140); border-radius:8px;">
       {{ success }}

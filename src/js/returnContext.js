@@ -15,3 +15,12 @@ export function returnContextBackTo(returnContext) {
     ? `/projects/${returnContext.projectId}?reopenRecipe=${returnContext.recipeId}`
     : '/library'
 }
+
+// Same idea for the cookbook page's "Import Recipes" shortcut (see
+// openspec/changes/archive/.../cookbook-import-shortcut): a `?returnToProject`
+// query param, not history.state, so the return path survives a page refresh
+// and the "Back to Cookbook" link is a real, bookmarkable URL.
+export function computeImportReturnContext(query) {
+  const { returnToProject } = query ?? {}
+  return returnToProject ? { projectId: returnToProject } : null
+}
