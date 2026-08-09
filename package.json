@@ -17,7 +17,7 @@
     "dexie-export-import": "^4.4.0",
     "fraction.js": "^5.3.4",
     "lz-string": "^1.5.0",
-    "pinia": "^3.0.4",
+    "pinia": "^4.0.2",
     "qrcode": "^1.5.4",
     "vue": "^3.5.41",
     "vue-router": "^5.2.0"
