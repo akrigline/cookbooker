@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      npm-minor-patch:
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # Patched via patch-package (patches/@magrinj+parse-ingredients+1.0.0.patch,
+      # see CLAUDE.md) — a version bump risks the patch silently drifting rather
+      # than failing loudly. Bump manually once the upstream PR merges.
+      - dependency-name: "@magrinj/parse-ingredients"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions-minor-patch:
+        update-types:
+          - minor
+          - patch
