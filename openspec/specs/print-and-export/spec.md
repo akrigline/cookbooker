@@ -20,7 +20,11 @@ Every recipe page SHALL be styled to render as a single printed page. Page break
 to prevent content from spilling across pages. Each recipe page SHALL include an inline QR code
 widget in the bottom-right corner of the recipe article, encoding the recipe's ingredient list for
 easy transfer to a shopping list application (see `recipe-qr-sharing` for the widget's truncation
-and fallback behavior).
+and fallback behavior). The system SHALL proactively surface a violation of this constraint by
+persisting a nullable `fitsOnPage` boolean field on each recipe record, computed by measuring the
+recipe's rendered sheet against a single print page after any write that creates or modifies the
+recipe. This lets list views warn the user before print time, rather than the recipe silently
+bleeding onto a second sheet only discovered when printed.
 
 #### Scenario: Print Page Break Isolation
 - **WHEN** the cookbook is printed or previewed
@@ -30,6 +34,14 @@ and fallback behavior).
 - **WHEN** a recipe page is rendered for print preview or printing
 - **THEN** a QR code widget is visible in the bottom-right corner of the recipe article
 - **AND** the widget encodes the recipe title and ingredient list
+
+#### Scenario: fitsOnPage is computed after a recipe write
+- **WHEN** a recipe is created or edited and saved
+- **THEN** the system measures whether the saved recipe's rendered sheet overflows a single print page and persists the result (`true` or `false`) to that recipe's `fitsOnPage` field
+
+#### Scenario: Unmeasured recipes are distinguishable from measured ones
+- **WHEN** a recipe has never been created or edited since this measurement was introduced
+- **THEN** its `fitsOnPage` field is `null`, distinct from a definite `true`/`false` measurement result
 
 ### Requirement: Single Recipe Export
 The system SHALL support exporting a single recipe. Individual recipe exports MUST match the margins, template, and accent color of their parent project, and SHALL NOT display page numbers.
