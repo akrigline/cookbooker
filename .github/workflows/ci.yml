@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+      # `@magrinj/parse-ingredients` declares "sideEffects": false, so a
+      # bundler change can silently tree-shake its locale registration out of
+      # the production bundle — `npm test` and a *successful* `npm run build`
+      # both stay green while every parseIngredientLine() call throws at
+      # runtime. See CLAUDE.md. "gallon" is locale-only content; minification
+      # strips the quotes around object keys, so match it unquoted.
+      - name: Assert ingredient locale survived tree-shaking
+        run: |
+          grep -rq 'gallon' dist/assets \
+            || { echo "::error::Ingredient locale data missing from the bundle — it was tree-shaken out (see CLAUDE.md)"; exit 1; }

@@ -7,6 +7,7 @@ on:
       - 'brainstorming/**'
       - 'openspec/**'
       - 'docs/**'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -29,6 +30,12 @@ jobs:
       - run: npm test
       - run: npm run build
 
+      # Kept in sync with the identical gate in ci.yml — see the comment there.
+      - name: Assert ingredient locale survived tree-shaking
+        run: |
+          grep -rq 'gallon' dist/assets \
+            || { echo "::error::Ingredient locale data missing from the bundle — it was tree-shaken out (see CLAUDE.md)"; exit 1; }
+
   release:
     needs: test
     runs-on: ubuntu-latest
@@ -37,8 +44,32 @@ jobs:
       GH_REPO: ${{ github.repository }}
       TZ: America/New_York
     steps:
+      # Two Dependabot PRs merging close together each dispatch this workflow
+      # at `--ref main`, so both runs resolve github.sha to the same tip commit
+      # (the `release` concurrency group queues rather than cancels). Without
+      # this guard the second run cuts a duplicate tag and redeploys the exact
+      # same commit. `gh release create` makes lightweight tags, so a tag ref's
+      # object.sha is the commit sha directly.
+      - name: Skip if this commit is already released
+        id: existing
+        run: |
+          # No `| head -n1` here: steps run with `-o pipefail`, and closing the
+          # pipe early can hand `gh api --paginate` a SIGPIPE. Take the first
+          # line in bash instead.
+          MATCHES=$(gh api --paginate "repos/${GH_REPO}/git/matching-refs/tags/v" \
+            --jq ".[] | select(.object.sha == \"${GITHUB_SHA}\") | .ref")
+          EXISTING="${MATCHES%%$'\n'*}"
+
+          if [[ -n "$EXISTING" ]]; then
+            echo "::notice::${GITHUB_SHA} is already released as ${EXISTING#refs/tags/}; skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Compute next date-based tag
         id: tag
+        if: steps.existing.outputs.skip == 'false'
         run: |
           TODAY=$(date +%Y.%m.%d)
           REFS_RAW=$(gh api "repos/${GH_REPO}/git/matching-refs/tags/v${TODAY}" --jq '.[].ref')
@@ -70,6 +101,7 @@ jobs:
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
+        if: steps.existing.outputs.skip == 'false'
         run: |
           gh release create "${{ steps.tag.outputs.tag }}" \
             --target "${{ github.sha }}" \
@@ -77,4 +109,5 @@ jobs:
             --generate-notes
 
       - name: Trigger Pages deploy
+        if: steps.existing.outputs.skip == 'false'
         run: gh workflow run pages.yml --ref main -f tag="${{ steps.tag.outputs.tag }}"
