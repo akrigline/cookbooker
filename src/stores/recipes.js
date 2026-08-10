@@ -26,6 +26,16 @@ export const useRecipesStore = defineStore('recipes', {
       if (recipe) Object.assign(recipe, changes)
       this.triggerFitMeasurement(id, recipe)
     },
+    async bulkEditRecipes(ids, changes) {
+      await db.bulkUpdateRecipes(ids, changes)
+      for (const id of ids) {
+        const recipe = this.recipes.find((r) => r.id === id)
+        if (recipe) Object.assign(recipe, changes)
+      }
+      for (const id of ids) {
+        this.triggerFitMeasurement(id, this.recipes.find((r) => r.id === id))
+      }
+    },
     patchRecipe(id, changes) {
       const recipe = this.recipes.find((r) => r.id === id)
       if (recipe) Object.assign(recipe, changes)

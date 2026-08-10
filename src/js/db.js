@@ -164,6 +164,18 @@ export const deleteRecipe = (id) =>
     await db.recipes.delete(id)
   })
 
+// Writes `changes` to every recipe in `ids` inside one transaction, so a bulk
+// action (e.g. "apply layout to selection") either lands on all of them or
+// none - a since-deleted recipe throws RecordNotFoundError from
+// updateOrThrow, which aborts the whole transaction rather than leaving the
+// selection half-updated.
+export const bulkUpdateRecipes = (ids, changes) =>
+  db.transaction('rw', db.recipes, async () => {
+    for (const id of ids) {
+      await updateOrThrow(db.recipes, 'recipe', id, changes)
+    }
+  })
+
 // ---------------------------------------------------------------------------
 // Projects
 // ---------------------------------------------------------------------------

@@ -14,6 +14,7 @@ import BackButton from '../components/BackButton.vue'
 import { sequenceForInsertAfter } from '../js/sequence'
 import { applyRange } from '../js/rangeSelect'
 import { intersectExistingRecipeIds } from '../js/cookbookImportShortcut'
+import { LAYOUT_TEMPLATES } from '../js/templates'
 
 // ---------------------------------------------------------------------------
 // Props / stores
@@ -495,6 +496,32 @@ async function doBulkMove() {
   if (ok) announce(`Moved ${count} recipe${count !== 1 ? 's' : ''}.`)
 }
 
+// "Apply layout" writes layoutTemplate to the recipes themselves (via
+// recipesStore.bulkEditRecipes -> db.bulkUpdateRecipes, one transaction), not
+// to project_recipes - the layout is a property of the recipe, so it follows
+// the recipe into any other cookbook it's placed in, not just this one.
+const bulkLayoutTarget = ref('')
+async function doBulkApplyLayout() {
+  if (!bulkLayoutTarget.value) return
+  const recipeIds = [
+    ...new Set(
+      Array.from(selectedIds.value)
+        .map((prId) => projectsStore.projectRecipes.find((p) => p.id === prId)?.recipeId)
+        .filter((id) => id != null),
+    ),
+  ]
+  const count = recipeIds.length
+  const layoutTemplate = bulkLayoutTarget.value
+  bulkLayoutTarget.value = ''
+  const ok = await persist('apply this layout to the selected recipes', () =>
+    recipesStore.bulkEditRecipes(recipeIds, { layoutTemplate }),
+  )
+  if (ok) {
+    const label = LAYOUT_TEMPLATES.find((tpl) => tpl.id === layoutTemplate)?.label ?? layoutTemplate
+    announce(`Applied "${label}" layout to ${count} recipe${count !== 1 ? 's' : ''}.`)
+  }
+}
+
 async function confirmBulkRemove() {
   if (modalBusy.value) return
   const ids = Array.from(selectedIds.value)
@@ -884,6 +911,7 @@ const librarySidebarHandlers = {
 
 const bulkActionHandlers = {
   onMove: doBulkMove,
+  onApplyLayout: doBulkApplyLayout,
   onNewChapterFromSelection: () => openChapterNameModal('newFromSelection'),
   onBulkRemove: openBulkRemove,
   onClear: clearSelection,
@@ -994,8 +1022,10 @@ const bulkActionHandlers = {
     <!-- In-cookbook bulk action bar -->
     <BulkActionBar
       v-model:bulk-move-target="bulkMoveTarget"
+      v-model:bulk-layout-target="bulkLayoutTarget"
       :count="selectedIds.size"
       :ordered-chapters="orderedChapters"
+      :layout-templates="LAYOUT_TEMPLATES"
       :handlers="bulkActionHandlers"
     />
   </main>

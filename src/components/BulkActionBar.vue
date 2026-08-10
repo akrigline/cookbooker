@@ -2,10 +2,12 @@
 defineProps({
   count: { type: Number, required: true },
   orderedChapters: { type: Array, required: true },
+  layoutTemplates: { type: Array, required: true },
   handlers: { type: Object, required: true },
 })
 
 const bulkMoveTarget = defineModel('bulkMoveTarget', { type: [String, Number], default: '' })
+const bulkLayoutTarget = defineModel('bulkLayoutTarget', { type: String, default: '' })
 </script>
 
 <template>
@@ -25,6 +27,17 @@ const bulkMoveTarget = defineModel('bulkMoveTarget', { type: [String, Number], d
         >
           <option value="">Choose chapter…</option>
           <option v-for="c in orderedChapters" :key="c.id" :value="c.id">{{ c.name }}</option>
+        </select>
+        <label for="bulk-layout-select" class="bulk-bar__label">Apply layout:</label>
+        <select
+          id="bulk-layout-select"
+          v-model="bulkLayoutTarget"
+          class="bulk-bar__select"
+          aria-label="Select layout to apply"
+          @change="handlers.onApplyLayout"
+        >
+          <option value="">Choose layout…</option>
+          <option v-for="tpl in layoutTemplates" :key="tpl.id" :value="tpl.id">{{ tpl.label }}</option>
         </select>
         <button type="button" class="bulk-bar__btn bulk-bar__btn--ghost" @click="handlers.onClear">
           Cancel
