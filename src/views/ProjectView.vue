@@ -806,13 +806,19 @@ function onRecipeDragEnd(e) {
 // ---------------------------------------------------------------------------
 
 const openMenuPrId = ref(null)
+const openMenuChapterId = ref(null)
 
 function toggleMenu(prId) {
   openMenuPrId.value = openMenuPrId.value === prId ? null : prId
 }
 
+function toggleChapterMenu(chapterId) {
+  openMenuChapterId.value = openMenuChapterId.value === chapterId ? null : chapterId
+}
+
 function closeMenus() {
   openMenuPrId.value = null
+  openMenuChapterId.value = null
 }
 
 // Close menus on outside click
@@ -859,6 +865,7 @@ const chapterCardHandlers = {
   onMoveRecipe: moveRecipe,
   onOpenPreview: openPreview,
   onToggleMenu: toggleMenu,
+  onToggleChapterMenu: toggleChapterMenu,
   onMoveRecipeToChapter: moveRecipeToChapter,
   onOpenRemoveRecipe: openRemoveRecipe,
 }
@@ -960,6 +967,7 @@ const bulkActionHandlers = {
           :ordered-chapters="orderedChapters"
           :selected-ids="selectedIds"
           :open-menu-pr-id="openMenuPrId"
+          :open-menu-chapter-id="openMenuChapterId"
           :project-id="project.id"
           :drag-state="dragState"
           :handlers="chapterCardHandlers"

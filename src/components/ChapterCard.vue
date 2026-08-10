@@ -11,6 +11,7 @@ const props = defineProps({
   orderedChapters: { type: Array, required: true },
   selectedIds: { type: Set, required: true },
   openMenuPrId: { type: [Number, String, null], default: null },
+  openMenuChapterId: { type: [Number, String, null], default: null },
   projectId: { type: [Number, String], required: true },
   // { dragChapterId, dropChapterAfterId, dragRecipePrId, dropChapterId, dropAfterPrId }
   dragState: { type: Object, required: true },
@@ -116,22 +117,34 @@ function dropLineBelow(pr) {
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
-          <button
-            type="button"
-            class="chapter-action-btn chapter-action-btn--danger"
-            :aria-label="`Delete chapter '${chapter.name}'`"
-            @click="handlers.onDeleteChapter(chapter)"
-          >
-            Delete
-          </button>
-          <button
-            type="button"
-            class="chapter-action-btn"
-            :aria-label="`Rename chapter '${chapter.name}'`"
-            @click="handlers.onRenameChapter(chapter.id, chapter.name)"
-          >
-            Rename
-          </button>
+          <div class="chapter-card__menu-wrap" @click.stop>
+            <button
+              type="button"
+              class="chapter-action-btn chapter-action-btn--icon"
+              :aria-label="`Actions for chapter '${chapter.name}'`"
+              :aria-expanded="openMenuChapterId === chapter.id"
+              @click="handlers.onToggleChapterMenu(chapter.id)"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+            </button>
+            <div v-if="openMenuChapterId === chapter.id" class="overflow-menu" role="menu">
+              <button
+                type="button"
+                role="menuitem"
+                @click="() => { handlers.onToggleChapterMenu(null); handlers.onRenameChapter(chapter.id, chapter.name) }"
+              >
+                Rename chapter
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                class="overflow-menu__danger"
+                @click="() => { handlers.onToggleChapterMenu(null); handlers.onDeleteChapter(chapter) }"
+              >
+                Delete chapter
+              </button>
+            </div>
+          </div>
         </template>
       </div>
     </div>
@@ -379,6 +392,14 @@ function dropLineBelow(pr) {
 }
 
 .chapter-action-btn--danger:hover { background: oklch(95% 0.04 25); }
+
+.chapter-action-btn--icon {
+  padding: 5px 7px;
+}
+
+.chapter-card__menu-wrap {
+  position: relative;
+}
 
 .recipe-list {
   list-style: none;
