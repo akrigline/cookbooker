@@ -1,68 +1,17 @@
-/* Print pagination: CSS Paged Media margin boxes (design.md Decision 3).
-   Page numbers are rendered entirely by the browser via counter(page) in the
-   @bottom-right margin box - no JS-rendered page-count element is used. */
+/* Print pagination: plain @page sizing/margins only. Page numbers are NOT
+   rendered via CSS Paged Media margin boxes (`@bottom-right` + counter(page))
+   - Chrome's support for that spec is too unreliable in practice (footer
+   content silently fails to render, and counter-reset on the UA `page`
+   counter doesn't reliably restart numbering after the Cover/TOC). Page
+   numbers are instead a normal HTML element positioned in the top-right
+   corner of each page, computed in JS (see compileBook.js's
+   `assignPageNumbers` and PagePreview.vue's `pageNumber` prop) - the
+   alternative this project's original design explicitly passed over, but
+   the one that actually works. */
 
 @page {
   size: 8.5in 11in;
   margin: 0.5in;
-
-  @bottom-right {
-    content: counter(page);
-    font-size: 10pt;
-    font-family: var(--font-main, serif);
-  }
-}
-
-/* Cover and Table of Contents are named pages with footers suppressed. */
-@page cover {
-  @bottom-right {
-    content: '';
-  }
-}
-
-@page toc {
-  @bottom-right {
-    content: '';
-  }
-}
-
-/* Used for standalone single-recipe exports, which never show page numbers. */
-@page single {
-  @bottom-right {
-    content: '';
-  }
-}
-
-/* Used for chapter dividers/recipe sheets when a project has page numbers
-   toggled off - suppresses the footer without affecting the default page. */
-@page no-numbers {
-  @bottom-right {
-    content: '';
-  }
-}
-
-.page--cover {
-  page: cover;
-}
-
-.page--toc {
-  page: toc;
-}
-
-.page--single {
-  page: single;
-}
-
-.page--no-numbers {
-  page: no-numbers;
-}
-
-/* Applied to the first chapter divider so recipe-page numbering starts at 1,
-   per design.md Decision 3's constraint that numbering begins after the
-   Cover and Table of Contents. Browser support for mid-document page-counter
-   resets is best-effort. */
-.reset-page-counter {
-  counter-reset: page 1;
 }
 
 .grayscale-print {

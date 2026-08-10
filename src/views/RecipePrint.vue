@@ -43,7 +43,7 @@ function printPage() {
 
     <!-- Single recipe exports carry no cover, TOC, or page number - just the
          parent project's margins, template fidelity, and accent color. -->
-    <PagePreview named="single">
+    <PagePreview>
       <RecipeSheet :recipe="recipe" :accent-color="project.accentColor" />
     </PagePreview>
   </div>

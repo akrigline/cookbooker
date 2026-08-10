@@ -235,6 +235,22 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   server-side), so its insertion line is pinned to the end of that chapter's
   list rather than tracking the pointer.
 
+- Print page numbers are NOT rendered via CSS Paged Media margin boxes
+  (`@page { @bottom-right { content: counter(page) } }`), despite that being
+  the original design decision (`openspec/changes/archive/2026-07-27-initial-
+  specification/design.md` Decision 3) - Chrome's support for that spec proved
+  too unreliable (footer content silently failing to render, `counter-reset`
+  on the UA `page` counter not reliably restarting numbering after the
+  Cover/TOC). `src/js/compileBook.js`'s `assignPageNumbers()` computes plain
+  JS page numbers instead (front matter unnumbered; body numbering starts at
+  1 on the first chapter divider, per print convention and the
+  `print-and-export` spec's "System Print Integration" requirement), and
+  `PagePreview.vue`'s `pageNumber` prop renders them as a normal absolutely-
+  positioned element in the page's top-right corner - not a footer. `src/css/
+  print.css`'s `@page` rule is now just sizing/margins. `TableOfContentsPage.
+  vue` reads the same `assignPageNumbers()` maps to print each entry's page
+  number with a dotted leader.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.

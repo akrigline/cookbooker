@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildChapterPlan } from './compileBook'
+import { assignPageNumbers, buildChapterPlan } from './compileBook'
 
 const recipesById = new Map([
   [1, { id: 1, title: 'Pancakes' }],
@@ -36,5 +36,37 @@ describe('buildChapterPlan', () => {
     const plan = buildChapterPlan({ chapters, projectRecipes, recipesById, projectId: 1 })
 
     expect(plan.map((e) => e.chapter.name)).toEqual(['Breakfast'])
+  })
+})
+
+describe('assignPageNumbers', () => {
+  it('numbers divider and recipe pages sequentially starting at 1', () => {
+    const plan = [
+      {
+        chapter: { id: 12, name: 'Appetizers' },
+        recipes: [{ id: 2, title: 'Waffles' }],
+      },
+      {
+        chapter: { id: 11, name: 'Breakfast' },
+        recipes: [
+          { id: 1, title: 'Pancakes' },
+          { id: 3, title: 'Soup' },
+        ],
+      },
+    ]
+
+    const { dividerPages, recipePages } = assignPageNumbers(plan)
+
+    expect(dividerPages.get(12)).toBe(1)
+    expect(recipePages.get('12:2')).toBe(2)
+    expect(dividerPages.get(11)).toBe(3)
+    expect(recipePages.get('11:1')).toBe(4)
+    expect(recipePages.get('11:3')).toBe(5)
+  })
+
+  it('returns empty maps for an empty plan', () => {
+    const { dividerPages, recipePages } = assignPageNumbers([])
+    expect(dividerPages.size).toBe(0)
+    expect(recipePages.size).toBe(0)
   })
 })

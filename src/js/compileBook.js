@@ -27,3 +27,26 @@ export function buildChapterPlan({ chapters, projectRecipes, recipesById, projec
 
   return plan
 }
+
+/**
+ * Numbers a chapter plan's printed pages sequentially starting at 1, per
+ * print convention: numbering begins on the first page of body content (the
+ * first chapter divider), after unnumbered front matter (Cover, Table of
+ * Contents). Returns lookup maps rather than mutating the plan so callers
+ * (TOC entries, the printed pages themselves) can each read the same
+ * numbers without re-deriving them.
+ */
+export function assignPageNumbers(chapterPlan) {
+  const dividerPages = new Map()
+  const recipePages = new Map()
+  let page = 0
+
+  for (const { chapter, recipes } of chapterPlan) {
+    dividerPages.set(chapter.id, ++page)
+    for (const recipe of recipes) {
+      recipePages.set(`${chapter.id}:${recipe.id}`, ++page)
+    }
+  }
+
+  return { dividerPages, recipePages }
+}

@@ -2,8 +2,11 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 defineProps({
-  named: {
-    type: String,
+  // Printed page number to display in the top-right corner. null/undefined
+  // renders no badge at all (cover, TOC, chapter-divider/recipe pages when
+  // the project has page numbers toggled off, single-recipe exports).
+  pageNumber: {
+    type: Number,
     default: null,
   },
 })
@@ -37,12 +40,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="page-preview" :class="named ? `page--${named}` : null">
+  <div class="page-preview">
     <div class="page-preview__margin">
       <div class="page-preview__content" ref="contentEl">
         <slot />
       </div>
     </div>
+    <span v-if="pageNumber != null" class="page-preview__page-number">{{ pageNumber }}</span>
     <p v-if="isOverflowing" class="page-preview__overflow-warning" role="status">
       Content is taller than one page and may be clipped or split across pages when printed
     </p>
@@ -76,6 +80,18 @@ onBeforeUnmount(() => {
 .page-preview__content {
   max-height: 100%;
   overflow: hidden;
+}
+
+/* Sits inside the page's own 0.5in margin band (above/right of
+   .page-preview__content, which is inset by that same 0.5in), so it never
+   overlaps printed content. */
+.page-preview__page-number {
+  position: absolute;
+  top: 0.2in;
+  right: 0.3in;
+  font-size: 10pt;
+  font-family: var(--font-main, serif);
+  color: inherit;
 }
 
 .page-preview__overflow-warning {
