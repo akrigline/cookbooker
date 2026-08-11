@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "prepare": "husky"
   },
   "dependencies": {
     "@dailykit/food-units-converter": "^1.0.2",
@@ -26,6 +27,7 @@
     "@vitejs/plugin-vue": "^6.0.8",
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.11.1",
+    "husky": "^9.1.7",
     "patch-package": "^8.0.1",
     "vite": "^8.2.1",
     "vitest": "^4.1.10"
