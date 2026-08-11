@@ -907,6 +907,7 @@ const librarySidebarHandlers = {
   onLibBulkAddToChapter: libBulkAddToChapter,
   onLibBulkAddToMisc: libBulkAddToMisc,
   onNewChapterFromLibrary: () => openChapterNameModal('newFromLibrary'),
+  onImport: startCookbookImport,
 }
 
 const bulkActionHandlers = {

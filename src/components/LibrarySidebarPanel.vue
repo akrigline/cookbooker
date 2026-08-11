@@ -67,7 +67,8 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
         <li v-if="!availableRecipes.length" class="lib-list__empty">
           <template v-if="librarySearch">No matches for "{{ librarySearch }}".</template>
           <template v-else>All library recipes are already in this cookbook.
-            <router-link to="/library/new">Create a new recipe</router-link>.
+            <router-link to="/library/new">Create a new recipe</router-link>
+            or <a href="#" @click.prevent="handlers.onImport">Import Recipes</a>.
           </template>
         </li>
         <li
@@ -193,6 +194,10 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
   height: 14px;
   cursor: pointer;
   accent-color: var(--color-focus);
+}
+
+.sidebar-section--new-chapter .sidebar-section__heading {
+  margin-bottom: 10px;
 }
 
 .sidebar-divider {
