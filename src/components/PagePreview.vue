@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 defineProps({
-  // Printed page number to display in the top-right corner. null/undefined
+  // Printed page number to display in the bottom-right corner. null/undefined
   // renders no badge at all (cover, TOC, chapter-divider/recipe pages when
   // the project has page numbers toggled off, single-recipe exports).
   pageNumber: {
@@ -82,13 +82,15 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-/* Sits inside the page's own 0.5in margin band (above/right of
-   .page-preview__content, which is inset by that same 0.5in), so it never
-   overlaps printed content. */
+/* Flush with the bottom-right corner of the page's own 0.5in margin band -
+   right at the same edge .page-preview__content's padding stops at, not
+   floating within the band, so it lines up with the printed text block's
+   corner. ProjectPrint.vue mirrors this to the bottom-left for even
+   (left-hand) pages of a double-sided book, matching that side's gutter. */
 .page-preview__page-number {
   position: absolute;
-  top: 0.2in;
-  right: 0.3in;
+  bottom: 0.5in;
+  right: 0.5in;
   font-size: 10pt;
   font-family: var(--font-main, serif);
   color: inherit;

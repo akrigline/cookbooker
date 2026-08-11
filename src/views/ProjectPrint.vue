@@ -165,6 +165,6 @@ onBeforeUnmount(() => gutterStyleEl?.remove())
 .print-project--double-sided
   :deep(.print-project__pages .page-preview:nth-of-type(even) .page-preview__page-number) {
   right: auto;
-  left: 0.3in;
+  left: 0.5in;
 }
 </style>
