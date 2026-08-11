@@ -119,7 +119,13 @@ onBeforeUnmount(() => {
     break-after: page;
   }
 
+  /* @page (print.css) is the sole source of the real print margin at print
+     time - this padding is a screen-only mockup of that margin (and, for
+     double-sided books, of the parity-swapped gutter set by ProjectPrint.vue's
+     nth-of-type CSS). Without zeroing it here, it stacked on top of @page's
+     own margin in real print output. */
   .page-preview__margin {
+    padding: 0;
     outline: none;
   }
 

@@ -38,6 +38,7 @@ db.on('populate', async () => {
     accentColor: '#d97742',
     coverTemplate: 'classic',
     pageNumbersEnabled: true,
+    doubleSidedEnabled: false,
   })
   const chapterId = await db.chapters.add({
     projectId,
@@ -192,6 +193,7 @@ export const createProject = (project) =>
       accentColor: '#d97742',
       coverTemplate: 'classic',
       pageNumbersEnabled: true,
+      doubleSidedEnabled: false,
       ...project,
     }
     const projectId = await db.projects.add(row)

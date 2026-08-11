@@ -4,10 +4,19 @@
    content silently fails to render, and counter-reset on the UA `page`
    counter doesn't reliably restart numbering after the Cover/TOC). Page
    numbers are instead a normal HTML element positioned in the top-right
-   corner of each page, computed in JS (see compileBook.js's
-   `assignPageNumbers` and PagePreview.vue's `pageNumber` prop) - the
-   alternative this project's original design explicitly passed over, but
-   the one that actually works. */
+   (or, for double-sided books, outer-top) corner of each page, computed in
+   JS (see compileBook.js's `layoutBookPages` and PagePreview.vue's
+   `pageNumber` prop) - the alternative this project's original design
+   explicitly passed over, but the one that actually works.
+
+   @page's own `margin` here IS the real print margin - the sole source of
+   it. PagePreview.vue's `.page-preview__margin` padding is a screen-only
+   mockup of this (zeroed under `@media print`), not a second layer that
+   stacks with it. Double-sided books add per-parity gutter margins via
+   `@page :left`/`:right`/`:first` overrides, which unlike margin-box
+   *content* are a reliably-supported, plain-margin-only subset of the same
+   spec (see ProjectPrint.vue's conditional `<style>` block) - this base
+   rule is what's in effect when double-sided printing is off. */
 
 @page {
   size: 8.5in 11in;

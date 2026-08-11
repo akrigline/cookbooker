@@ -1083,6 +1083,7 @@ const bulkActionHandlers = {
     v-model:accent="modal.editAccent"
     :cover-template="project?.coverTemplate"
     :page-numbers-enabled="project?.pageNumbersEnabled"
+    :double-sided-enabled="project?.doubleSidedEnabled"
     :busy="modalBusy"
     @update-field="updateField"
     @close="closeModal"

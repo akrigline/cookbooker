@@ -5,6 +5,7 @@ import { ACCENT_COLORS, COVER_TEMPLATES } from '../js/templates'
 defineProps({
   coverTemplate: { type: String, default: null },
   pageNumbersEnabled: { type: Boolean, default: false },
+  doubleSidedEnabled: { type: Boolean, default: false },
   busy: { type: Boolean, default: false },
 })
 
@@ -61,6 +62,14 @@ const emit = defineEmits(['update-field', 'close', 'save'])
           @change="emit('update-field', 'pageNumbersEnabled', $event.target.checked)"
         />
         <span>Page numbers &amp; Table of Contents</span>
+      </label>
+      <label class="form-field form-field--checkbox">
+        <input
+          type="checkbox"
+          :checked="doubleSidedEnabled"
+          @change="emit('update-field', 'doubleSidedEnabled', $event.target.checked)"
+        />
+        <span>Double-sided printing</span>
       </label>
     </div>
     <div class="modal-actions">

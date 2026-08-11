@@ -58,41 +58,6 @@ When compiling a full cookbook for printing, the system SHALL generate pages in 
 - **WHEN** the user triggers a full export with double-sided printing toggled ON
 - **THEN** the print layout compiles the same relative sequence (Title Page, optionally Table of Contents, then chapters and recipes) with blank pages inserted per the Recto-Forced Section Starts requirement
 
-### Requirement: Single-Page Recipe Layout Constraint
-Every recipe page SHALL be styled to render as a single printed page. Page breaks MUST be enforced
-to prevent content from spilling across pages. Each recipe page SHALL include an inline QR code
-widget in the bottom-right corner of the recipe article, encoding the recipe's ingredient list for
-easy transfer to a shopping list application (see `recipe-qr-sharing` for the widget's truncation
-and fallback behavior). The system SHALL proactively surface a violation of this constraint by
-persisting a nullable `fitsOnPage` boolean field on each recipe record, computed by measuring the
-recipe's rendered sheet against a single print page after any write that creates or modifies the
-recipe. This lets list views warn the user before print time, rather than the recipe silently
-bleeding onto a second sheet only discovered when printed. The measurement SHALL use the parent
-project's current margin configuration, including the wider total horizontal margin implied by
-double-sided printing's gutter, so the `fitsOnPage` result reflects the space actually available
-in that project's compiled book.
-
-#### Scenario: Print Page Break Isolation
-- **WHEN** the cookbook is printed or previewed
-- **THEN** the layout separates each recipe onto its own distinct printed sheet
-
-#### Scenario: Inline QR widget present on recipe page
-- **WHEN** a recipe page is rendered for print preview or printing
-- **THEN** a QR code widget is visible in the bottom-right corner of the recipe article
-- **AND** the widget encodes the recipe title and ingredient list
-
-#### Scenario: fitsOnPage is computed after a recipe write
-- **WHEN** a recipe is created or edited and saved
-- **THEN** the system measures whether the saved recipe's rendered sheet overflows a single print page and persists the result (`true` or `false`) to that recipe's `fitsOnPage` field
-
-#### Scenario: Unmeasured recipes are distinguishable from measured ones
-- **WHEN** a recipe has never been created or edited since this measurement was introduced
-- **THEN** its `fitsOnPage` field is `null`, distinct from a definite `true`/`false` measurement result
-
-#### Scenario: fitsOnPage accounts for double-sided gutter margin
-- **WHEN** a recipe is created or edited and saved in a project with double-sided printing enabled
-- **THEN** the fit measurement uses the project's double-sided total horizontal margin rather than the single-sided default
-
 ### Requirement: System Print Integration
 The system SHALL initiate printing using the browser's system print dialog. Page numbers MUST be rendered dynamically on recipe pages, but suppressed on the Title Page and the Table of Contents pages. When a project has double-sided printing enabled, each page's number SHALL be positioned at the outer top corner of that page (top-right on a right-hand/recto page, top-left on a left-hand/verso page) instead of always top-right.
 

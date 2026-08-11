@@ -25,9 +25,13 @@ don't support that.
   padding currently stack at actual print time (~1in real margin against
   a 0.5in on-screen preview); this change makes `@page` the sole source of
   real print margin, zeroing the component's padding under `@media print`.
-- Recipe-fit measurement (`recipeFitMeasure.js`) uses the correct total
-  horizontal margin (1.25in vs. today's 1in) when double-sided is enabled,
-  so the fit-on-page warning stays accurate.
+- Recipe-fit measurement (`recipeFitMeasure.js`) is intentionally left
+  unchanged: `fitsOnPage` is a single field on the recipe record, and a
+  recipe can belong to multiple projects with different double-sided
+  settings (library/shared-recipe model), so it can't be made
+  project-aware without a larger schema change. It stays measured at
+  today's global 1in margin; the badge is a known, slightly less precise
+  signal for recipes used in double-sided projects, not a hard guarantee.
 
 When the toggle is off, all print/export behavior is unchanged from today.
 
@@ -41,8 +45,7 @@ When the toggle is off, all print/export behavior is unchanged from today.
 
 - `print-and-export`: adds the double-sided toggle, gutter margins,
   recto-forced chapter/TOC starts with blank-page insertion, mirrored page
-  numbers, and corrects the print-margin stacking bug and fit-measurement
-  margin constant.
+  numbers, and corrects the print-margin stacking bug.
 
 ## Impact
 
@@ -58,7 +61,5 @@ When the toggle is off, all print/export behavior is unchanged from today.
   parent-selector rules instead of fixed values; print padding zeroed.
 - `src/css/print.css`: baseline `@page` rule and comment updated to
   reflect the new margin ownership split.
-- `src/js/recipeFitMeasure.js`: horizontal margin constant becomes
-  project-aware.
 - `compileBook.test.js`: new tests for blank insertion and parity-aware
   numbering.
