@@ -53,6 +53,7 @@ defineProps({
 }
 
 .toc-page h2 {
+  margin-top: 0;
   color: var(--toc-accent);
   border-bottom: 3px solid var(--toc-accent);
   padding-bottom: var(--space-sm);

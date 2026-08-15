@@ -192,16 +192,16 @@ async function handleExport() {
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
         <p v-if="error" style="color:var(--color-danger); font-weight:600; margin:0;">{{ error }}</p>
-        <button v-if="isEditing" type="button" @click="showDeleteModal = true" style="padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--color-danger-border); background:none; color:oklch(45% 0.12 25); cursor:pointer;">Delete recipe</button>
-        <button v-if="isEditing" type="button" @click="handleExport" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">
+        <button v-if="isEditing" type="button" @click="showDeleteModal = true" style="padding:12px 20px; font-size:15px; font-weight:600; border-radius:8px; border:1px solid var(--color-danger-border); background:none; color:oklch(45% 0.12 25); cursor:pointer;">Delete recipe</button>
+        <button v-if="isEditing" type="button" @click="handleExport" style="display:flex; align-items:center; gap:8px; padding:12px 20px; font-size:15px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">
           <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Export recipe
         </button>
-        <button v-if="isEditing" type="button" @click="handlePrint" style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">
+        <button v-if="isEditing" type="button" @click="handlePrint" style="display:flex; align-items:center; gap:8px; padding:12px 20px; font-size:15px; font-weight:600; border-radius:8px; border:1px solid var(--gray-84); background:none; cursor:pointer;">
           <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
           Print recipe
         </button>
-        <button type="button" :disabled="saving" @click="save" :style="saving ? 'opacity:0.55; cursor:not-allowed;' : 'cursor:pointer;'" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:var(--gray-20); color:var(--gray-99);">{{ saving ? 'Saving…' : 'Save' }}</button>
+        <button type="button" :disabled="saving" @click="save" :style="saving ? 'opacity:0.55; cursor:not-allowed;' : 'cursor:pointer;'" style="padding:12px 20px; font-size:15px; font-weight:600; border-radius:8px; border:none; background:var(--gray-20); color:var(--gray-99);">{{ saving ? 'Saving…' : 'Save' }}</button>
       </div>
     </div>
 

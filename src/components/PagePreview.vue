@@ -78,6 +78,7 @@ onBeforeUnmount(() => {
 }
 
 .page-preview__content {
+  height: 100%;
   max-height: 100%;
   overflow: hidden;
 }

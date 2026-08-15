@@ -3,6 +3,7 @@ import { onMounted, ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectsStore } from '../stores/projects'
 import { ACCENT_COLORS } from '../js/templates'
+import EditCookbookModal from '../components/EditCookbookModal.vue'
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -30,6 +31,15 @@ const error = ref(null)
 const lastTrigger = ref(null)
 const firstFieldEl = ref(null)
 
+// Edit modal - shares EditCookbookModal with ProjectView.vue so both entry
+// points offer the same options (cover layout, page numbers/TOC, double-sided).
+const editTitle = ref('')
+const editSubtitle = ref('')
+const editAccent = ref('')
+const editingProject = computed(() =>
+  modal.value?.type === 'edit' ? projectsStore.projects.find((p) => p.id === modal.value.id) : null,
+)
+
 // ── Computed ──────────────────────────────────────────────────────────────────
 
 const projectCountLabel = computed(() => {
@@ -37,11 +47,12 @@ const projectCountLabel = computed(() => {
   return `${len} cookbook${len === 1 ? '' : 's'}`
 })
 
-const showFormModal = computed(() => !!modal.value && (modal.value.type === 'create' || modal.value.type === 'edit'))
+const showFormModal = computed(() => modal.value?.type === 'create')
+const showEditModal = computed(() => modal.value?.type === 'edit')
 const showDeleteModal = computed(() => !!modal.value && modal.value.type === 'delete')
 
-const formHeading = computed(() => modal.value?.type === 'edit' ? 'Edit cookbook details' : 'New cookbook')
-const formSubmitLabel = computed(() => modal.value?.type === 'edit' ? 'Save changes' : 'Create cookbook')
+const formHeading = computed(() => 'New cookbook')
+const formSubmitLabel = computed(() => 'Create cookbook')
 
 const titleInvalid = computed(() => titleTouched.value && !form.value.title.trim())
 
@@ -69,12 +80,6 @@ const deleteTarget = computed(() =>
 )
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-/** Resolve an accentId from a stored accentColor string (or default). */
-function accentIdFromColor(color) {
-  const match = ACCENT_COLORS.find(a => a.value === color)
-  return match ? match.id : 'terracotta'
-}
 
 function accentColorFromId(id) {
   return (ACCENT_MAP[id] || ACCENT_COLORS[0]).value
@@ -108,15 +113,10 @@ function openCreate(e) {
 
 function openEdit(project, e) {
   lastTrigger.value = e?.currentTarget ?? null
-  form.value = {
-    title:    project.title,
-    subtitle: project.subtitle || '',
-    accentId: accentIdFromColor(project.accentColor),
-    layoutId: project.coverTemplate || 'classic',
-  }
-  titleTouched.value = false
+  editTitle.value = project.title
+  editSubtitle.value = project.subtitle || ''
+  editAccent.value = project.accentColor || ''
   modal.value = { type: 'edit', id: project.id }
-  focusFirstField()
 }
 
 function openDelete(project, e) {
@@ -152,21 +152,55 @@ async function handleFormSubmit() {
       accentColor:   accentColorFromId(form.value.accentId),
       coverTemplate: form.value.layoutId,
     }
-    if (modal.value.type === 'create') {
-      const id = await projectsStore.createProject(payload)
-      closeModal()
-      router.push(`/projects/${id}`)
-    } else {
-      await projectsStore.editProject(modal.value.id, payload)
-      closeModal()
-    }
+    const id = await projectsStore.createProject(payload)
+    closeModal()
+    router.push(`/projects/${id}`)
+  } catch (err) {
+    // `createProject` rejects on a genuine write failure. Without this the
+    // dialog stays open, never leaves its "Saving…" state, and the
+    // rejection is only visible in the console.
+    error.value = `Could not save this cookbook: ${err.message}`
+  } finally {
+    submitting.value = false
+  }
+}
+
+// EditCookbookModal has no error slot of its own (it's shared with
+// ProjectView.vue, which reports failures into a page-level banner rather
+// than inside the dialog) - `editBannerError` mirrors that here: the dialog
+// closes on failure and this banner, shown above the project grid, says
+// what did not happen.
+const editBannerError = ref('')
+
+async function saveEditCookbook() {
+  if (!modal.value || modal.value.type !== 'edit' || submitting.value) return
+  submitting.value = true
+  editBannerError.value = ''
+  try {
+    await projectsStore.editProject(modal.value.id, {
+      title: editTitle.value.trim(),
+      subtitle: editSubtitle.value.trim(),
+      accentColor: editAccent.value,
+    })
+    closeModal()
   } catch (err) {
     // `editProject` rejects when the cookbook is already gone (deleted in
     // another tab). Without this the dialog stays open, never leaves its
     // "Saving…" state, and the rejection is only visible in the console.
-    error.value = `Could not save this cookbook: ${err.message}`
+    editBannerError.value = `Could not save this cookbook: ${err.message}`
+    closeModal()
   } finally {
     submitting.value = false
+  }
+}
+
+async function updateField(field, value) {
+  if (!modal.value || modal.value.type !== 'edit') return
+  try {
+    await projectsStore.editProject(modal.value.id, { [field]: value })
+  } catch (err) {
+    editBannerError.value = `Could not save this cookbook: ${err.message}`
+    closeModal()
   }
 }
 
@@ -206,6 +240,14 @@ function handleModalKeyDown(e) {
 
 <template>
   <main id="cm-main" class="cm-page-main">
+
+    <p
+      v-if="editBannerError"
+      role="alert"
+      style="margin:0 0 20px; padding:12px 16px; border-radius:8px; background:oklch(95% 0.045 25); border:1px solid oklch(82% 0.07 25); color:oklch(38% 0.12 25); font-size:14px; font-weight:600;"
+    >
+      {{ editBannerError }}
+    </p>
 
     <!-- Header row -->
     <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:32px; flex-wrap:wrap;">
@@ -280,7 +322,7 @@ function handleModalKeyDown(e) {
     </div>
   </main>
 
-  <!-- ── Create / Edit modal ──────────────────────────────────────────────── -->
+  <!-- ── Create modal ─────────────────────────────────────────────────────── -->
   <Teleport to="body">
     <div v-if="showFormModal" @click="closeModal" @keydown="handleModalKeyDown" class="modal-backdrop">
       <div role="dialog" aria-modal="true" aria-labelledby="cm-form-heading" @click.stop class="modal-box">
@@ -372,6 +414,21 @@ function handleModalKeyDown(e) {
       </div>
     </div>
   </Teleport>
+
+  <!-- ── Edit modal (shared with ProjectView.vue's cookbook edit button) ──── -->
+  <EditCookbookModal
+    v-if="showEditModal"
+    v-model:title="editTitle"
+    v-model:subtitle="editSubtitle"
+    v-model:accent="editAccent"
+    :cover-template="editingProject?.coverTemplate"
+    :page-numbers-enabled="editingProject?.pageNumbersEnabled"
+    :double-sided-enabled="editingProject?.doubleSidedEnabled"
+    :busy="submitting"
+    @update-field="updateField"
+    @close="closeModal"
+    @save="saveEditCookbook"
+  />
 
   <!-- ── Delete confirmation modal ───────────────────────────────────────── -->
   <Teleport to="body">
