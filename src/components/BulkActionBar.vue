@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   count: { type: Number, required: true },
   orderedChapters: { type: Array, required: true },
   layoutTemplates: { type: Array, required: true },
@@ -8,6 +10,9 @@ defineProps({
 
 const bulkMoveTarget = defineModel('bulkMoveTarget', { type: [String, Number], default: '' })
 const bulkLayoutTarget = defineModel('bulkLayoutTarget', { type: String, default: '' })
+
+const recommendedTemplates = computed(() => props.layoutTemplates.filter((tpl) => tpl.tier === 'recommended'))
+const legacyTemplates = computed(() => props.layoutTemplates.filter((tpl) => tpl.tier === 'legacy'))
 </script>
 
 <template>
@@ -37,7 +42,12 @@ const bulkLayoutTarget = defineModel('bulkLayoutTarget', { type: String, default
           @change="handlers.onApplyLayout"
         >
           <option value="">Choose layout…</option>
-          <option v-for="tpl in layoutTemplates" :key="tpl.id" :value="tpl.id">{{ tpl.label }}</option>
+          <optgroup label="Recommended">
+            <option v-for="tpl in recommendedTemplates" :key="tpl.id" :value="tpl.id">{{ tpl.label }}</option>
+          </optgroup>
+          <optgroup label="More layouts">
+            <option v-for="tpl in legacyTemplates" :key="tpl.id" :value="tpl.id">{{ tpl.label }}</option>
+          </optgroup>
         </select>
         <button type="button" class="bulk-bar__btn bulk-bar__btn--ghost" @click="handlers.onClear">
           Cancel

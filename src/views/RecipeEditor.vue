@@ -4,7 +4,14 @@ import { useRouter, useRoute } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
 import { parseIngredientsText } from '../js/conversions'
 import { exportRecipeToHtml } from '../js/recipeExport'
-import { LAYOUT_TEMPLATES, DEFAULT_LAYOUT_TEMPLATE, INGREDIENT_COLUMN_OPTIONS, IMAGE_ASPECT_RATIOS } from '../js/templates'
+import {
+  LAYOUT_TEMPLATES,
+  DEFAULT_LAYOUT_TEMPLATE,
+  INGREDIENT_COLUMN_OPTIONS,
+  IMAGE_ASPECT_RATIOS,
+  PLACEMENT_OPTIONS,
+  DEFAULT_PLACEMENT,
+} from '../js/templates'
 import { computeReturnContext, returnContextBackTo } from '../js/returnContext'
 import RecipeSheet from '../components/RecipeSheet.vue'
 import PagePreview from '../components/PagePreview.vue'
@@ -39,6 +46,8 @@ const notes = ref('')
 const layoutTemplate = ref(DEFAULT_LAYOUT_TEMPLATE)
 const ingredientColumns = ref(1)
 const imageAspectRatio = ref('auto')
+const imagePlacement = ref(DEFAULT_PLACEMENT)
+const notesPlacement = ref(DEFAULT_PLACEMENT)
 const imageFile = ref(null)
 const existingImage = ref(null)
 const notesTextarea = ref(null)
@@ -48,6 +57,14 @@ const deleting = ref(false)
 const saving = ref(false)
 const loaded = ref(false)
 const recipeNotFound = ref(false)
+// Closed by default, including when editing a recipe that already has a
+// legacy-tier layout selected - the disclosure is purely about not
+// advertising the legacy templates, not about hiding the recipe's own
+// current choice (that still shows as selected once expanded).
+const showLegacyLayouts = ref(false)
+
+const recommendedTemplates = computed(() => LAYOUT_TEMPLATES.filter((tpl) => tpl.tier === 'recommended'))
+const legacyTemplates = computed(() => LAYOUT_TEMPLATES.filter((tpl) => tpl.tier === 'legacy'))
 
 onMounted(async () => {
   if (!recipesStore.loaded) await recipesStore.load()
@@ -61,6 +78,8 @@ onMounted(async () => {
       layoutTemplate.value = recipe.layoutTemplate ?? DEFAULT_LAYOUT_TEMPLATE
       ingredientColumns.value = recipe.ingredientColumns ?? 1
       imageAspectRatio.value = recipe.imageAspectRatio ?? 'auto'
+      imagePlacement.value = recipe.imagePlacement ?? DEFAULT_PLACEMENT
+      notesPlacement.value = recipe.notesPlacement ?? DEFAULT_PLACEMENT
       existingImage.value = recipe.image ?? null
     } else {
       recipeNotFound.value = true
@@ -72,10 +91,9 @@ onMounted(async () => {
 })
 
 const parsedIngredients = computed(() => parseIngredientsText(ingredientsText.value))
-const showImageAspectControl = computed(() => {
-  const active = LAYOUT_TEMPLATES.find((tpl) => tpl.id === layoutTemplate.value)
-  return active ? active.hasImage : true
-})
+const activeLayoutTemplate = computed(() => LAYOUT_TEMPLATES.find((tpl) => tpl.id === layoutTemplate.value))
+const showImageAspectControl = computed(() => (activeLayoutTemplate.value ? activeLayoutTemplate.value.hasImage : true))
+const showPlacementControls = computed(() => Boolean(activeLayoutTemplate.value?.placementConfigurable))
 
 const previewRecipe = computed(() => ({
   id: isEditing.value ? Number(props.recipeId) : Date.now(),
@@ -86,6 +104,8 @@ const previewRecipe = computed(() => ({
   layoutTemplate: layoutTemplate.value,
   ingredientColumns: ingredientColumns.value,
   imageAspectRatio: imageAspectRatio.value,
+  imagePlacement: imagePlacement.value,
+  notesPlacement: notesPlacement.value,
   image: imageFile.value ?? existingImage.value ?? null,
 }))
 
@@ -215,10 +235,55 @@ async function handleExport() {
 
         <div role="group" aria-label="Layout template">
           <p style="font-size:12px; font-weight:600; color:var(--gray-52); margin:0 0 8px;">Layout template</p>
-          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:8px;">
-            <button v-for="tpl in LAYOUT_TEMPLATES" :key="tpl.id" type="button" :aria-pressed="layoutTemplate === tpl.id" @click="layoutTemplate = tpl.id" :style="layoutTemplate === tpl.id ? 'background:oklch(93% 0.02 250); border:1.5px solid var(--color-focus); color:var(--gray-20);' : 'background:var(--gray-96); border:1.5px solid var(--gray-84); color:var(--gray-20);'" style="text-align:left; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:12px;">
+            <button
+              v-for="tpl in recommendedTemplates"
+              :key="tpl.id"
+              type="button"
+              :aria-pressed="layoutTemplate === tpl.id"
+              class="cm-layout-card"
+              :class="{ 'cm-layout-card--active': layoutTemplate === tpl.id }"
+              @click="layoutTemplate = tpl.id"
+            >
+              <!-- eslint-disable-next-line vue/no-v-html -->
+              <span class="cm-layout-card__thumb" v-html="tpl.thumbnail"></span>
+              <span class="cm-layout-card__label">{{ tpl.label }}</span>
+            </button>
+          </div>
+
+          <hr class="cm-layout-separator" />
+
+          <button
+            type="button"
+            class="cm-legacy-toggle"
+            :aria-expanded="showLegacyLayouts"
+            @click="showLegacyLayouts = !showLegacyLayouts"
+          >
+            {{ showLegacyLayouts ? 'Hide more layouts' : 'Show more layouts' }}
+          </button>
+
+          <div v-if="showLegacyLayouts" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:8px; margin-top:10px;">
+            <button v-for="tpl in legacyTemplates" :key="tpl.id" type="button" :aria-pressed="layoutTemplate === tpl.id" @click="layoutTemplate = tpl.id" :style="layoutTemplate === tpl.id ? 'background:oklch(93% 0.02 250); border:1.5px solid var(--color-focus); color:var(--gray-20);' : 'background:var(--gray-96); border:1.5px solid var(--gray-84); color:var(--gray-20);'" style="text-align:left; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
               {{ tpl.label }}
               <span style="display:block; font-weight:400; font-size:12px; color:var(--gray-46); margin-top:2px;">{{ tpl.description || tpl.label }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="showPlacementControls" role="group" aria-label="Image placement">
+          <p style="font-size:12px; font-weight:600; color:var(--gray-52); margin:0 0 8px;">Image placement</p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button v-for="opt in PLACEMENT_OPTIONS" :key="opt.id" type="button" :aria-pressed="imagePlacement === opt.id" @click="imagePlacement = opt.id" :style="imagePlacement === opt.id ? 'background:oklch(93% 0.02 250); border:1.5px solid var(--color-focus); color:var(--gray-20);' : 'background:var(--gray-96); border:1.5px solid var(--gray-84); color:var(--gray-20);'" style="padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+              {{ opt.label }}
+            </button>
+          </div>
+        </div>
+
+        <div v-if="showPlacementControls" role="group" aria-label="Chef's Notes placement">
+          <p style="font-size:12px; font-weight:600; color:var(--gray-52); margin:0 0 8px;">Chef's Notes placement</p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button v-for="opt in PLACEMENT_OPTIONS" :key="opt.id" type="button" :aria-pressed="notesPlacement === opt.id" @click="notesPlacement = opt.id" :style="notesPlacement === opt.id ? 'background:oklch(93% 0.02 250); border:1.5px solid var(--color-focus); color:var(--gray-20);' : 'background:var(--gray-96); border:1.5px solid var(--gray-84); color:var(--gray-20);'" style="padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+              {{ opt.label }}
             </button>
           </div>
         </div>
@@ -297,6 +362,77 @@ async function handleExport() {
 .cm-preview-column :deep(.page-preview) {
   margin-left: 0;
   margin-right: 0;
+}
+
+.cm-layout-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--gray-84);
+  background: var(--gray-96);
+  color: var(--gray-20);
+  cursor: pointer;
+}
+
+.cm-layout-card--active {
+  border-color: var(--color-focus);
+  background: oklch(93% 0.02 250);
+}
+
+.cm-layout-card__thumb {
+  display: block;
+  width: 100%;
+}
+
+.cm-layout-card__thumb :deep(svg) {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.cm-layout-card__thumb :deep(.thumb-title) {
+  fill: var(--gray-46);
+}
+
+.cm-layout-card__thumb :deep(.thumb-notes) {
+  fill: var(--gray-88);
+  stroke: var(--gray-78);
+  stroke-width: 1;
+}
+
+.cm-layout-card__thumb :deep(.thumb-ingredients),
+.cm-layout-card__thumb :deep(.thumb-instructions) {
+  fill: var(--gray-93);
+}
+
+.cm-layout-card__thumb :deep(.thumb-qr) {
+  fill: var(--gray-78);
+}
+
+.cm-layout-card__label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cm-layout-separator {
+  margin: 16px 0 12px;
+  border: none;
+  border-top: 1px solid var(--gray-84);
+}
+
+.cm-legacy-toggle {
+  margin-top: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--gray-46);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 input:focus, textarea:focus, button:focus-visible, a:focus-visible {

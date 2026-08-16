@@ -33,18 +33,41 @@ function checkOverflow() {
   isOverflowing.value = contentEl.value.scrollHeight > contentEl.value.clientHeight
 }
 
-let observer = null
+let resizeObserver = null
+let mutationObserver = null
 
 onMounted(() => {
   checkOverflow()
-  if (typeof ResizeObserver !== 'undefined' && contentEl.value) {
-    observer = new ResizeObserver(checkOverflow)
-    observer.observe(contentEl.value)
+  if (!contentEl.value) return
+  // ResizeObserver alone only catches contentEl's own box changing size (e.g.
+  // the page shrinking under max-width:100% on a narrow screen) - it does NOT
+  // fire when a descendant's content grows/shrinks, because contentEl itself
+  // is height-clamped (max-height:100% + overflow:hidden, see above) so its
+  // own box never resizes as content is edited. That left this warning stuck
+  // at whatever it was at mount time while the user kept typing. A
+  // MutationObserver on the slotted content catches exactly that case.
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(checkOverflow)
+    resizeObserver.observe(contentEl.value)
+  }
+  if (typeof MutationObserver !== 'undefined') {
+    mutationObserver = new MutationObserver(checkOverflow)
+    // attributes:true matters as much as childList/characterData here - some
+    // layout-affecting changes (e.g. the ingredient column-count picker) are
+    // applied as a `style`/`class` attribute change on an existing element,
+    // not a change to its children or text, and would otherwise be missed.
+    mutationObserver.observe(contentEl.value, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+    })
   }
 })
 
 onBeforeUnmount(() => {
-  observer?.disconnect()
+  resizeObserver?.disconnect()
+  mutationObserver?.disconnect()
 })
 </script>
 

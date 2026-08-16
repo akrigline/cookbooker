@@ -2,6 +2,8 @@
 import { computed } from 'vue'
 import { DEFAULT_LAYOUT_TEMPLATE } from '../js/templates'
 import { useSettingsStore } from '../stores/settings'
+import RecipeLayoutDefault from './RecipeLayoutDefault.vue'
+import RecipeLayoutTwoColumn from './RecipeLayoutTwoColumn.vue'
 import RecipeLayoutHeroSplitBalanced from './RecipeLayoutHeroSplitBalanced.vue'
 import RecipeLayoutHeroSplitAsymmetric from './RecipeLayoutHeroSplitAsymmetric.vue'
 import RecipeLayoutAsymmetricSidebar from './RecipeLayoutAsymmetricSidebar.vue'
@@ -11,6 +13,8 @@ import RecipeLayoutDualColumnBottomSplit from './RecipeLayoutDualColumnBottomSpl
 import RecipeLayoutTextOnly from './RecipeLayoutTextOnly.vue'
 
 const LAYOUT_COMPONENTS = {
+  default: RecipeLayoutDefault,
+  'two-column': RecipeLayoutTwoColumn,
   'hero-split-balanced': RecipeLayoutHeroSplitBalanced,
   'hero-split-asymmetric': RecipeLayoutHeroSplitAsymmetric,
   'asymmetric-sidebar': RecipeLayoutAsymmetricSidebar,

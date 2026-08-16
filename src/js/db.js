@@ -31,6 +31,13 @@ db.version(2).stores({ settings: 'key' })
 // redeclaring (see the version(2) comment above for the contrasting case).
 db.version(3).upgrade((tx) => tx.table('recipes').toCollection().modify({ fitsOnPage: null }))
 
+// Backfill for the two-column layout's per-recipe image/notes placement config
+// (see openspec/changes/two-column-configurable-layout). 'none' is a no-op
+// under every template that doesn't read these fields.
+db.version(4).upgrade((tx) =>
+  tx.table('recipes').toCollection().modify({ imagePlacement: 'none', notesPlacement: 'none' }),
+)
+
 db.on('populate', async () => {
   const projectId = await db.projects.add({
     title: 'My First Cookbook',
@@ -55,6 +62,8 @@ db.on('populate', async () => {
     layoutTemplate: 'hero-split-balanced',
     ingredientColumns: 1,
     imageAspectRatio: 'auto',
+    imagePlacement: 'none',
+    notesPlacement: 'none',
     fitsOnPage: null,
   })
   await db.project_recipes.add({ projectId, chapterId, recipeId, sequence: 0 })

@@ -1,14 +1,52 @@
+// Inline block-structure sketches for the recommended templates only (see
+// openspec/changes/two-column-configurable-layout design.md "Thumbnails" decision).
+// Static shape indicators, not live per-recipe previews - the two-column
+// thumbnail always shows its base structure regardless of a recipe's actual
+// imagePlacement/notesPlacement.
+const THUMB_DEFAULT = `<svg viewBox="0 0 120 160" aria-hidden="true">
+  <rect x="4" y="4" width="112" height="14" rx="2" class="thumb-title" />
+  <rect x="4" y="22" width="112" height="18" rx="2" class="thumb-notes" />
+  <rect x="4" y="44" width="80" height="60" rx="2" class="thumb-ingredients" />
+  <rect x="90" y="70" width="26" height="26" rx="2" class="thumb-qr" />
+  <rect x="4" y="108" width="112" height="48" rx="2" class="thumb-instructions" />
+</svg>`
+
+const THUMB_TWO_COLUMN = `<svg viewBox="0 0 120 160" aria-hidden="true">
+  <rect x="4" y="4" width="112" height="14" rx="2" class="thumb-title" />
+  <rect x="4" y="22" width="34" height="102" rx="2" class="thumb-ingredients" />
+  <rect x="8" y="112" width="26" height="12" rx="2" class="thumb-qr" />
+  <rect x="42" y="22" width="74" height="134" rx="2" class="thumb-instructions" />
+</svg>`
+
 export const LAYOUT_TEMPLATES = [
-  { id: 'hero-split-balanced', label: 'Hero Split (Balanced)', hasImage: true },
-  { id: 'hero-split-asymmetric', label: 'Hero Split (Asymmetric)', hasImage: true },
-  { id: 'asymmetric-sidebar', label: 'Asymmetric Sidebar', hasImage: true },
-  { id: 'column-optimized', label: 'Column Optimized', hasImage: true },
-  { id: 'balanced-header', label: 'Balanced Header', hasImage: true },
-  { id: 'dual-column-bottom-split', label: 'Dual Column, Bottom Split', hasImage: true },
-  { id: 'text-only', label: 'Text-Only (no image container)', hasImage: false },
+  { id: 'default', label: 'Default', tier: 'recommended', hasImage: true, thumbnail: THUMB_DEFAULT },
+  {
+    id: 'two-column',
+    label: 'Two Column',
+    tier: 'recommended',
+    hasImage: true,
+    placementConfigurable: true,
+    thumbnail: THUMB_TWO_COLUMN,
+  },
+  { id: 'hero-split-balanced', label: 'Hero Split (Balanced)', tier: 'legacy', hasImage: true },
+  { id: 'hero-split-asymmetric', label: 'Hero Split (Asymmetric)', tier: 'legacy', hasImage: true },
+  { id: 'asymmetric-sidebar', label: 'Asymmetric Sidebar', tier: 'legacy', hasImage: true },
+  { id: 'column-optimized', label: 'Column Optimized', tier: 'legacy', hasImage: true },
+  { id: 'balanced-header', label: 'Balanced Header', tier: 'legacy', hasImage: true },
+  { id: 'dual-column-bottom-split', label: 'Dual Column, Bottom Split', tier: 'legacy', hasImage: true },
+  { id: 'text-only', label: 'Text-Only (no image container)', tier: 'legacy', hasImage: false },
 ]
 
-export const DEFAULT_LAYOUT_TEMPLATE = 'hero-split-balanced'
+export const DEFAULT_LAYOUT_TEMPLATE = 'default'
+
+export const PLACEMENT_OPTIONS = [
+  { id: 'none', label: 'None' },
+  { id: 'hero', label: 'Hero (full width)' },
+  { id: 'left', label: 'Left column' },
+  { id: 'right', label: 'Right column' },
+]
+
+export const DEFAULT_PLACEMENT = 'none'
 
 export const COVER_TEMPLATES = [
   { id: 'classic', label: 'Classic Border' },

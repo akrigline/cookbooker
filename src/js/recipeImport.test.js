@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseRecipeImportHtml } from './recipeImport'
+import { DEFAULT_LAYOUT_TEMPLATE } from './templates'
 
 function wrapDocument(body) {
   return `<!DOCTYPE html>
@@ -79,7 +80,7 @@ describe('parseRecipeImportHtml', () => {
 
   it('defaults layoutTemplate to the registry default when omitted', () => {
     const { recipes } = parseRecipeImportHtml(BATCH_RECIPES)
-    expect(recipes[0].layoutTemplate).toBe('hero-split-balanced')
+    expect(recipes[0].layoutTemplate).toBe(DEFAULT_LAYOUT_TEMPLATE)
   })
 
   it('ignores a legacy cm-ingredient-qty-align meta element from a file exported before this change', () => {
