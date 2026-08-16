@@ -307,6 +307,23 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `ready` only accounts for fonts already requested by something on the page, so checking it too
   early can resolve before the measurement mount's own fonts are even requested).
 
+## Known issues
+
+- `RecipeImage.vue`'s `.recipe-image` defaults to `height: 100%`, only overridden to `height: auto`
+  when `aspectRatio` matches one of `ASPECT_RATIO_CSS`'s explicit keys (`1:1`/`4:3`/`3:4`/`16:9`).
+  `'auto'` (the default `imageAspectRatio` value) isn't one of those keys, so a lone `RecipeImage` in
+  a column-direction flex container (nothing else in that flex line to resolve `100%` against)
+  balloons to fill the container's remaining space and squeezes out whatever's below it. Confirmed
+  affecting the legacy `hero-split-balanced`, `hero-split-asymmetric`, and `asymmetric-sidebar`
+  templates (their Title+Image+Notes column) whenever a recipe's `imageAspectRatio` is left at
+  `'auto'` - masked whenever the user picks an explicit aspect ratio, which sets the overriding
+  inline `height: auto`. Found and left unfixed (out of scope) during
+  `openspec/changes/two-column-configurable-layout` (see its `tasks.md` §6.2); `RecipeLayoutTwoColumn.vue`
+  and `RecipeLayoutDefault.vue` sidestep it by wrapping each image slot in a `div` with an explicit
+  percentage height instead of relying on `RecipeImage`'s own `height: 100%`. Fixing the 3 legacy
+  layouts needs the same wrapper treatment (or adding an `'auto'` entry to `ASPECT_RATIO_CSS` and
+  proving that doesn't regress the object-fit: cover framing those templates rely on).
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
