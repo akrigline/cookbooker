@@ -253,7 +253,7 @@ function handleModalKeyDown(e) {
     <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:32px; flex-wrap:wrap;">
       <div>
         <h1 class="text-page-title">Cookbooks</h1>
-        <p style="margin:0; font-size:15px; color:var(--ink-46);">{{ projectCountLabel }}</p>
+        <p class="text-subtitle" style="margin:0;">{{ projectCountLabel }}</p>
       </div>
       <button type="button" @click="openCreate" class="btn-new" :disabled="submitting">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -315,9 +315,9 @@ function handleModalKeyDown(e) {
     </div>
 
     <!-- Empty state -->
-    <div v-else style="border:1px dashed var(--ink-78); border-radius:14px; padding:64px 32px; text-align:center; background:var(--ink-99);">
+    <div v-else style="border:1px dashed var(--ink-80); border-radius:14px; padding:64px 32px; text-align:center; background:var(--ink-99);">
       <p style="font-family:'Newsreader',Georgia,serif; font-size:22px; font-weight:600; margin:0 0 8px;">No cookbooks yet</p>
-      <p style="margin:0 0 20px; font-size:15px; color:var(--ink-46);">Create your first cookbook project to start organizing recipes into chapters.</p>
+      <p class="text-subtitle" style="margin:0 0 20px;">Create your first cookbook project to start organizing recipes into chapters.</p>
       <button type="button" @click="openCreate" class="btn-new">New Cookbook</button>
     </div>
   </main>
@@ -501,7 +501,7 @@ function handleModalKeyDown(e) {
 /* Modals */
 .modal-backdrop {
   position: fixed; inset: 0;
-  background: oklch(20% 0.01 75 / 0.45);
+  background: oklch(10% 0.01 75 / 0.45);
   display: flex; align-items: center; justify-content: center;
   padding: 24px; z-index: 200;
 }
@@ -509,7 +509,7 @@ function handleModalKeyDown(e) {
   background: var(--ink-99); border-radius: 16px;
   width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto;
   padding: 28px 28px 24px;
-  box-shadow: 0 20px 60px oklch(20% 0.02 75 / 0.25);
+  box-shadow: 0 20px 60px oklch(10% 0.01 75 / 0.25);
 }
 .modal-box-sm { max-width: 420px; }
 
@@ -570,7 +570,7 @@ function handleModalKeyDown(e) {
   border-radius: 8px; border: none;
   background: var(--color-danger); color: white; cursor: pointer;
 }
-.btn-delete:hover { background: oklch(38% 0.14 25); }
+.btn-delete:hover { background: var(--color-danger-hover); }
 .btn-delete:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-delete:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 </style>

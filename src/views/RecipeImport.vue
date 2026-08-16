@@ -166,7 +166,7 @@ function handleCancelReview() {
 
     <template v-if="isInputStage">
       <h1 class="text-page-title" style="margin:0 0 8px;">Import Recipes</h1>
-      <p style="margin:0 0 32px; font-size:15px; color:var(--ink-46); line-height:1.5;">Bring in recipes transcribed elsewhere (Drive docs, PDFs, bookmarked pages, screenshots) using the structured recipe/1 HTML format. Nothing is added to your library until you review and confirm.</p>
+      <p class="text-subtitle" style="margin:0 0 32px; line-height:1.5;">Bring in recipes transcribed elsewhere (Drive docs, PDFs, bookmarked pages, screenshots) using the structured recipe/1 HTML format. Nothing is added to your library until you review and confirm.</p>
 
       <section aria-labelledby="cm-file-heading" style="background:var(--ink-99); border:1px solid var(--ink-88); border-radius:14px; padding:24px; margin-bottom:20px;">
         <h2 id="cm-file-heading" class="text-h2" style="margin:0 0 6px;">Select a file</h2>
@@ -179,7 +179,7 @@ function handleCancelReview() {
       <section aria-labelledby="cm-paste-heading" style="background:var(--ink-99); border:1px solid var(--ink-88); border-radius:14px; padding:24px;">
         <h2 id="cm-paste-heading" class="text-h2" style="margin:0 0 6px;">Or paste HTML</h2>
         <p style="margin:0 0 12px; font-size:14px; color:var(--ink-46);">Paste recipe/1 HTML text directly.</p>
-        <textarea id="cm-paste-area" v-model="pastedHtml" rows="8" placeholder="<div data-cm-format=&quot;recipe&quot; data-cm-version=&quot;1&quot;>…</div>" style="width:100%; box-sizing:border-box; padding:12px 14px; font-size:13px; font-family:ui-monospace,monospace; border:1px solid var(--ink-78); border-radius:8px; resize:vertical;"></textarea>
+        <textarea id="cm-paste-area" v-model="pastedHtml" rows="8" placeholder="<div data-cm-format=&quot;recipe&quot; data-cm-version=&quot;1&quot;>…</div>" style="width:100%; box-sizing:border-box; padding:12px 14px; font-size:13px; font-family:ui-monospace,monospace; border:1px solid var(--ink-80); border-radius:8px; resize:vertical;"></textarea>
         <div style="display:flex; justify-content:flex-end; margin-top:12px;">
           <button type="button" @click="handlePasteImport" class="btn-primary">
             Parse pasted text
@@ -192,14 +192,14 @@ function handleCancelReview() {
 
     <template v-if="isReviewStage">
       <h1 tabindex="-1" class="text-page-title" style="margin:0 0 8px; outline:none;">Review Import</h1>
-      <p style="margin:0 0 28px; font-size:15px; color:var(--ink-46);">
+      <p class="text-subtitle" style="margin:0 0 28px;">
         {{ candidates.length }} recipe{{ candidates.length === 1 ? '' : 's' }} parsed successfully. Review below and confirm to add them to your library.
       </p>
 
       <section v-if="candidates.length">
         <h2 class="text-h2">Ready to import</h2>
         <div style="display:flex; flex-direction:column; gap:20px; margin-bottom:32px;">
-          <div v-for="c in candidates" :key="c.key" style="background:var(--ink-99); border:1px solid var(--ink-88); border-radius:12px; overflow:hidden; box-shadow:0 1px 3px oklch(20% 0.02 75 / 0.06);">
+          <div v-for="c in candidates" :key="c.key" style="background:var(--ink-99); border:1px solid var(--ink-88); border-radius:12px; overflow:hidden; box-shadow:0 1px 3px oklch(10% 0.01 75 / 0.06);">
             <div style="display:flex; align-items:center; gap:10px; padding:14px 20px; background:var(--ink-96); border-bottom:1px solid var(--ink-88);">
               <input type="checkbox" :id="`cm-inc-${c.key}`" v-model="c.included" style="width:19px; height:19px; flex-shrink:0; accent-color:var(--color-focus);" />
               <label :for="`cm-inc-${c.key}`" style="font-size:13px; font-weight:600; cursor:pointer;">Include "{{ c.recipe.title }}"</label>

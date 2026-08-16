@@ -105,7 +105,7 @@ const legacyTemplates = computed(() => props.layoutTemplates.filter((tpl) => tpl
 .bulk-bar__label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--ink-78);
+  color: var(--ink-80);
   white-space: nowrap;
 }
 
@@ -148,7 +148,7 @@ const legacyTemplates = computed(() => props.layoutTemplates.filter((tpl) => tpl
 .bulk-bar__btn--ghost {
   background: none;
   border-color: var(--ink-52);
-  color: var(--ink-78);
+  color: var(--ink-80);
 }
 
 .bulk-bar__btn--ghost:hover { background: var(--ink-30); }

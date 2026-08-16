@@ -172,7 +172,7 @@ async function confirmRestore() {
   <main id="cm-main" class="cm-page-main">
     <div style="margin-bottom:28px;">
       <h1 class="text-page-title">Settings</h1>
-      <p style="margin:0; font-size:15px; color:var(--ink-46);">Manage your data, exports, and database backups.</p>
+      <p class="text-subtitle" style="margin:0;">Manage your data, exports, and database backups.</p>
     </div>
 
     <section class="card-section" style="margin-bottom:24px;">

@@ -45,7 +45,7 @@ async function copyToClipboard() {
   <main id="cm-main" class="cm-page-main cm-page-main--narrow">
     <div style="margin-bottom:28px;">
       <h1 class="text-page-title">Recipe QR Decoder</h1>
-      <p style="margin:0; font-size:15px; color:var(--ink-46);">
+      <p class="text-subtitle" style="margin:0;">
         Decodes a recipe shared from Cookbooker — everything happens on this device; nothing is
         uploaded anywhere.
       </p>
@@ -73,7 +73,7 @@ async function copyToClipboard() {
 
 <style scoped>
 .cm-decode-notice {
-  border: 1px dashed var(--ink-78);
+  border: 1px dashed var(--ink-80);
   border-radius: 14px;
   padding: 40px 32px;
   text-align: center;

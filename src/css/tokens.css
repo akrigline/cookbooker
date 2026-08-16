@@ -40,6 +40,7 @@ html {
   --color-focus: oklch(52% 0.16 250);
 
   --color-danger: oklch(45% 0.14 25);
+  --color-danger-hover: oklch(38% 0.14 25);
   --color-danger-bg: oklch(96% 0.03 25);
   --color-danger-border: oklch(85% 0.06 25);
 
@@ -52,7 +53,7 @@ html {
   --ink-93: oklch(93% 0.006 75);
   --ink-88: oklch(88% 0.008 75);
   --ink-84: oklch(84% 0.008 75);   /* consolidated: --gray-86 folded in, was a near-duplicate stop */
-  --ink-78: oklch(80% 0.01 75);
+  --ink-80: oklch(80% 0.01 75);
   --ink-52: oklch(50% 0.01 75);
   --ink-46: oklch(45% 0.01 75);    /* added: real 25-occurrence cluster, not in original 10 */
   --ink-42: oklch(40% 0.01 75);
@@ -190,6 +191,11 @@ html {
   font-weight: 600;
   letter-spacing: -0.01em;
   margin: 0;
+}
+
+.text-subtitle {
+  font-size: 15px;
+  color: var(--ink-46);
 }
 
 *,

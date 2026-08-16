@@ -6,7 +6,7 @@ colors:
   ink-93: oklch(93% 0.006 75)
   ink-88: oklch(88% 0.008 75)
   ink-84: oklch(84% 0.008 75)
-  ink-78: oklch(80% 0.01 75)
+  ink-80: oklch(80% 0.01 75)
   ink-52: oklch(50% 0.01 75)
   ink-46: oklch(45% 0.01 75)
   ink-42: oklch(40% 0.01 75)
@@ -14,6 +14,7 @@ colors:
   ink-20: oklch(20% 0.01 75)
   focus: oklch(52% 0.16 250)
   danger: oklch(45% 0.14 25)
+  danger-hover: oklch(38% 0.14 25)
   danger-bg: oklch(96% 0.03 25)
   danger-border: oklch(85% 0.06 25)
   success: oklch(35% 0.05 140)
@@ -134,6 +135,8 @@ components:
     rounded: '{rounded.DEFAULT}'
     padding: 10px 20px
     typography: '{typography.button-text}'
+  button-danger-hover:
+    backgroundColor: '{colors.danger-hover}'
   card:
     backgroundColor: '{colors.ink-99}'
     rounded: '{rounded.lg}'
@@ -176,7 +179,7 @@ new call site.
 
 - **`ink-99`/`ink-96`/`ink-93`**: page background, card fill, hover fill.
 - **`ink-88`/`ink-84`**: dividers and default borders.
-- **`ink-78`/`ink-52`/`ink-46`/`ink-42`**: disabled/placeholder/secondary text.
+- **`ink-80`/`ink-52`/`ink-46`/`ink-42`**: disabled/placeholder/secondary text.
 - **`ink-30`/`ink-20`**: primary text, near-black chrome (primary button fill, bulk-action bar).
 - **`focus`**: the single interactive-blue used for every `:focus-visible` ring, checkbox
   `accent-color`, and drag-over border.
@@ -255,7 +258,8 @@ evokes a historical manuscript layout, in contrast to the softer screen-chrome s
 ## Components
 
 - **Buttons** — Primary: `ink-20` fill, `ink-99` text, hover `ink-30`. Secondary/ghost: `ink-93`
-  fill, `ink-20` text, `ink-84` border, hover `ink-88`. Danger: `danger` fill, `ink-99` text. All
+  fill, `ink-20` text, `ink-84` border, hover `ink-88`. Danger: `danger` fill, `ink-99` text,
+  hover `danger-hover`. All
   three: `rounded.DEFAULT`, `10px 20px` padding, `button-text` typography,
   `:focus-visible { outline: 2px solid focus; outline-offset: 2px }`, `:disabled { opacity: 0.5 }`.
 - **Cards** — `ink-99` fill, 1px `ink-88` border, `rounded.lg`. No shadow.

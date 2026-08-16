@@ -26,8 +26,10 @@ Fixed items are checked off; deferred items keep their original rationale plus w
 
 - [x] Danger-button chroma drift: `ConfirmDialog.vue`'s `.modal-btn--danger` used
   `oklch(45% 0.18 25)` where the `--color-danger` token is `oklch(45% 0.14 25)`. **Fixed** —
-  base now references `var(--color-danger)`; hover snapped to `oklch(38% 0.14 25)` (matching
-  `Dashboard.vue`'s `.btn-delete:hover`, the app's existing convention for the hover shade).
+  base now references `var(--color-danger)`. The hover shade (`oklch(38% 0.14 25)`, previously
+  hand-duplicated inline in both `ConfirmDialog.vue` and `Dashboard.vue`'s `.btn-delete:hover`)
+  is now a real `--color-danger-hover` token in `tokens.css` (and `DESIGN.md`), referenced by
+  both sites instead of duplicated.
 
 - [x] `.btn-secondary` (`RecipeEditor.vue`/`Settings.vue`) uses `background: none` (transparent
   ghost) vs every other secondary/ghost button's filled `var(--ink-93)` background. **Corrected
@@ -35,7 +37,8 @@ Fixed items are checked off; deferred items keep their original rationale plus w
   (`AboutModal.vue`/`ChapterNameModal.vue`/`ConfirmDialog.vue`/`EditCookbookModal.vue`, despite
   its name) was already filled `ink-93`/border `ink-84`/hover `ink-88`, matching `DESIGN.md`
   exactly. The real outliers were the *transparent* ones: `.btn-secondary` in
-  `Settings.vue`/`DecodeRecipe.vue`/`RecipeImport.vue`, and the inline cancel buttons in
+  `Settings.vue`/`DecodeRecipe.vue`/`RecipeImport.vue`, `.btn-cancel`/`.btn-import` in
+  `Dashboard.vue`/`RecipeLibrary.vue`, and the inline cancel buttons in
   `RecipeEditor.vue`/`RecipeLibrary.vue`/`RecipeImport.vue`. All switched to filled `ink-93` +
   `ink-84` border (hover `ink-88` where a scoped `:hover` rule exists; the two delete-confirm
   inline buttons have no hover state to set since inline `style=` can't express `:hover`).
@@ -67,9 +70,9 @@ Fixed items are checked off; deferred items keep their original rationale plus w
   both the inline `:style` binding and the `<style>` block's fallback declaration. Unanimous
   council verdict: wiring it into the title/section-header rule as originally intended is a
   design decision nobody has made, not implied by "clean up dead code" — left undone
-  deliberately. Note: `RecipeSheet.vue`'s `accentColor` prop is now otherwise unconsumed within
-  the component (still received from `RecipePreviewDialog.vue`) — left in place rather than
-  chasing the whole prop chain, which was out of scope for this pass.
+  deliberately. The now-fully-dead `accentColor` prop chain (`RecipeSheet.vue` →
+  `RecipePreviewDialog.vue` → `ProjectView.vue`/`ProjectPrint.vue`/`RecipePrint.vue`) was removed
+  entirely per explicit follow-up decision, rather than left declared-but-unused.
 
 - [x] `#d97742` (terracotta, the default accent) is duplicated as a hex literal in ~9 places
   instead of referencing `ACCENT_COLORS[0].value` from `src/js/templates.js`. **Fixed** —
@@ -86,21 +89,43 @@ Fixed items are checked off; deferred items keep their original rationale plus w
 - [x] `App.vue`'s body font stack duplicated `--font-main` with a slightly different, unloaded
   stack. **Fixed** — replaced with `var(--font-main)`.
 
-- [ ] Untokenized one-off heading/body sizes recur often enough to be de facto tokens but aren't
-  named anywhere: 18px, 22px, 15px (a muted-subtitle size repeated across ~9 files). **Deferred**
-  — council split on the 15px case (two of four suggested a `.text-subtitle`/`.text-subtle`
-  utility now) but converged on doing it opportunistically next time one of those views is
-  touched, per the checklist's own original recommendation, rather than adding new utilities
-  with no migration.
+- [x] Untokenized one-off heading/body sizes recur often enough to be de facto tokens but aren't
+  named anywhere: 18px, 22px, 15px (a muted-subtitle size repeated across ~9 files). **Partially
+  fixed by follow-up decision**: the council split on the 15px case (two of four suggested a
+  utility class now); the user chose to act on it. Added `.text-subtitle` (`font-size: 15px;
+  color: var(--ink-46);`) to `tokens.css` and migrated all 11 matching sites across
+  `Dashboard.vue`, `RecipeEditor.vue`, `DecodeRecipe.vue`, `Settings.vue`, `RecipeImport.vue` ×2,
+  `RecipeLibrary.vue` ×2, `ProjectView.vue`, and `NotFound.vue`. **18px and 22px remain
+  deferred** — each is a true one-off (not a repeated pattern like the 15px case), left for
+  opportunistic formalization next time their view is touched, per the checklist's original
+  recommendation.
 
-- [ ] Translucent shadow/scrim colors hand-duplicate the `--ink-20`/`--ink-99` hue as
-  opaque-looking literals with an alpha channel. **Deferred, with a correction**: the council
-  found the literals are actually `oklch(10% 0.01 75 / …)` and `oklch(20% 0.02 75 / …)` — L=10 is
-  *not* `--ink-20` (that's `oklch(20% … )`), so the original "hand-duplicating ink-20" framing
-  was imprecise; a naive relative-color rewrite based on that framing would have silently
-  lightened every shadow. Still blocked on the same decision as before: new semantic tokens
-  (`--scrim`, `--shadow-modal`, etc.) vs. relative-color syntax, preserving the as-authored L
-  values rather than "correcting" them to the nearest `--ink-*` stop.
+- [x] Translucent shadow/scrim colors hand-duplicate the `--ink-20`/`--ink-99` hue as
+  opaque-looking literals with an alpha channel. **The color-family split fixed by follow-up
+  decision; the bigger alpha-token question still deferred.** The council found the literals
+  actually split into two inconsistent families — `oklch(10% 0.01 75 / …)` (`Modal.vue`,
+  `ChapterCard.vue`'s popover, `BulkActionBar.vue`, `LibrarySidebarPanel.vue`) vs `oklch(20%
+  0.01-0.02 75 / …)` (`Dashboard.vue`, `RecipeEditor.vue`/`RecipeLibrary.vue`'s inline
+  delete-confirm modals, `RecipeImport.vue`'s candidate-card shadow) — independent of the
+  original "hand-duplicating ink-20" framing, which was itself imprecise (L=10 isn't `--ink-20`,
+  that's `oklch(20% …)`). Unified every site onto the `10%/0.01` family (matching `Modal.vue`,
+  the canonical shared component), preserving each site's own alpha value rather than also
+  normalizing opacity. **Still blocked**: promoting these into real semantic tokens (`--scrim`,
+  `--shadow-modal`, etc.) waits on the new semantic tokens vs. relative-color-syntax decision —
+  today's fix only made the *values* consistent, not the *mechanism*.
+
+- [x] Not on the original checklist, found by the council's Skeptic while investigating item 5:
+  `--ink-78` in `tokens.css` is actually `oklch(80% 0.01 75)` — an 80%-lightness value carrying a
+  `78` name, contradicting `DESIGN.md`'s own stated rule that a stop's name should match its
+  lightness. **Fixed** — renamed to `--ink-80` across `tokens.css`, `DESIGN.md`, and all ~13 call
+  sites (`BulkActionBar.vue`, `ChapterCard.vue`, `DecodeRecipe.vue`, `Dashboard.vue`,
+  `RecipeLibrary.vue`, `RecipeImport.vue`, `RecipeEditor.vue`).
+
+- [ ] Not on the original checklist, found by the council's Skeptic while investigating item 7:
+  `RecipePreviewDialog.vue` has an unscoped `<style>` block reaching into `.modal-box` (Vue scoped
+  styles don't stop a rule from also matching elsewhere in the document), meaning `Modal.vue`'s
+  box styles are already leaking globally. **Deferred, kept as tech debt** per explicit decision
+  — flagged as a risk for any future `Modal.vue` styling change, not touched in this pass.
 
 - [ ] `RecipeImage.vue`'s `.recipe-image` defaults to `height: 100%`, only overridden to
   `height: auto` for an explicit `imageAspectRatio`, causing a real layout bug (image balloons,

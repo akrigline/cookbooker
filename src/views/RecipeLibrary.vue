@@ -77,7 +77,7 @@ async function confirmDelete() {
     <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:28px; flex-wrap:wrap;">
       <div>
         <h1 class="text-page-title">Recipe Library</h1>
-        <p style="margin:0; font-size:15px; color:var(--ink-46);">{{ resultCountLabel }}</p>
+        <p class="text-subtitle" style="margin:0;">{{ resultCountLabel }}</p>
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <router-link to="/library/import" class="btn-import">
@@ -134,16 +134,16 @@ async function confirmDelete() {
       </article>
     </div>
 
-    <div v-else style="border:1px dashed var(--ink-78); border-radius:14px; padding:64px 32px; text-align:center; background:var(--ink-99);">
+    <div v-else style="border:1px dashed var(--ink-80); border-radius:14px; padding:64px 32px; text-align:center; background:var(--ink-99);">
       <p style="font-family:'Newsreader',Georgia,serif; font-size:22px; font-weight:600; margin:0 0 8px;">{{ recipesStore.recipes.length ? 'No matching recipes' : 'No recipes yet' }}</p>
-      <p style="margin:0 0 20px; font-size:15px; color:var(--ink-46);">{{ recipesStore.recipes.length ? `Nothing matches "${query}". Try a different title or ingredient.` : 'Add your first recipe or import recipes to start building your library.' }}</p>
+      <p class="text-subtitle" style="margin:0 0 20px;">{{ recipesStore.recipes.length ? `Nothing matches "${query}". Try a different title or ingredient.` : 'Add your first recipe or import recipes to start building your library.' }}</p>
       <router-link v-if="!recipesStore.recipes.length" to="/library/new" class="btn-new" style="display:inline-flex;">
         New Recipe
       </router-link>
     </div>
 
-    <div v-if="deleteTarget" @click="deleteTarget = null" style="position:fixed; inset:0; background:oklch(20% 0.01 75 / 0.45); display:flex; align-items:center; justify-content:center; padding:24px; z-index:200;">
-      <div role="alertdialog" aria-modal="true" aria-labelledby="cm-del-heading" aria-describedby="cm-del-desc" @click.stop style="background:var(--ink-99); border-radius:14px; width:100%; max-width:420px; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(20% 0.02 75 / 0.25);">
+    <div v-if="deleteTarget" @click="deleteTarget = null" style="position:fixed; inset:0; background:oklch(10% 0.01 75 / 0.45); display:flex; align-items:center; justify-content:center; padding:24px; z-index:200;">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="cm-del-heading" aria-describedby="cm-del-desc" @click.stop style="background:var(--ink-99); border-radius:14px; width:100%; max-width:420px; padding:26px 26px 22px; box-shadow:0 20px 60px oklch(10% 0.01 75 / 0.25);">
         <h2 id="cm-del-heading" class="text-h2">Delete "{{ deleteTarget.title }}"?</h2>
         <p id="cm-del-desc" style="margin:0 0 22px; font-size:14px; color:var(--ink-42); line-height:1.5;">This permanently removes the recipe from the Global Recipe Library and withdraws it from every cookbook that includes it. This can't be undone.</p>
         <div style="display:flex; justify-content:flex-end; gap:10px;">

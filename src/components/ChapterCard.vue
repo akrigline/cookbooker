@@ -471,7 +471,7 @@ function dropLineBelow(pr) {
 
 .recipe-row__drag {
   flex-shrink: 0;
-  color: var(--ink-78);
+  color: var(--ink-80);
   cursor: grab;
 }
 
@@ -608,7 +608,7 @@ function dropLineBelow(pr) {
 .drag-handle {
   display: inline-flex;
   align-items: center;
-  color: var(--ink-78);
+  color: var(--ink-80);
   cursor: grab;
   flex-shrink: 0;
 }
