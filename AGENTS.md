@@ -251,6 +251,62 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   vue` reads the same `assignPageNumbers()` maps to print each entry's page
   number with a dotted leader.
 
+- The table of contents can span multiple physical pages (2 columns each), not a fixed one page.
+  The intra-page column split is real CSS, not hand-rolled JS: `TableOfContentsPage.vue`'s
+  `.toc-rows` is `columns: 2; column-fill: auto; height: 100%` (`calc(100% - 60px)` via the
+  `.toc-rows--with-heading` modifier when `showHeading` is true, to leave room for the "Table of
+  Contents" heading - column-fill:auto is only honored by Chrome/WebKit when the container has an
+  explicit height, W3C csswg-drafts #4689), and each row component has `break-inside: avoid` so a
+  wrapped multi-line title never splits across the column boundary. An earlier version reimplemented
+  column-balancing by hand in JS from measured row heights (e.g. gluing a chapter header to its
+  first recipe so neither would be stranded cost ~6 lines of blank space whenever a fresh chapter
+  started near a column's end) - trust the browser's layout for this, don't rebuild it.
+  `src/js/tocLayout.js`'s `measureTocLayout` only has to find the *page* cut points: it mounts
+  `TableOfContentsPage` off-screen in a plain div sized to `CONTENT_WIDTH_IN`/`CONTENT_HEIGHT_PX`
+  (matching the real page's content box, so `.toc-rows`'s `height: 100%`/`calc()` resolves the same
+  off-screen as it does inside `PagePreview.vue`'s real box), with every remaining row in that same
+  real `columns: 2; column-fill: auto` flow, and - since CSS multicol lets content that overflows N
+  columns spill into repeating column "runs" extending sideways past the container's own width,
+  rather than clipping it, in continuous (non-paginated) media - reads back each row's rendered x
+  position to know which column (and via `Math.floor(columnIndex / 2)`, which page) real
+  column-fill layout placed it on. `CONTENT_HEIGHT_PX` must equal exactly what the real page
+  resolves - verified with `document.querySelector('.toc-rows').clientHeight` on an actual rendered
+  print preview (960px on an 8.5x11in/0.5in-margin page, 900px with the heading), not assumed from
+  `inches * 96px/in` math alone. **A stray `+ 90` correction was briefly added here and made things
+  worse, not better**: it was a fix for a *different*, since-removed bug (a separately-measured,
+  inaccurate JS heading height, back when `.toc-rows`'s height was still JS-computed rather than
+  this CSS `100%`/`calc()`); once that was replaced, the `+90` just made the measurement think more
+  rows fit than the real page's `overflow: hidden` actually allows, silently clipping the excess
+  rather than under-filling the page - worse than the bug it was chasing, and much less visible.
+  **If a future "N off, tweak this number" report comes in, re-derive the correction from
+  `clientHeight` on the real page again rather than reapplying an old offset** - the two are only
+  guaranteed to agree right after they were checked together; either side of this can drift
+  independently as the surrounding code changes. This needs only two off-screen mounts total
+  regardless of how many pages result: one with the heading shown (page 1) to find how many rows
+  fit there, and one without (every subsequent page) for whatever didn't fit, since column-fill is
+  monotonic and overflow just keeps spilling sideways through as many page-worth column-pairs as
+  needed. Reuses `TableOfContentsPage.vue` for measurement (same rationale as
+  `recipeFitMeasure.js`'s overflow check - measured and displayed markup must be identical, which is
+  also why `TocChapterRow.vue`/`TocRecipeRow.vue` are their own components), so
+  `TableOfContentsPage.vue`'s `rows` prop is a flat, already-page-sliced list - never a pre-split
+  pair of column arrays, and never a JS-computed height passed down as a prop. Because pagination
+  needs a DOM mount, it's async - `compileBook.js`'s `layoutBookPages` takes a pre-computed
+  `tocPageCount` instead of a `showToc` boolean, and `ProjectPrint.vue` runs the async measurement
+  in a `watch` before computing `bookLayout`, gating the entire page list behind a `tocReady` ref so
+  a wrong/undercounted TOC page count (and therefore wrong chapter/recipe page numbers) is never
+  shown, even briefly. `PagePreview.vue`'s `hideOverflowWarning` prop (set by `ProjectPrint.vue` on
+  every TOC page) suppresses its own scrollHeight/clientHeight overflow banner there - TOC pages are
+  deliberately packed right to the column height's edge, which otherwise trips that heuristic as a
+  false positive. Two sharp edges that already bit this: (1) `.toc-title` must be
+  `flex: 0 1 auto; min-width: 0` (shrinkable), not `flex: 0 0 auto` - with `flex-shrink: 0` a long
+  title doesn't wrap, it overflows horizontally past its column and visually bleeds into the next
+  one; (2) `index.html` loads Google Fonts with `display=swap`, so text renders in a fallback font
+  first and swaps once the real font loads - measuring before that swap reads row heights/wrap
+  points against the wrong font, so both `tocLayout.js` and `recipeFitMeasure.js`
+  `await document.fonts.ready` *after* mounting (not as an upfront gate before anything mounts -
+  `ready` only accounts for fonts already requested by something on the page, so checking it too
+  early can resolve before the measurement mount's own fonts are even requested).
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.

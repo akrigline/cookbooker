@@ -1,11 +1,6 @@
 import { createApp, h, nextTick } from 'vue'
 import RecipeSheet from '../components/RecipeSheet.vue'
-
-// Matches PagePreview.vue's print-page dimensions (8.5in x 11in, 0.5in
-// margin) so the overflow check mirrors what actually clips at print time.
-const PAGE_WIDTH = '8.5in'
-const PAGE_HEIGHT = '11in'
-const PAGE_MARGIN = '0.5in'
+import { PAGE_WIDTH, PAGE_HEIGHT, PAGE_MARGIN } from './pageDimensions.js'
 
 function createContainer() {
   const container = document.createElement('div')
@@ -35,6 +30,16 @@ export async function measureRecipeFit(recipe, { component = RecipeSheet, props 
     app.mount(container)
 
     await nextTick()
+    // index.html loads Google Fonts with `display=swap`, so text initially
+    // renders in a fallback font with different metrics and swaps to the
+    // real one once it loads - measuring before that swap can read a
+    // fit/overflow result that doesn't match the real render (see
+    // tocLayout.js's measureTocLayout for the same race and fuller context).
+    // Must run AFTER mounting, not as an upfront gate: `document.fonts.ready`
+    // only accounts for fonts already requested by something on the page, so
+    // checking it before this mount exists could resolve before its fonts
+    // are even requested.
+    if (typeof document !== 'undefined' && document.fonts) await document.fonts.ready
     await new Promise((resolve) => requestAnimationFrame(resolve))
 
     return container.scrollHeight <= container.clientHeight

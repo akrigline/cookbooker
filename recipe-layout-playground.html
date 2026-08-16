@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Recipe Layout Playground</title>
+<script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.27/dist/interact.min.js"></script>
+<style>
+  :root {
+    /* Copied from src/css/tokens.css so the mock page matches real print output */
+    --recipe-bg: #ffffff;
+    --recipe-surface-container-low: #f5f3f3;
+    --recipe-on-surface: #1b1c1c;
+    --recipe-on-surface-variant: #4c4546;
+    --recipe-primary: #000000;
+    --recipe-outline-variant: #cfc4c5;
+    --recipe-column-gap: 2rem;
+    --font-recipe-title: 'EB Garamond', Georgia, serif;
+    --font-recipe-body: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+    /* QR chip colors, from RecipeQRCode.vue's own scoped styles */
+    --qr-gray-30: oklch(30% 0.01 75);
+    --qr-gray-42: oklch(40% 0.01 75);
+
+    --ui-bg: #16181c;
+    --ui-panel: #1e2128;
+    --ui-panel-2: #262a33;
+    --ui-border: #343944;
+    --ui-text: #e7e9ee;
+    --ui-text-dim: #9aa1af;
+    --ui-accent: #d97742;
+    --guide-color: #ff2fd0;
+  }
+
+  * { box-sizing: border-box; }
+
+  body.no-select, body.no-select * {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+  }
+
+  body {
+    margin: 0;
+    background: var(--ui-bg);
+    color: var(--ui-text);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ---------- Sidebar ---------- */
+  #sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background: var(--ui-panel);
+    border-right: 1px solid var(--ui-border);
+    overflow-y: auto;
+    padding: 16px;
+  }
+  #sidebar h1 { font-size: 15px; margin: 0 0 4px; }
+  #sidebar .sub { font-size: 12px; color: var(--ui-text-dim); margin: 0 0 16px; line-height: 1.5; }
+
+  .group { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--ui-border); }
+  .group h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ui-text-dim); margin: 0 0 8px; }
+
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  .preset-btn {
+    background: var(--ui-panel-2);
+    border: 1px solid var(--ui-border);
+    color: var(--ui-text);
+    padding: 6px 9px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .preset-btn:hover { border-color: var(--ui-accent); }
+
+  .place-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.25); }
+
+  .field { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; font-size: 12.5px; }
+  .field label { color: var(--ui-text-dim); }
+  .field select, .field input[type=number] {
+    background: var(--ui-panel-2); color: var(--ui-text); border: 1px solid var(--ui-border);
+    border-radius: 5px; padding: 3px 6px; font-size: 12px; width: 78px;
+  }
+  .toggle-row { display: flex; align-items: center; gap: 6px; font-size: 12.5px; margin-bottom: 6px; }
+
+  #props-empty { font-size: 12px; color: var(--ui-text-dim); }
+  #props-panel { display: none; }
+  #props-panel .xywh { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin-bottom: 10px; }
+  #props-panel .xywh label { font-size: 10.5px; color: var(--ui-text-dim); display: block; margin-bottom: 2px; }
+  #props-panel .xywh input { width: 100%; background: var(--ui-panel-2); color: var(--ui-text); border: 1px solid var(--ui-border); border-radius: 5px; padding: 4px 6px; font-size: 12px; }
+  #props-type { font-size: 12.5px; font-weight: 600; margin: 0 0 10px; display: flex; align-items: center; gap: 6px; }
+
+  button.reset-btn {
+    width: 100%; background: var(--ui-panel-2); border: 1px solid var(--ui-border); color: var(--ui-text-dim);
+    padding: 7px; border-radius: 6px; font-size: 12px; cursor: pointer;
+  }
+  button.reset-btn:hover { color: #ff8a7a; border-color: #ff8a7a; }
+
+  /* ---------- Main / canvas ---------- */
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  #canvas-wrap { flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 28px; }
+
+  #page {
+    width: 816px;  /* 8.5in @ 96dpi */
+    height: 1056px; /* 11in @ 96dpi */
+    flex-shrink: 0;
+    background: var(--recipe-bg);
+    color: var(--recipe-on-surface);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.2);
+    position: relative;
+  }
+  #page-margin-hint {
+    position: absolute;
+    inset: 48px; /* 0.5in */
+    outline: 1px dashed rgba(0,0,0,0.15);
+    outline-offset: 0;
+    pointer-events: none;
+  }
+  #page-inner {
+    position: absolute;
+    inset: 48px;
+  }
+
+  .box {
+    position: absolute;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    display: flex;
+    flex-direction: column;
+  }
+  .box.selected {
+    outline: 1.5px solid var(--ui-accent);
+    outline-offset: 1px;
+    box-shadow: 0 0 0 4000px rgba(0,0,0,0.02);
+  }
+  .box .box-label {
+    position: absolute;
+    top: -18px;
+    left: -1px;
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 3px 3px 0 0;
+    color: #fff;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.1s;
+  }
+  .box.selected .box-label, .box:hover .box-label { opacity: 1; }
+
+  .guide-line { position: absolute; background: var(--guide-color); z-index: 50; pointer-events: none; }
+  .guide-line.v { width: 1px; top: 0; bottom: 0; }
+  .guide-line.h { height: 1px; left: 0; right: 0; }
+
+  /* ---------- dummy content styling ----------
+     Class names and values below are copied verbatim from src/css/tokens.css's
+     .text-recipe-title / .text-section-header / .text-ingredient-list /
+     .text-instruction-step / .text-chef-note utilities, and from the scoped
+     styles in RecipeTitle/RecipeIngredients/RecipeInstructions/RecipeNotes/
+     RecipeQRCode.vue - not approximated sizes. */
+  .blk-title { padding: 4px; }
+  .blk-title h2 {
+    margin: 0; font-family: var(--font-recipe-title); font-size: 32px; line-height: 40px;
+    letter-spacing: -0.01em; font-weight: 600; color: var(--recipe-primary);
+  }
+  .blk-image {
+    width: 100%; height: 100%;
+    background: repeating-linear-gradient(135deg, var(--recipe-surface-container-low), var(--recipe-surface-container-low) 10px, #ece7e7 10px, #ece7e7 20px);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--recipe-on-surface-variant); font-family: var(--font-recipe-body);
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .blk-ingredients, .blk-instructions { padding: 6px; overflow: hidden; }
+  /* .text-section-header, applied to the Ingredients/Instructions/Chef's Notes headers */
+  .blk-ingredients h3, .blk-instructions h3, .blk-notes h3 {
+    font-family: var(--font-recipe-body); font-weight: 700; font-size: 14px; line-height: 20px;
+    letter-spacing: 0.05em; margin: 0 0 6px; color: var(--recipe-on-surface);
+  }
+  /* .text-ingredient-list, on .ingredients-list; .ingredient-item/.ingredient-qty/
+     .ingredient-name/.qty-primary/.qty-secondary match RecipeIngredients.vue exactly
+     so the [data-qty-align] override rules below (copied from RecipeSheet.vue) apply. */
+  .ing-list {
+    list-style: none; margin: 0; padding: 0; column-gap: var(--recipe-column-gap);
+    font-family: var(--font-recipe-body); font-size: 14px; line-height: 1.2; font-weight: 400; color: var(--recipe-on-surface);
+  }
+  .ingredient-item { display: flex; align-items: flex-start; padding: 0.25rem 0; break-inside: avoid; }
+  .ingredient-qty { flex: 0 0 33%; padding-right: 0.5rem; white-space: nowrap; text-align: var(--ing-qty-align, right); }
+  .qty-primary { font-weight: 700; }
+  .qty-secondary { font-size: 12px; font-weight: 400; color: var(--recipe-on-surface-variant); }
+  .ingredient-name { flex: 1; }
+  /* [data-qty-align="inline"] override, copied from RecipeSheet.vue's <style scoped> */
+  .blk-ingredients[data-qty-align="inline"] .ingredient-item { display: block; }
+  .blk-ingredients[data-qty-align="inline"] .ingredient-qty { display: inline; flex: none; padding-right: 0.25em; white-space: normal; }
+  .blk-ingredients[data-qty-align="inline"] .ingredient-name { display: inline; flex: none; }
+  .blk-ingredients[data-qty-align="inline"] .qty-primary { display: inline; }
+  .blk-ingredients[data-qty-align="inline"] .qty-secondary { display: inline; margin-left: 0.2em; }
+  /* .text-instruction-step, on step-content <p>; step-number is .text-section-header + recipe-primary color */
+  .blk-instructions .step { display: flex; gap: 1rem; margin-bottom: 0.75rem; }
+  .blk-instructions .step .num {
+    font-family: var(--font-recipe-body); font-weight: 700; font-size: 14px; line-height: 20px; letter-spacing: 0.05em;
+    color: var(--recipe-primary); border-right: 1px solid var(--recipe-outline-variant);
+    padding-right: 1rem; flex-shrink: 0; width: 2ch;
+  }
+  .blk-instructions .step p {
+    font-family: var(--font-recipe-body); font-size: 14px; line-height: 1.2; font-weight: 400; color: var(--recipe-on-surface);
+  }
+  .blk-notes {
+    width: 100%; height: 100%; padding: 1rem;
+    background: var(--recipe-surface-container-low); border: 1px solid var(--recipe-outline-variant);
+  }
+  .blk-notes.plain { background: none; border: none; }
+  /* .text-chef-note - serif (font-recipe-title), not the sans body font */
+  .blk-notes p {
+    font-family: var(--font-recipe-title); font-size: 14px; line-height: 1.2; font-weight: 400; color: var(--recipe-on-surface-variant);
+  }
+  .blk-qr {
+    width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px; background: #fff; padding: 4px;
+  }
+  .blk-qr .qr-header {
+    margin: 0; font-family: var(--font-recipe-body); font-size: 8px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--qr-gray-30); text-align: center;
+  }
+  .blk-qr .qr-box {
+    width: 55%; aspect-ratio: 1;
+    background:
+      linear-gradient(0deg, #000 22%, transparent 22%) 0 0/20% 20%,
+      linear-gradient(90deg, #000 22%, transparent 22%) 0 0/20% 20%,
+      #fff;
+    background-repeat: repeat; border: 3px solid #000;
+  }
+  .blk-qr .qr-cap {
+    margin: 0; font-family: var(--font-recipe-body); font-size: 7px; color: var(--qr-gray-30);
+    text-align: center; letter-spacing: 0.02em;
+  }
+
+  #footer-actions {
+    border-top: 1px solid var(--ui-border); background: var(--ui-panel); padding: 12px 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  #prompt-box {
+    flex: 1; background: var(--ui-panel-2); border: 1px solid var(--ui-border); border-radius: 6px;
+    padding: 10px 12px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px;
+    color: var(--ui-text); max-height: 150px; overflow-y: auto; white-space: pre-wrap;
+  }
+  #copy-btn {
+    background: var(--ui-accent); color: #fff; border: none; padding: 10px 16px; border-radius: 6px;
+    font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; align-self: stretch;
+  }
+  #copy-btn:hover { filter: brightness(1.08); }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <h1>Recipe Layout Playground</h1>
+  <p class="sub">Drag frames to move, drag an edge to resize — like InDesign content frames on a column grid. Frames snap to column lines, page center, and each other's edges (magenta guides). All six elements are always on the page; Image and Chef's Notes can be hidden below since a recipe might not have either. This is a sketchpad, not a spec — get the idea across, I'll implement it properly.</p>
+
+  <div class="group">
+    <h2>Presets</h2>
+    <div class="presets" id="presets"></div>
+  </div>
+
+  <div class="group">
+    <h2>Visibility</h2>
+    <div class="toggle-row"><input type="checkbox" id="opt-show-image" checked /><label for="opt-show-image">Show Image</label></div>
+    <div class="toggle-row"><input type="checkbox" id="opt-show-notes" checked /><label for="opt-show-notes">Show Chef's Notes</label></div>
+  </div>
+
+  <div class="group">
+    <h2>Selected frame</h2>
+    <div id="props-empty">Click a frame on the page to select it.</div>
+    <div id="props-panel">
+      <p id="props-type"></p>
+      <div class="xywh">
+        <div><label>X (in)</label><input type="number" step="0.05" id="prop-x" /></div>
+        <div><label>Y (in)</label><input type="number" step="0.05" id="prop-y" /></div>
+        <div><label>W (in)</label><input type="number" step="0.05" id="prop-w" /></div>
+        <div><label>H (in)</label><input type="number" step="0.05" id="prop-h" /></div>
+      </div>
+      <div id="props-type-options"></div>
+    </div>
+  </div>
+
+  <div class="group">
+    <h2>Column grid</h2>
+    <div class="field"><label>Columns</label><input type="number" id="opt-cols" value="12" min="1" max="24" step="1" /></div>
+    <div class="field"><label>Gutter (in)</label><input type="number" id="opt-gutter" value="0.15" min="0" max="1" step="0.05" /></div>
+    <div class="toggle-row"><input type="checkbox" id="opt-show-columns" checked /><label for="opt-show-columns">Show column guides</label></div>
+    <div class="toggle-row"><input type="checkbox" id="opt-smart-guides" checked /><label for="opt-smart-guides">Snap to column lines &amp; other frames</label></div>
+  </div>
+
+  <button class="reset-btn" id="reset-btn">Reset to preset positions</button>
+</div>
+
+<div id="main">
+  <div id="canvas-wrap">
+    <div id="page">
+      <div id="page-margin-hint"></div>
+      <div id="page-inner"></div>
+    </div>
+  </div>
+  <div id="footer-actions">
+    <div id="prompt-box"></div>
+    <button id="copy-btn">Copy Prompt</button>
+  </div>
+</div>
+
+<script>
+const IN = 96; // css reference px per inch
+const PAGE_W_IN = 7.5; // content area inside 0.5in margins on 8.5x11
+const PAGE_H_IN = 10;
+const PAGE_W = PAGE_W_IN * IN;
+const PAGE_H = PAGE_H_IN * IN;
+const SNAP_TOL = 4; // px
+const GRID_STEP = IN / 8; // 1/8 inch
+// RecipeQRCode.vue stamps the rendered SVG at a fixed 1.25in x 1.25in
+// regardless of container size ("exactly 1.25in x 1.25in at any printer DPI"
+// per its own comment) - so the QR frame here is fixed size too, drag-only.
+const QR_SIZE_IN = 1.25;
+
+const BLOCK_DEFS = {
+  title:        { label: 'Title',        color: '#e0a95c' },
+  image:        { label: 'Image',        color: '#7fb8d9' },
+  ingredients:  { label: 'Ingredients',  color: '#9fcf8f' },
+  instructions: { label: 'Instructions', color: '#c98fd0' },
+  notes:        { label: "Chef's Notes", color: '#e08f8f' },
+  qr:           { label: 'QR Code',      color: '#8fa6e0' },
+};
+const BLOCK_KEYS = Object.keys(BLOCK_DEFS);
+// Every recipe always has a title/ingredients/instructions/QR. Image and Chef's
+// Notes are the two elements a real recipe might not have (no photo, no notes),
+// so those are the only two with a visibility toggle - see #opt-show-image/-notes.
+const HIDEABLE_TYPES = ['image', 'notes'];
+
+const DUMMY = {
+  title: 'Grandma’s Skillet Cornbread',
+  // [primary qty, secondary/metric qty (mirrors RecipeIngredients.vue's qty-secondary), name]
+  ingredients: [
+    ['2 cups', '(280g)', 'yellow cornmeal'], ['1 cup', '(120g)', 'all-purpose flour'], ['2 tbsp', '(25g)', 'sugar'],
+    ['1 tbsp', '', 'baking powder'], ['1 tsp', '', 'kosher salt'], ['2', '', 'large eggs'],
+    ['1 3/4 cups', '(415mL)', 'buttermilk'], ['1/3 cup', '(75g)', 'melted butter'],
+  ],
+  steps: [
+    'Preheat oven to 425°F with a cast-iron skillet inside.',
+    'Whisk dry ingredients together in a large bowl.',
+    'Whisk eggs, buttermilk, and melted butter separately, then fold into the dry mix.',
+    'Add batter to the hot skillet and bake 20-22 minutes until golden.',
+    'Rest 5 minutes before slicing and serving warm.',
+  ],
+  notes: 'This one’s from Nana’s recipe box — double the batch for a crowd, and swap in bacon fat for extra flavor if you have it on hand.',
+};
+
+const state = {
+  boxes: [],       // always 6 entries, one per BLOCK_KEYS type - {id, type, x, y, w, h} in inches
+  selectedId: null,
+  smartGuides: true,
+  showColumns: true,
+  cols: 12,
+  gutterIn: 0.15,
+  aspect: 'auto',
+  ingCols: '1',
+  ingQtyAlign: 'right', // matches DEFAULT_INGREDIENT_QTY_ALIGN in src/js/templates.js
+  notesBoxed: true,
+  qrCaption: true,
+  imageVisible: true,
+  notesVisible: true,
+};
+
+// All 6 frames always exist; every preset gives every type a position (even
+// Image on the text-only preset, where it just starts hidden). The 7 "CURRENT"
+// presets are traced from the real components in src/components/RecipeLayout*.vue
+// (LAYOUT_COMPONENTS map in RecipeSheet.vue) - rough sketches of each
+// component's flex proportions, not a pixel-accurate re-measure. QR is drawn
+// as a slim strip directly under Ingredients on those 7, approximating where
+// it renders today (inside RecipeIngredients.vue's qr-item) without literally
+// nesting it - this tool always keeps QR as its own frame.
+const PRESETS = {
+  'CURRENT: Hero Split Balanced': {
+    boxes: [
+      { type: 'title', x: 0, y: 0, w: 7.5, h: 1 },
+      { type: 'image', x: 0, y: 1, w: 7.5, h: 4 },
+      { type: 'notes', x: 0, y: 5, w: 7.5, h: 1.5 },
+      { type: 'ingredients', x: 0, y: 6.5, w: 3.6, h: 2.25 },
+      { type: 'qr', x: 1.175, y: 8.75, w: 1.25, h: 1.25 },
+      { type: 'instructions', x: 3.9, y: 6.5, w: 3.6, h: 3.5 },
+    ],
+  },
+  'CURRENT: Hero Split Asymmetric': {
+    boxes: [
+      { type: 'title', x: 0, y: 0, w: 7.5, h: 1 },
+      { type: 'image', x: 0, y: 1, w: 7.5, h: 4 },
+      { type: 'notes', x: 0, y: 5, w: 7.5, h: 1.5 },
+      { type: 'ingredients', x: 0, y: 6.5, w: 2.4, h: 2.25 },
+      { type: 'qr', x: 0.575, y: 8.75, w: 1.25, h: 1.25 },
+      { type: 'instructions', x: 2.6, y: 6.5, w: 4.9, h: 3.5 },
+    ],
+  },
+  'CURRENT: Asymmetric Sidebar': {
+    boxes: [
+      { type: 'title', x: 0, y: 0, w: 2.4, h: 0.8 },
+      { type: 'image', x: 0, y: 0.9, w: 2.4, h: 5.3 },
+      { type: 'notes', x: 0, y: 6.3, w: 2.4, h: 3.7 },
+      { type: 'ingredients', x: 2.6, y: 0, w: 4.9, h: 3.65 },
+      { type: 'qr', x: 4.425, y: 3.65, w: 1.25, h: 1.25 },
+      { type: 'instructions', x: 2.6, y: 4.9, w: 4.9, h: 5.1 },
+    ],
+  },
+  'CURRENT: Column Optimized': {
+    boxes: [
+      { type: 'title', x: 0, y: 0, w: 7.5, h: 1 },
+      { type: 'notes', x: 0, y: 1.2, w: 2.4, h: 1.4 },
+      { type: 'ingredients', x: 0, y: 2.7, w: 2.4, h: 5.85 },
+      { type: 'qr', x: 0.575, y: 8.55, w: 1.25, h: 1.25 },
+      { type: 'image', x: 2.6, y: 1.2, w: 4.9, h: 4.5 },
+      { type: 'instructions', x: 2.6, y: 5.8, w: 4.9, h: 4 },
+    ],
+  },
+  'CURRENT: Balanced Header': {
+    boxes: [
+      { type: 'title', x: 0, y: 0, w: 4.5, h: 1.8 },
+      { type: 'image', x: 4.6, y: 0, w: 2.9, h: 1.8 },
+      { type: 'notes', x: 0, y: 2, w: 7.5, h: 1.3 },
+      { type: 'ingredients', x: 0, y: 3.5, w: 7.5, h: 1.75 },
+      { type: 'qr', x: 3.125, y: 5.25, w: 1.25, h: 1.25 },
+      { type: 'instructions', x: 0, y: 6.5, w: 7.5, h: 3.3 },
+    ],
+  },
+  'CURRENT: Dual Column Bottom Split': {
+    boxes: [
+      { type: 'title', x: 0, y: 0, w: 7.5, h: 0.8 },
+      { type: 'ingredients', x: 0, y: 1, w: 7.5, h: 1.15 },
+      { type: 'qr', x: 3.125, y: 2.15, w: 1.25, h: 1.25 },
+      { type: 'image', x: 0, y: 3.4, w: 2.7, h: 3.1 },
+      { type: 'notes', x: 0, y: 6.7, w: 2.7, h: 3.1 },
+      { type: 'instructions', x: 2.9, y: 3.4, w: 4.6, h: 6.4 },
+    ],
+  },
+  'CURRENT: Text Only (no image)': {
+    imageVisible: false,
+    boxes: [
+      { type: 'title', x: 0, y: 0, w: 7.5, h: 1 },
+      { type: 'image', x: 0, y: 1.2, w: 3.6, h: 3 },
+      { type: 'ingredients', x: 0, y: 1.2, w: 3.6, h: 5.75 },
+      { type: 'qr', x: 1.175, y: 6.95, w: 1.25, h: 1.25 },
+      { type: 'instructions', x: 3.9, y: 1.2, w: 3.6, h: 6.8 },
+      { type: 'notes', x: 0, y: 8.2, w: 7.5, h: 1.6 },
+    ],
+  },
+  // Exploratory: QR given real breathing room as its own frame, not squeezed under Ingredients.
+  'IDEA: QR sidebar card': {
+    boxes: [
+      { type: 'title', x: 0, y: 0, w: 7.5, h: 1 },
+      { type: 'image', x: 0, y: 1, w: 4.6, h: 5.5 },
+      { type: 'qr', x: 5.575, y: 1, w: 1.25, h: 1.25 },
+      { type: 'notes', x: 4.9, y: 2.45, w: 2.6, h: 4.35 },
+      { type: 'ingredients', x: 0, y: 6.8, w: 3.6, h: 3.2 },
+      { type: 'instructions', x: 3.9, y: 6.8, w: 3.6, h: 3.2 },
+    ],
+  },
+  'IDEA: QR footer band': {
+    boxes: [
+      { type: 'title', x: 0, y: 0, w: 7.5, h: 1 },
+      { type: 'image', x: 0, y: 1, w: 7.5, h: 4.5 },
+      { type: 'ingredients', x: 0, y: 5.7, w: 3.6, h: 3 },
+      { type: 'instructions', x: 3.9, y: 5.7, w: 3.6, h: 3 },
+      { type: 'notes', x: 0, y: 8.75, w: 5.9, h: 1.25 },
+      { type: 'qr', x: 6.25, y: 8.75, w: 1.25, h: 1.25 },
+    ],
+  },
+  'IDEA: QR beside notes': {
+    boxes: [
+      { type: 'title', x: 0, y: 0, w: 7.5, h: 1 },
+      { type: 'image', x: 0, y: 1, w: 7.5, h: 4 },
+      { type: 'notes', x: 0, y: 5.2, w: 5.5, h: 1.4 },
+      { type: 'qr', x: 5.7, y: 5.2, w: 1.25, h: 1.25 },
+      { type: 'ingredients', x: 0, y: 6.8, w: 3.6, h: 3.2 },
+      { type: 'instructions', x: 3.9, y: 6.8, w: 3.6, h: 3.2 },
+    ],
+  },
+};
+
+const layer = document.getElementById('page-inner');
+const presetsEl = document.getElementById('presets');
+
+Object.entries(PRESETS).forEach(([name, preset]) => {
+  const btn = document.createElement('button');
+  btn.className = 'preset-btn';
+  btn.textContent = name;
+  btn.onclick = () => loadPreset(preset);
+  presetsEl.appendChild(btn);
+});
+
+let currentPreset = null;
+
+function isVisible(box) {
+  if (box.type === 'image') return state.imageVisible;
+  if (box.type === 'notes') return state.notesVisible;
+  return true;
+}
+
+function loadPreset(preset) {
+  currentPreset = preset;
+  layer.innerHTML = '';
+  state.imageVisible = preset.imageVisible !== false;
+  state.notesVisible = preset.notesVisible !== false;
+  document.getElementById('opt-show-image').checked = state.imageVisible;
+  document.getElementById('opt-show-notes').checked = state.notesVisible;
+  // id = type: exactly one persistent frame per block type, always present in
+  // state.boxes even when hidden, so re-showing a frame restores its position.
+  // QR width/height are forced to QR_SIZE_IN regardless of what the preset says -
+  // its size is locked, not a preset detail.
+  state.boxes = preset.boxes.map((d) => {
+    const box = { id: d.type, ...d };
+    if (box.type === 'qr') { box.w = QR_SIZE_IN; box.h = QR_SIZE_IN; }
+    return box;
+  });
+  state.selectedId = null;
+  rebuildCanvas();
+  updatePrompt();
+}
+
+function rebuildCanvas() {
+  layer.innerHTML = '';
+  state.boxes.forEach((box) => { if (isVisible(box)) createBoxEl(box); });
+  renderColumnGuides();
+  if (state.selectedId != null && !isVisible(getBox(state.selectedId))) selectBox(null);
+  else selectBox(state.selectedId);
+}
+
+document.getElementById('opt-show-image').onchange = (e) => { state.imageVisible = e.target.checked; rebuildCanvas(); updatePrompt(); };
+document.getElementById('opt-show-notes').onchange = (e) => { state.notesVisible = e.target.checked; rebuildCanvas(); updatePrompt(); };
+
+function boxContentHTML(box) {
+  const key = box.type;
+  if (key === 'title') return `<div class="blk-title"><h2>${DUMMY.title}</h2></div>`;
+  if (key === 'image') return `<div class="blk-image">recipe photo</div>`;
+  if (key === 'ingredients') {
+    const items = DUMMY.ingredients.map(([qty, secondary, name]) => `<li class="ingredient-item">
+        <div class="ingredient-qty">
+          <div class="qty-primary">${qty}</div>${secondary ? `<div class="qty-secondary">${secondary}</div>` : ''}
+        </div>
+        <div class="ingredient-name">${name}</div>
+      </li>`).join('');
+    const textAlign = state.ingQtyAlign === 'inline' ? 'right' : state.ingQtyAlign;
+    return `<div class="blk-ingredients" data-qty-align="${state.ingQtyAlign}" style="--ing-qty-align:${textAlign}">
+        <h3>Ingredients</h3>
+        <ul class="ing-list" style="column-count:${state.ingCols}">${items}</ul>
+      </div>`;
+  }
+  if (key === 'instructions') {
+    const steps = DUMMY.steps.map((s, i) => `<div class="step"><span class="num">${String(i + 1).padStart(2, '0')}</span><p>${s}</p></div>`).join('');
+    return `<div class="blk-instructions"><h3>Instructions</h3>${steps}</div>`;
+  }
+  if (key === 'notes') return `<div class="blk-notes ${state.notesBoxed ? '' : 'plain'}"><h3>Chef's Notes</h3><p>${DUMMY.notes}</p></div>`;
+  if (key === 'qr') {
+    return `<div class="blk-qr">
+        <p class="qr-header">Copy Ingredients</p>
+        <div class="qr-box"></div>
+        ${state.qrCaption ? '<p class="qr-cap">Scan for shopping list</p>' : ''}
+      </div>`;
+  }
+  return '';
+}
+
+function createBoxEl(box) {
+  const el = document.createElement('div');
+  el.className = 'box';
+  el.dataset.id = box.id;
+  syncBoxStyle(el, box);
+  el.innerHTML = `<span class="box-label" style="background:${BLOCK_DEFS[box.type].color}">${BLOCK_DEFS[box.type].label}</span>${boxContentHTML(box)}`;
+  el.addEventListener('mousedown', () => selectBox(box.id));
+  layer.appendChild(el);
+  attachInteract(el);
+}
+
+function syncBoxStyle(el, box) {
+  el.style.left = box.x * IN + 'px';
+  el.style.top = box.y * IN + 'px';
+  el.style.width = box.w * IN + 'px';
+  el.style.height = box.h * IN + 'px';
+  el.style.borderColor = BLOCK_DEFS[box.type].color;
+  el.style.background = box.type === 'image' || box.type === 'qr' ? '#fff' : BLOCK_DEFS[box.type].color + '14';
+}
+
+function getBox(id) { return state.boxes.find((b) => b.id === id); }
+function getEl(id) { return layer.querySelector(`.box[data-id="${id}"]`); }
+
+// ---------- selection & properties ----------
+function selectBox(id) {
+  state.selectedId = id;
+  layer.querySelectorAll('.box').forEach((el) => el.classList.toggle('selected', el.dataset.id === id));
+  const panel = document.getElementById('props-panel');
+  const empty = document.getElementById('props-empty');
+  if (id == null) { panel.style.display = 'none'; empty.style.display = 'block'; return; }
+  const box = getBox(id);
+  panel.style.display = 'block';
+  empty.style.display = 'none';
+  document.getElementById('props-type').innerHTML = `<span class="place-swatch" style="background:${BLOCK_DEFS[box.type].color}"></span>${BLOCK_DEFS[box.type].label}`;
+  document.getElementById('prop-x').value = box.x.toFixed(2);
+  document.getElementById('prop-y').value = box.y.toFixed(2);
+  document.getElementById('prop-w').value = box.w.toFixed(2);
+  document.getElementById('prop-h').value = box.h.toFixed(2);
+  document.getElementById('prop-w').disabled = box.type === 'qr';
+  document.getElementById('prop-h').disabled = box.type === 'qr';
+  renderTypeOptions(box);
+}
+
+function renderTypeOptions(box) {
+  const wrap = document.getElementById('props-type-options');
+  wrap.innerHTML = '';
+  if (box.type === 'image') {
+    wrap.innerHTML = `<div class="field"><label>Aspect ratio</label><select id="opt-aspect">
+      <option value="auto">Auto</option><option value="4:3">4:3</option><option value="1:1">1:1</option>
+      <option value="3:4">3:4</option><option value="16:9">16:9</option></select></div>`;
+    wrap.querySelector('#opt-aspect').value = state.aspect;
+    wrap.querySelector('#opt-aspect').onchange = (e) => { state.aspect = e.target.value; updatePrompt(); };
+  } else if (box.type === 'ingredients') {
+    wrap.innerHTML = `<div class="field"><label>Columns</label><select id="opt-ing-cols">
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+      </select></div>
+      <div class="field"><label>Qty alignment</label><select id="opt-ing-qty-align">
+        <option value="left">Left</option><option value="right">Right</option><option value="inline">Inline</option>
+      </select></div>`;
+    wrap.querySelector('#opt-ing-cols').value = state.ingCols;
+    wrap.querySelector('#opt-ing-cols').onchange = (e) => { state.ingCols = e.target.value; refreshAllContent(); };
+    wrap.querySelector('#opt-ing-qty-align').value = state.ingQtyAlign;
+    wrap.querySelector('#opt-ing-qty-align').onchange = (e) => { state.ingQtyAlign = e.target.value; refreshAllContent(); };
+  } else if (box.type === 'notes') {
+    wrap.innerHTML = `<div class="toggle-row"><input type="checkbox" id="opt-notes-boxed" ${state.notesBoxed ? 'checked' : ''}/><label for="opt-notes-boxed">Boxed background</label></div>`;
+    wrap.querySelector('#opt-notes-boxed').onchange = (e) => { state.notesBoxed = e.target.checked; refreshAllContent(); };
+  } else if (box.type === 'qr') {
+    wrap.innerHTML = `<p style="font-size:11.5px;color:var(--ui-text-dim);margin:0 0 8px;">Size locked to ${QR_SIZE_IN}in x ${QR_SIZE_IN}in - matches the fixed SVG dimensions RecipeQRCode.vue stamps at render time. Drag to reposition, can't resize.</p>
+      <div class="toggle-row"><input type="checkbox" id="opt-qr-caption" ${state.qrCaption ? 'checked' : ''}/><label for="opt-qr-caption">Show caption</label></div>`;
+    wrap.querySelector('#opt-qr-caption').onchange = (e) => { state.qrCaption = e.target.checked; refreshAllContent(); };
+  }
+}
+
+function refreshAllContent() {
+  state.boxes.forEach((box) => {
+    const el = getEl(box.id);
+    if (el) {
+      const label = el.querySelector('.box-label').outerHTML;
+      el.innerHTML = label + boxContentHTML(box);
+    }
+  });
+  updatePrompt();
+}
+
+['prop-x', 'prop-y', 'prop-w', 'prop-h'].forEach((id) => {
+  document.getElementById(id).addEventListener('change', () => {
+    const box = getBox(state.selectedId);
+    if (!box) return;
+    box.x = clamp(parseFloat(document.getElementById('prop-x').value) || 0, 0, PAGE_W_IN - box.w);
+    box.y = clamp(parseFloat(document.getElementById('prop-y').value) || 0, 0, PAGE_H_IN - box.h);
+    box.w = Math.max(0.3, parseFloat(document.getElementById('prop-w').value) || box.w);
+    box.h = Math.max(0.3, parseFloat(document.getElementById('prop-h').value) || box.h);
+    syncBoxStyle(getEl(box.id), box);
+    selectBox(box.id);
+    updatePrompt();
+  });
+});
+
+layer.addEventListener('mousedown', (e) => { if (e.target === layer) selectBox(null); });
+document.getElementById('page-margin-hint').addEventListener('mousedown', () => selectBox(null));
+
+document.getElementById('opt-smart-guides').onchange = (e) => { state.smartGuides = e.target.checked; };
+document.getElementById('reset-btn').onclick = () => { if (currentPreset) loadPreset(currentPreset); };
+document.getElementById('copy-btn').onclick = () => {
+  navigator.clipboard.writeText(document.getElementById('prompt-box').textContent).then(() => {
+    const btn = document.getElementById('copy-btn');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1200);
+  });
+};
+
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+// ---------- column grid ----------
+function colWidthPx() {
+  const gutterPx = state.gutterIn * IN;
+  return (PAGE_W - gutterPx * (state.cols - 1)) / state.cols;
+}
+// px position of the start of column i (0-based), i can be 0..cols (cols = right page edge)
+function colLinePx(i) {
+  const cw = colWidthPx();
+  const gutterPx = state.gutterIn * IN;
+  return i * (cw + gutterPx);
+}
+// all distinct snap-worthy x positions: every column's left edge and right edge
+function columnSnapTargets() {
+  const cw = colWidthPx();
+  const targets = new Set([0, PAGE_W]);
+  for (let i = 0; i < state.cols; i++) {
+    const start = colLinePx(i);
+    targets.add(Math.round(start));
+    targets.add(Math.round(start + cw));
+  }
+  return Array.from(targets);
+}
+// nearest column boundary index (0..cols) for a given px position - used for reporting, not just snapping
+function nearestColIndex(px) {
+  const cw = colWidthPx();
+  const gutterPx = state.gutterIn * IN;
+  return clamp(Math.round(px / (cw + gutterPx)), 0, state.cols);
+}
+
+let colGuideEls = [];
+function renderColumnGuides() {
+  colGuideEls.forEach((g) => g.remove());
+  colGuideEls = [];
+  if (!state.showColumns) return;
+  const cw = colWidthPx();
+  for (let i = 0; i < state.cols; i++) {
+    const start = colLinePx(i);
+    [start, start + cw].forEach((x) => {
+      const g = document.createElement('div');
+      g.className = 'guide-line v';
+      g.style.left = x + 'px';
+      g.style.background = 'rgba(60,130,246,0.3)';
+      g.style.zIndex = 1;
+      layer.appendChild(g);
+      colGuideEls.push(g);
+    });
+  }
+}
+
+document.getElementById('opt-cols').onchange = (e) => { state.cols = Math.max(1, parseInt(e.target.value, 10) || 12); renderColumnGuides(); updatePrompt(); };
+document.getElementById('opt-gutter').onchange = (e) => { state.gutterIn = Math.max(0, parseFloat(e.target.value) || 0); renderColumnGuides(); updatePrompt(); };
+document.getElementById('opt-show-columns').onchange = (e) => { state.showColumns = e.target.checked; renderColumnGuides(); };
+
+// ---------- smart guides / snapping ----------
+let guideEls = [];
+function clearGuides() { guideEls.forEach((g) => g.remove()); guideEls = []; }
+function drawGuide(orientation, pos) {
+  const g = document.createElement('div');
+  g.className = 'guide-line ' + orientation;
+  if (orientation === 'v') g.style.left = pos + 'px';
+  else g.style.top = pos + 'px';
+  layer.appendChild(g);
+  guideEls.push(g);
+}
+
+function snapEdges(id, left, top, w, h) {
+  clearGuides();
+  let snappedLeft = left, snappedTop = top;
+  const guides = [];
+
+  if (state.smartGuides) {
+    // Edges only (no center-alignment matching) - with 6 persistent frames plus
+    // a full column grid, adding center points roughly triples the target count
+    // and made snapping trigger almost everywhere. Edges are also what people
+    // actually look at when aligning boxes.
+    const xTargets = columnSnapTargets();
+    const yTargets = [0, PAGE_H];
+    state.boxes.forEach((b) => {
+      if (b.id === id || !isVisible(b)) return;
+      xTargets.push(b.x * IN, (b.x + b.w) * IN);
+      yTargets.push(b.y * IN, (b.y + b.h) * IN);
+    });
+    const myXs = [left, left + w];
+    const myYs = [top, top + h];
+    let bestX = null, bestXDelta = SNAP_TOL + 1;
+    myXs.forEach((mx, i) => xTargets.forEach((tx) => {
+      const d = Math.abs(mx - tx);
+      if (d < bestXDelta) { bestXDelta = d; bestX = { edge: i, target: tx }; }
+    }));
+    if (bestX) {
+      snappedLeft = bestX.target - (bestX.edge === 0 ? 0 : w);
+      guides.push(['v', bestX.target]);
+    }
+    let bestY = null, bestYDelta = SNAP_TOL + 1;
+    myYs.forEach((my, i) => yTargets.forEach((ty) => {
+      const d = Math.abs(my - ty);
+      if (d < bestYDelta) { bestYDelta = d; bestY = { edge: i, target: ty }; }
+    }));
+    if (bestY) {
+      snappedTop = bestY.target - (bestY.edge === 0 ? 0 : h);
+      guides.push(['h', bestY.target]);
+    }
+  }
+
+  guides.forEach(([o, p]) => drawGuide(o, p));
+  return { left: clamp(snappedLeft, 0, PAGE_W - w), top: clamp(snappedTop, 0, PAGE_H - h) };
+}
+
+function snapSize(w, h) {
+  if (!state.smartGuides) return { w, h };
+  const rw = Math.round(w / GRID_STEP) * GRID_STEP;
+  const rh = Math.round(h / GRID_STEP) * GRID_STEP;
+  return {
+    w: Math.abs(rw - w) <= SNAP_TOL ? rw : w,
+    h: Math.abs(rh - h) <= SNAP_TOL ? rh : h,
+  };
+}
+
+// ---------- interact.js wiring ----------
+function attachInteract(el) {
+  const isQr = el.dataset.id === 'qr';
+  const interactable = interact(el)
+    .draggable({
+      listeners: {
+        start() {
+          document.body.classList.add('no-select');
+        },
+        move(event) {
+          const id = event.target.dataset.id;
+          let left = parseFloat(event.target.style.left) + event.dx;
+          let top = parseFloat(event.target.style.top) + event.dy;
+          const w = parseFloat(event.target.style.width);
+          const h = parseFloat(event.target.style.height);
+          const snapped = snapEdges(id, left, top, w, h);
+          event.target.style.left = snapped.left + 'px';
+          event.target.style.top = snapped.top + 'px';
+          const box = getBox(id);
+          box.x = snapped.left / IN;
+          box.y = snapped.top / IN;
+        },
+        end(event) {
+          document.body.classList.remove('no-select');
+          clearGuides();
+          if (event.target.dataset.id === state.selectedId) selectBox(state.selectedId);
+          updatePrompt();
+        },
+      },
+      modifiers: [interact.modifiers.restrictRect({ restriction: 'parent', endOnly: false })],
+    });
+  // QR's footprint is locked to QR_SIZE_IN (see the constant's comment) - drag-only, no resize handles.
+  if (isQr) return;
+  interactable.resizable({
+      edges: { left: true, right: true, top: true, bottom: true },
+      margin: 8,
+      listeners: {
+        start() {
+          document.body.classList.add('no-select');
+        },
+        move(event) {
+          const id = event.target.dataset.id;
+          let left = parseFloat(event.target.style.left) + event.deltaRect.left;
+          let top = parseFloat(event.target.style.top) + event.deltaRect.top;
+          const sized = snapSize(event.rect.width, event.rect.height);
+          left = clamp(left, 0, PAGE_W - sized.w);
+          top = clamp(top, 0, PAGE_H - sized.h);
+          event.target.style.left = left + 'px';
+          event.target.style.top = top + 'px';
+          event.target.style.width = sized.w + 'px';
+          event.target.style.height = sized.h + 'px';
+          const box = getBox(id);
+          box.x = left / IN; box.y = top / IN; box.w = sized.w / IN; box.h = sized.h / IN;
+        },
+        end(event) {
+          document.body.classList.remove('no-select');
+          const id = event.target.dataset.id;
+          const box = getBox(id);
+          refreshAllContent();
+          if (id === state.selectedId) selectBox(id);
+        },
+      },
+      modifiers: [
+        interact.modifiers.restrictEdges({ outer: 'parent' }),
+        interact.modifiers.restrictSize({ min: { width: 60, height: 40 } }),
+      ],
+    });
+}
+
+// ---------- prompt output ----------
+function generateCSS() {
+  return state.boxes.filter(isVisible).map((b) => {
+    return `.blk-${b.type} {\n  position: absolute;\n  left: ${b.x.toFixed(2)}in;\n  top: ${b.y.toFixed(2)}in;\n  width: ${b.w.toFixed(2)}in;\n  height: ${b.h.toFixed(2)}in;\n}`;
+  }).join('\n');
+}
+
+function updatePrompt() {
+  const lines = [];
+  lines.push(`Rough layout sketch for a new recipe layout component (src/components/RecipeLayout<Name>.vue) — treat the exact numbers below as approximate intent, not a spec to copy literally; use judgment on the real implementation. Background guide: ${state.cols}-column grid with ${state.gutterIn.toFixed(2)}in gutters, inside the standard 7.5in x 10in content area (0.5in page margins).`);
+  const order = [...state.boxes].filter(isVisible).sort((a, b) => a.y - b.y || a.x - b.x);
+  order.forEach((b) => {
+    let extra = '';
+    if (b.type === 'image' && state.aspect !== 'auto') extra = `, aspect ratio ${state.aspect}`;
+    if (b.type === 'ingredients') extra = `, ${state.ingCols} column${state.ingCols === '1' ? '' : 's'}, qty alignment: ${state.ingQtyAlign}`;
+    if (b.type === 'notes') extra = state.notesBoxed ? ', boxed background (surface-container-low + outline-variant border)' : ', plain (no box)';
+    if (b.type === 'qr') extra = `${state.qrCaption ? ', caption visible' : ', caption hidden'}, size fixed at ${QR_SIZE_IN}in x ${QR_SIZE_IN}in (do not resize - RecipeQRCode.vue stamps its SVG at this exact size)`;
+    const colStart = nearestColIndex(b.x * IN) + 1;
+    const colEnd = nearestColIndex((b.x + b.w) * IN);
+    lines.push(`- ${BLOCK_DEFS[b.type].label}: columns ${colStart}-${colEnd} of ${state.cols} (~left ${b.x.toFixed(2)}in, top ${b.y.toFixed(2)}in, width ${b.w.toFixed(2)}in, height ${b.h.toFixed(2)}in)${extra}`);
+  });
+  if (!state.imageVisible) lines.push(`- Image: hidden in this sketch (no photo for this recipe / this layout doesn't use one).`);
+  if (!state.notesVisible) lines.push(`- Chef's Notes: hidden in this sketch (no notes for this recipe).`);
+  lines.push(`QR code is always its own standalone frame here, NOT nested inside RecipeIngredients like it is today (RecipeIngredients.vue's <li class="qr-item">) — pull RecipeQRCode out so it's a sibling of RecipeIngredients/RecipeImage/RecipeNotes, and drop the qr-item usage from RecipeIngredients.vue if this becomes the layout of record.`);
+  lines.push(`Reuse the existing RecipeTitle / RecipeImage / RecipeIngredients / RecipeInstructions / RecipeNotes / RecipeQRCode subcomponents as-is; only the positioning wrapper is new. Register the new component in RecipeSheet.vue's LAYOUT_COMPONENTS map.`);
+  lines.push('');
+  lines.push('Reference CSS (absolute positions, inches):');
+  lines.push(generateCSS());
+  document.getElementById('prompt-box').textContent = lines.join('\n');
+}
+
+loadPreset(PRESETS['CURRENT: Hero Split Balanced']);
+</script>
+</body>
+</html>

@@ -1,8 +1,9 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useProjectsStore } from '../stores/projects'
 import { useRecipesStore } from '../stores/recipes'
 import { buildChapterPlan, layoutBookPages } from '../js/compileBook'
+import { measureTocLayout } from '../js/tocLayout'
 import PagePreview from '../components/PagePreview.vue'
 import PrintToolbar from '../components/PrintToolbar.vue'
 import CoverPage from '../components/CoverPage.vue'
@@ -42,13 +43,37 @@ const showToc = computed(() => Boolean(project.value?.pageNumbersEnabled))
 const doubleSided = computed(() => Boolean(project.value?.doubleSidedEnabled))
 const chaptersById = computed(() => new Map(chapterPlan.value.map((e) => [e.chapter.id, e.chapter])))
 
+// The table of contents can span more than one physical page, and how many
+// it needs depends on real rendered row heights (title wrapping) that only
+// exist after a DOM mount - see tocLayout.js's measureTocLayout. Every
+// chapter/recipe page number below depends on that count, so this can't be
+// a plain synchronous computed; the template gates all page rendering on
+// `tocReady` so a stale/undercounted TOC page count is never shown, even
+// briefly. `tocMeasureToken` drops the result of a superseded async run if
+// the chapter plan changes again before a previous measurement resolves.
+const tocPages = ref([])
+const tocReady = ref(false)
+let tocMeasureToken = 0
+watch(
+  [chapterPlan, showToc],
+  async ([plan, enabled]) => {
+    const token = ++tocMeasureToken
+    tocReady.value = false
+    const pages = enabled ? (await measureTocLayout(plan)).pages : []
+    if (token !== tocMeasureToken) return
+    tocPages.value = pages
+    tocReady.value = true
+  },
+  { immediate: true },
+)
+
 // Numbering begins at 1 on the first chapter divider (the Title Page and
 // Table of Contents are unnumbered front matter, per print-and-export
 // spec's "System Print Integration" requirement) - null when the project
 // has page numbers toggled off entirely. Also drives blank-page insertion
 // for recto-forced TOC/chapter starts when double-sided printing is on.
 const bookLayout = computed(() =>
-  layoutBookPages(chapterPlan.value, { doubleSided: doubleSided.value, showToc: showToc.value }),
+  layoutBookPages(chapterPlan.value, { doubleSided: doubleSided.value, tocPageCount: tocPages.value.length }),
 )
 const pageNumbers = computed(() =>
   showToc.value ? { dividerPages: bookLayout.value.dividerPages, recipePages: bookLayout.value.recipePages } : null,
@@ -91,12 +116,14 @@ onBeforeUnmount(() => gutterStyleEl?.remove())
   <div v-if="project" class="print-project" :class="{ 'print-project--double-sided': doubleSided }">
     <PrintToolbar :title="`Print Preview: ${project.title}`" @print="printPage" />
 
+    <p v-if="!tocReady" class="print-project__preparing">Preparing print preview…</p>
+
     <!-- Dedicated wrapper so every `.page-preview` sibling's nth-of-type
          position among *this* parent's children is exactly its physical
          page position - PrintToolbar (and anything else outside this
          wrapper) renders its own root <div>, which would otherwise count
          toward the same "div" nth-of-type sequence and throw off parity. -->
-    <div class="print-project__pages">
+    <div v-else class="print-project__pages">
       <PagePreview>
         <CoverPage :project="project" />
       </PagePreview>
@@ -104,9 +131,10 @@ onBeforeUnmount(() => gutterStyleEl?.remove())
       <template v-for="entry in bookLayout.pages" :key="`${entry.type}-${entry.page}`">
         <PagePreview v-if="entry.type === 'blank'" />
 
-        <PagePreview v-else-if="entry.type === 'toc'">
+        <PagePreview v-else-if="entry.type === 'toc'" hide-overflow-warning>
           <TableOfContentsPage
-            :chapters="chapterPlan"
+            :rows="tocPages[entry.tocPageIndex].rows"
+            :show-heading="entry.tocPageIndex === 0"
             :page-numbers="pageNumbers"
             :accent-color="project.accentColor"
           />
@@ -131,6 +159,12 @@ onBeforeUnmount(() => gutterStyleEl?.remove())
 </template>
 
 <style scoped>
+.print-project__preparing {
+  text-align: center;
+  padding: var(--space-xl, 3rem) 0;
+  color: var(--gray-46, #757575);
+}
+
 /* PagePreview itself carries no inter-page spacing (a single preview,
    e.g. RecipePreviewDialog, shouldn't have to cancel out a margin it
    never wanted). This view stacks many pages on screen, so it owns the

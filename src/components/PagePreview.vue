@@ -9,6 +9,15 @@ defineProps({
     type: Number,
     default: null,
   },
+  // TOC pages are intentionally packed to fill their column height as
+  // closely as possible (see tocLayout.js's measureTocLayout), which can
+  // trip this component's own overflow heuristic right at the boundary -
+  // a false positive there, not a real clipping bug, so ProjectPrint.vue
+  // sets this for every TOC page.
+  hideOverflowWarning: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 // Fixed page height clips overflowing content with no other visual sign
@@ -47,7 +56,7 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <span v-if="pageNumber != null" class="page-preview__page-number">{{ pageNumber }}</span>
-    <p v-if="isOverflowing" class="page-preview__overflow-warning" role="status">
+    <p v-if="isOverflowing && !hideOverflowWarning" class="page-preview__overflow-warning" role="status">
       Content is taller than one page and may be clipped or split across pages when printed
     </p>
   </div>

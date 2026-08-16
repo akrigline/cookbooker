@@ -57,7 +57,7 @@ describe('layoutBookPages', () => {
   it('numbers divider and recipe pages sequentially starting at 1 when single-sided', () => {
     const { dividerPages, recipePages, pages } = layoutBookPages(twoChapterPlan, {
       doubleSided: false,
-      showToc: false,
+      tocPageCount: 0,
     })
 
     expect(dividerPages.get(11)).toBe(1)
@@ -71,7 +71,7 @@ describe('layoutBookPages', () => {
   it('returns empty maps and no pages for an empty plan', () => {
     const { dividerPages, recipePages, pages } = layoutBookPages([], {
       doubleSided: false,
-      showToc: false,
+      tocPageCount: 0,
     })
     expect(dividerPages.size).toBe(0)
     expect(recipePages.size).toBe(0)
@@ -81,7 +81,7 @@ describe('layoutBookPages', () => {
   it('places an unnumbered TOC page directly after the Title Page when single-sided', () => {
     const { pages, dividerPages } = layoutBookPages(twoChapterPlan, {
       doubleSided: false,
-      showToc: true,
+      tocPageCount: 1,
     })
 
     expect(pages[0]).toMatchObject({ type: 'toc', printedNumber: null })
@@ -93,7 +93,7 @@ describe('layoutBookPages', () => {
   it('inserts a blank page before the TOC and again before a chapter landing on a verso page, silently consuming number slots', () => {
     const { pages, dividerPages, recipePages } = layoutBookPages(twoChapterPlan, {
       doubleSided: true,
-      showToc: true,
+      tocPageCount: 1,
     })
 
     expect(pages.map((p) => p.type)).toEqual([
@@ -121,7 +121,7 @@ describe('layoutBookPages', () => {
   it('still forces a recto start for the first chapter when double-sided and page numbers are off (no TOC)', () => {
     const { pages, dividerPages } = layoutBookPages(twoChapterPlan, {
       doubleSided: true,
-      showToc: false,
+      tocPageCount: 0,
     })
 
     expect(pages[0]).toMatchObject({ type: 'blank' })
@@ -134,7 +134,24 @@ describe('layoutBookPages', () => {
       { chapter: { id: 20, name: 'One' }, recipes: [] },
       { chapter: { id: 21, name: 'Two' }, recipes: [{ id: 1, title: 'X' }] },
     ]
-    const { pages } = layoutBookPages(oddChapterPlan, { doubleSided: false, showToc: true })
+    const { pages } = layoutBookPages(oddChapterPlan, { doubleSided: false, tocPageCount: 1 })
     expect(pages.every((p) => p.type !== 'blank')).toBe(true)
+  })
+
+  it('shifts divider/recipe numbering by however many TOC pages were actually needed', () => {
+    const { pages, dividerPages, recipePages } = layoutBookPages(twoChapterPlan, {
+      doubleSided: false,
+      tocPageCount: 3,
+    })
+
+    expect(pages.slice(0, 3).map((p) => p.type)).toEqual(['toc', 'toc', 'toc'])
+    expect(pages.slice(0, 3).map((p) => p.tocPageIndex)).toEqual([0, 1, 2])
+    expect(dividerPages.get(11)).toBe(1)
+    expect(recipePages.get('11:1')).toBe(2)
+    expect(recipePages.get('11:2')).toBe(3)
+    expect(dividerPages.get(12)).toBe(4)
+    expect(recipePages.get('12:3')).toBe(5)
+    // Physical pages: Title(1), toc(2,3,4), divider(5), recipe(6,7), divider(8), recipe(9).
+    expect(pages.find((p) => p.chapterId === 11 && p.type === 'divider').page).toBe(5)
   })
 })

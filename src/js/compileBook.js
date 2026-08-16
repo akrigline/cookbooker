@@ -51,8 +51,17 @@ export function buildChapterPlan({ chapters, projectRecipes, recipesById, projec
  * chapter divider. A blank page still silently consumes a page-number slot
  * once numbering has started (keeping numbers in sync with true physical
  * position for anyone actually duplex-printing), but is never displayed.
+ *
+ * `tocPageCount` (from tocLayout.js's measureTocLayout, which knows how many
+ * physical pages the table of contents actually needs once real row heights
+ * are measured) replaces what used to be a single hardcoded TOC page - 0
+ * means no TOC/page numbers at all, N pushes N `toc` entries before divider
+ * numbering starts, so chapter/recipe page numbers always land correctly
+ * however long the TOC runs. Recto-forcing (double-sided) only applies
+ * before the first TOC page; the rest are already consecutive physical
+ * pages, the same way a chapter's recipe pages are.
  */
-export function layoutBookPages(chapterPlan, { doubleSided = false, showToc = false } = {}) {
+export function layoutBookPages(chapterPlan, { doubleSided = false, tocPageCount = 0 } = {}) {
   const pages = []
   const dividerPages = new Map()
   const recipePages = new Map()
@@ -75,10 +84,12 @@ export function layoutBookPages(chapterPlan, { doubleSided = false, showToc = fa
     if (doubleSided && wouldLandOnVerso()) pushBlank()
   }
 
-  if (showToc) {
+  if (tocPageCount > 0) {
     forceRecto()
-    physicalPage++
-    pages.push({ type: 'toc', page: physicalPage, printedNumber: null })
+    for (let i = 0; i < tocPageCount; i++) {
+      physicalPage++
+      pages.push({ type: 'toc', page: physicalPage, printedNumber: null, tocPageIndex: i })
+    }
   }
 
   for (const { chapter, recipes } of chapterPlan) {

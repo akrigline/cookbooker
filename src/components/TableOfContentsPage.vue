@@ -1,12 +1,27 @@
 <script setup>
+import TocChapterRow from './TocChapterRow.vue'
+import TocRecipeRow from './TocRecipeRow.vue'
+
 defineProps({
-  chapters: {
-    // [{ chapter, recipes: [recipe, ...] }]
+  // Flat, ordered row descriptors ({ type: 'chapter', chapter } |
+  // { type: 'recipe', chapter, recipe }) for THIS physical TOC page, as
+  // produced by tocLayout.js's measureTocLayout. A long table of contents
+  // spans several of these pages - one TableOfContentsPage instance per
+  // page, each getting only the rows real CSS column-fill layout measured
+  // as fitting on it. The actual 2-column split within a page is real CSS
+  // (`.toc-rows`'s `columns: 2; column-fill: auto`), not pre-split arrays.
+  rows: {
     type: Array,
     required: true,
   },
+  // Only the first TOC page shows the "Table of Contents" heading;
+  // continuation pages skip it so their rows get the full page height.
+  showHeading: {
+    type: Boolean,
+    default: true,
+  },
   // { dividerPages: Map<chapterId, number>, recipePages: Map<"chapterId:recipeId", number> }
-  // from compileBook.js's assignPageNumbers, or null when the project has
+  // from compileBook.js's layoutBookPages, or null when the project has
   // page numbers toggled off.
   pageNumbers: {
     type: Object,
@@ -21,27 +36,24 @@ defineProps({
 
 <template>
   <div class="toc-page" :style="{ '--toc-accent': accentColor }">
-    <h2>Table of Contents</h2>
-    <ol class="toc-chapters">
-      <li v-for="entry in chapters" :key="entry.chapter.id">
-        <span class="toc-chapter-name">
-          <span class="toc-title">{{ entry.chapter.name }}</span>
-          <span v-if="pageNumbers" class="toc-leader" aria-hidden="true"></span>
-          <span v-if="pageNumbers" class="toc-page-number">{{
-            pageNumbers.dividerPages.get(entry.chapter.id)
-          }}</span>
-        </span>
-        <ul class="toc-recipes">
-          <li v-for="recipe in entry.recipes" :key="recipe.id">
-            <span class="toc-title">{{ recipe.title }}</span>
-            <span v-if="pageNumbers" class="toc-leader" aria-hidden="true"></span>
-            <span v-if="pageNumbers" class="toc-page-number">{{
-              pageNumbers.recipePages.get(`${entry.chapter.id}:${recipe.id}`)
-            }}</span>
-          </li>
-        </ul>
-      </li>
-    </ol>
+    <h2 v-if="showHeading">Table of Contents</h2>
+    <ul class="toc-rows" :class="{ 'toc-rows--with-heading': showHeading }">
+      <component
+        :is="row.type === 'chapter' ? TocChapterRow : TocRecipeRow"
+        v-for="row in rows"
+        :key="row.type === 'chapter' ? `c${row.chapter.id}` : `r${row.recipe.id}`"
+        :title="row.type === 'chapter' ? row.chapter.name : row.recipe.title"
+        :page-number="
+          row.type === 'chapter'
+            ? pageNumbers
+              ? pageNumbers.dividerPages.get(row.chapter.id)
+              : null
+            : pageNumbers
+              ? pageNumbers.recipePages.get(`${row.chapter.id}:${row.recipe.id}`)
+              : null
+        "
+      />
+    </ul>
   </div>
 </template>
 
@@ -53,57 +65,26 @@ defineProps({
 }
 
 .toc-page h2 {
-  margin-top: 0;
+  margin: 0 0 var(--space-lg) 0;
   color: var(--toc-accent);
   border-bottom: 3px solid var(--toc-accent);
   padding-bottom: var(--space-sm);
 }
 
-.toc-chapters {
+.toc-rows {
+  height: 100%;
+  columns: 2;
+  column-fill: auto;
+  column-gap: var(--space-lg);
   list-style: none;
-  margin: var(--space-lg) 0 0;
+  margin: 0;
   padding: 0;
 }
 
-.toc-chapters > li {
-  margin-bottom: var(--space-md);
-}
-
-.toc-chapter-name {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--space-xs);
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--toc-accent);
-}
-
-.toc-recipes {
-  list-style: none;
-  margin: var(--space-xs) 0 0;
-  padding-left: var(--space-md);
-}
-
-.toc-recipes li {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--space-xs);
-  padding: 2px 0;
-}
-
-.toc-title {
-  flex: 0 0 auto;
-}
-
-.toc-leader {
-  flex: 1 1 auto;
-  border-bottom: 1px dotted currentColor;
-  margin-bottom: 3px;
-  opacity: 0.5;
-}
-
-.toc-page-number {
-  flex: 0 0 auto;
-  text-align: right;
+/* Leaves room for the "Table of Contents" heading above it, which only
+   page 1 renders - see tocLayout.js for why this is a plain constant
+   rather than a JS-measured heading height. */
+.toc-rows--with-heading {
+  height: calc(100% - 60px);
 }
 </style>
