@@ -340,7 +340,7 @@ function dropLineBelow(pr) {
   background: var(--ink-93);
   border: 1px solid var(--ink-84);
   padding: 2px 8px;
-  border-radius: 99px;
+  border-radius: 999px;
   white-space: nowrap;
 }
 

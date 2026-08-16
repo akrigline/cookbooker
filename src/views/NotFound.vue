@@ -11,7 +11,7 @@ defineProps({
   <main id="cm-main" class="cm-page-main cm-page-main--compact">
     <h1 class="text-page-title--compact">Not found</h1>
     <p style="margin:0 0 28px; font-size:15px; color:var(--ink-46); line-height:1.5;">{{ message }}</p>
-    <router-link to="/" class="btn-primary" style="display:inline-flex; align-items:center; background:var(--ink-20); color:var(--ink-99); border:none; border-radius:8px; padding:11px 20px; font-size:14px; font-weight:600; text-decoration:none;">
+    <router-link to="/" class="btn-primary" style="display:inline-flex; align-items:center; background:var(--ink-20); color:var(--ink-99); border:none; border-radius:8px; padding:10px 20px; font-size:14px; font-weight:600; text-decoration:none;">
       Back to Dashboard
     </router-link>
   </main>

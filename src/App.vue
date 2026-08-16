@@ -6,7 +6,7 @@ const showAbout = ref(false)
 </script>
 
 <template>
-  <div style="min-height:100vh; background:var(--ink-96); font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif; color:var(--ink-20);">
+  <div style="min-height:100vh; background:var(--ink-96); font-family:var(--font-main); color:var(--ink-20);">
     <a href="#cm-main" class="cm-skip-link" style="position:absolute; left:12px; top:-60px; transform:translateY(-100px); background:var(--ink-20); color:white; padding:10px 16px; border-radius:6px; z-index:100; text-decoration:none; font-size:14px; font-weight:600; transition:transform 0.15s;">Skip to main content</a>
     <header class="cm-app-chrome" style="border-bottom:1px solid var(--ink-88); background:var(--ink-99);">
       <div style="max-width:1280px; margin:0 auto; padding:16px 32px; display:flex; align-items:center; gap:28px; flex-wrap:wrap;">

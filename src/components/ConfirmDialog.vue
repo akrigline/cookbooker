@@ -71,9 +71,9 @@ const emit = defineEmits(['close', 'confirm'])
 .modal-btn--ghost:hover:not(:disabled) { background: var(--ink-88); }
 
 .modal-btn--danger {
-  background: oklch(45% 0.18 25);
+  background: var(--color-danger);
   color: var(--ink-99);
 }
 
-.modal-btn--danger:hover:not(:disabled) { background: oklch(38% 0.18 25); }
+.modal-btn--danger:hover:not(:disabled) { background: oklch(38% 0.14 25); }
 </style>

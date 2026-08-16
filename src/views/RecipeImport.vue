@@ -273,9 +273,9 @@ function handleCancelReview() {
 }
 
 .btn-secondary {
-  display:flex; align-items:center; gap:8px; background:none; color:var(--ink-20); border:1px solid var(--ink-84); border-radius:8px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer;
+  display:flex; align-items:center; gap:8px; background:var(--ink-93); color:var(--ink-20); border:1px solid var(--ink-84); border-radius:8px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer;
 }
-.btn-secondary:hover { background:var(--ink-93); }
+.btn-secondary:hover { background:var(--ink-88); }
 .btn-secondary:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
 
 .btn-primary {
@@ -286,9 +286,9 @@ function handleCancelReview() {
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-cancel {
-  padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--ink-84); background:none; cursor:pointer;
+  padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--ink-84); background:var(--ink-93); cursor:pointer;
 }
-.btn-cancel:hover { background:var(--ink-93); }
+.btn-cancel:hover { background:var(--ink-88); }
 .btn-cancel:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
 </style>
 

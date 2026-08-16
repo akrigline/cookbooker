@@ -147,7 +147,7 @@ async function confirmDelete() {
         <h2 id="cm-del-heading" class="text-h2">Delete "{{ deleteTarget.title }}"?</h2>
         <p id="cm-del-desc" style="margin:0 0 22px; font-size:14px; color:var(--ink-42); line-height:1.5;">This permanently removes the recipe from the Global Recipe Library and withdraws it from every cookbook that includes it. This can't be undone.</p>
         <div style="display:flex; justify-content:flex-end; gap:10px;">
-          <button type="button" @click="deleteTarget = null" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--ink-84); background:none; cursor:pointer;">Cancel</button>
+          <button type="button" @click="deleteTarget = null" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--ink-84); background:var(--ink-93); cursor:pointer;">Cancel</button>
           <button type="button" @click="confirmDelete" :disabled="deletingId === deleteTarget.id" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:var(--color-danger); color:white; cursor:pointer;">Delete permanently</button>
         </div>
       </div>
@@ -157,9 +157,9 @@ async function confirmDelete() {
 
 <style scoped>
 .btn-import {
-  display:flex; align-items:center; gap:8px; background:none; color:var(--ink-20); border:1px solid var(--ink-84); border-radius:8px; padding:12px 18px; font-size:15px; font-weight:600; cursor:pointer; text-decoration:none;
+  display:flex; align-items:center; gap:8px; background:var(--ink-93); color:var(--ink-20); border:1px solid var(--ink-84); border-radius:8px; padding:12px 18px; font-size:15px; font-weight:600; cursor:pointer; text-decoration:none;
 }
-.btn-import:hover { background:var(--ink-93); }
+.btn-import:hover { background:var(--ink-88); }
 .btn-import:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
 
 .btn-new {

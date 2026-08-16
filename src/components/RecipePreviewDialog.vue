@@ -9,10 +9,6 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  accentColor: {
-    type: String,
-    default: '#d97742',
-  },
   hasPrev: {
     type: Boolean,
     default: false,
@@ -78,7 +74,7 @@ onUnmounted(() => {
       </header>
       <div class="rpd-content">
         <PagePreview>
-          <RecipeSheet :recipe="recipe" :accent-color="accentColor" />
+          <RecipeSheet :recipe="recipe" />
         </PagePreview>
       </div>
     </div>

@@ -1,4 +1,6 @@
 <script setup>
+import { DEFAULT_ACCENT_COLOR } from '../js/templates'
+
 defineProps({
   project: {
     type: Object,
@@ -11,7 +13,7 @@ defineProps({
   <div
     class="cover-page"
     :class="`cover-page--${project.coverTemplate || 'classic'}`"
-    :style="{ '--cover-accent': project.accentColor || '#d97742' }"
+    :style="{ '--cover-accent': project.accentColor || DEFAULT_ACCENT_COLOR }"
   >
     <div class="cover-page__frame">
       <h2 class="cover-page__title">{{ project.title }}</h2>

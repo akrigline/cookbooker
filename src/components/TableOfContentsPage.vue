@@ -1,6 +1,7 @@
 <script setup>
 import TocChapterRow from './TocChapterRow.vue'
 import TocRecipeRow from './TocRecipeRow.vue'
+import { DEFAULT_ACCENT_COLOR } from '../js/templates'
 
 defineProps({
   // Flat, ordered row descriptors ({ type: 'chapter', chapter } |
@@ -29,7 +30,7 @@ defineProps({
   },
   accentColor: {
     type: String,
-    default: '#d97742',
+    default: DEFAULT_ACCENT_COLOR,
   },
 })
 </script>

@@ -29,10 +29,6 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  accentColor: {
-    type: String,
-    default: '#d97742',
-  },
   // Not required: undefined lets the app-wide default through. Kept as a prop
   // (rather than reading the store directly in the leaf) so a future
   // per-cookbook override stays a one-line change at call sites that hold a
@@ -55,7 +51,7 @@ const resolvedQtyAlign = computed(() => props.qtyAlign ?? settingsStore.ingredie
   <article
     class="recipe-sheet"
     :data-qty-align="resolvedQtyAlign"
-    :style="{ '--recipe-accent': accentColor, '--recipe-qty-align': resolvedQtyAlign }"
+    :style="{ '--recipe-qty-align': resolvedQtyAlign }"
   >
     <component :is="activeLayout" :recipe="recipe" />
   </article>
@@ -63,7 +59,6 @@ const resolvedQtyAlign = computed(() => props.qtyAlign ?? settingsStore.ingredie
 
 <style scoped>
 .recipe-sheet {
-  --recipe-accent: #d97742;
   background: var(--recipe-bg);
   color: var(--recipe-on-surface);
   position: relative;

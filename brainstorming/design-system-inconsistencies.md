@@ -3,91 +3,111 @@
 Plain resolve-later checklist, not a plan or spec — per `CLAUDE.md`, content under
 `brainstorming/` isn't authoritative and shouldn't be referenced unless a task specifically
 points here. Compiled 2026-08-16 while renaming `--gray-*` → `--ink-*`, finishing the
-literal-to-token color migration, and authoring the root `DESIGN.md`. Each item is a real,
-currently-shipped inconsistency found by inventorying the actual CSS across the app — none of
-these are fixed by that work; they're logged here for a future cleanup pass.
+literal-to-token color migration, and authoring the root `DESIGN.md`.
 
-- [ ] Three unrelated button class-naming schemes exist for the same functional
+Resolved 2026-08-16 via a 4-member Claude council (Architect/Skeptic/Pragmatist/Researcher,
+independent investigations) debating and cross-checking each item against the actual code — the
+council caught that several items' premises no longer matched the codebase (noted inline below).
+Fixed items are checked off; deferred items keep their original rationale plus why they were left.
+
+- [x] Three unrelated button class-naming schemes exist for the same functional
   primary/secondary/danger button: `modal-btn--*` (`ChapterNameModal.vue`, `ConfirmDialog.vue`,
   `EditCookbookModal.vue`), flat `btn-primary/secondary/danger` (`RecipeEditor.vue`,
   `Settings.vue`), and `btn-new/open/icon` (`Dashboard.vue`, `RecipeLibrary.vue`,
-  `ProjectView.vue`). Recommendation: consolidate onto one shared `Button`-style
-  component/class set once a component library is worth introducing.
+  `ProjectView.vue`). **Deferred** — unanimous council verdict: consolidating onto one shared
+  `Button` component is a real component-library effort (8+ files, several inline `style=`
+  buttons that a class rename wouldn't even reach), with no `@vue/test-utils` to catch
+  regressions. Do this when a behavioral requirement (loading state, icon slots) forces a real
+  component, not as a naming pass.
 
-- [ ] Button vertical padding drift: `10px 20px` (`modal-btn`/`.btn-cancel`/`.btn-submit`/
-  `.btn-delete`) vs `11px 20px` (`RecipeEditor.vue`/`Settings.vue`'s
-  `.btn-primary/secondary/danger`). Recommendation: standardize on `10px 20px`, the more common
-  value.
+- [x] Button vertical padding drift: `10px 20px` vs `11px 20px`. **Fixed** — snapped every
+  `11px 20px` site to `10px 20px` (`Settings.vue` ×3, `DecodeRecipe.vue`, plus the inline
+  `btn-primary` in `NotFound.vue`/`RecipeEditor.vue`), matching `DESIGN.md`'s documented value.
 
-- [ ] Danger-button chroma drift: `ConfirmDialog.vue`'s `.modal-btn--danger` uses
-  `oklch(45% 0.18 25)` where every other danger button uses `var(--color-danger)`
-  (`oklch(45% 0.14 25)`). Recommendation: snap to the token — the chroma difference is subtle and
-  this looks like independent drift, not a deliberate choice.
+- [x] Danger-button chroma drift: `ConfirmDialog.vue`'s `.modal-btn--danger` used
+  `oklch(45% 0.18 25)` where the `--color-danger` token is `oklch(45% 0.14 25)`. **Fixed** —
+  base now references `var(--color-danger)`; hover snapped to `oklch(38% 0.14 25)` (matching
+  `Dashboard.vue`'s `.btn-delete:hover`, the app's existing convention for the hover shade).
 
-- [ ] `.btn-secondary` (`RecipeEditor.vue`/`Settings.vue`) uses `background: none` (transparent
-  ghost) vs every other secondary/ghost button's filled `var(--ink-93)` background.
-  Recommendation: decide which is the intended ghost-button treatment and align the other.
+- [x] `.btn-secondary` (`RecipeEditor.vue`/`Settings.vue`) uses `background: none` (transparent
+  ghost) vs every other secondary/ghost button's filled `var(--ink-93)` background. **Corrected
+  and fixed** — the council found the checklist's framing backwards: `modal-btn--ghost`
+  (`AboutModal.vue`/`ChapterNameModal.vue`/`ConfirmDialog.vue`/`EditCookbookModal.vue`, despite
+  its name) was already filled `ink-93`/border `ink-84`/hover `ink-88`, matching `DESIGN.md`
+  exactly. The real outliers were the *transparent* ones: `.btn-secondary` in
+  `Settings.vue`/`DecodeRecipe.vue`/`RecipeImport.vue`, and the inline cancel buttons in
+  `RecipeEditor.vue`/`RecipeLibrary.vue`/`RecipeImport.vue`. All switched to filled `ink-93` +
+  `ink-84` border (hover `ink-88` where a scoped `:hover` rule exists; the two delete-confirm
+  inline buttons have no hover state to set since inline `style=` can't express `:hover`).
 
-- [ ] Input border-color drift: `Dashboard.vue`'s `.form-input` uses `var(--ink-78)` where every
-  other form input/search input in the app uses `var(--ink-84)`. Recommendation: snap to
-  `--ink-84` unless there's a reason `Dashboard.vue`'s form specifically needs a darker border.
+- [x] Input border-color drift: `Dashboard.vue`'s `.form-input` uses `var(--ink-78)` where every
+  other form input/search input in the app uses `var(--ink-84)`. **Fixed, narrowly** — only
+  `Dashboard.vue`'s `.form-input` changed. The council flagged that other `--ink-78` hits
+  (`DecodeRecipe.vue`/`RecipeImport.vue`/`Dashboard.vue`/`RecipeLibrary.vue`'s dashed
+  empty-state borders, `RecipeEditor.vue`'s SVG stroke/fill) are a legitimately different role
+  and were left untouched.
 
-- [ ] Pill/fully-round radius drift: `99px` (`ChapterCard.vue`'s `.chapter-badge`) vs `999px`
-  (`Dashboard.vue`'s `.btn-swatch`) for the same "fully round" intent. Both render identically at
-  these sizes; `DESIGN.md` documents `999px` as the target — recommend updating
-  `ChapterCard.vue` to match.
+- [x] Pill/fully-round radius drift: `99px` (`ChapterCard.vue`'s `.chapter-badge`) vs `999px`
+  (`Dashboard.vue`'s `.btn-swatch`). **Fixed** — `ChapterCard.vue` snapped to `999px`, matching
+  `DESIGN.md`'s documented target.
 
-- [ ] Modal radius drift: the shared `Modal.vue` uses `border-radius: 16px`, but three ad hoc
-  inline `.modal-box` clones (`Dashboard.vue`'s modal, `RecipeEditor.vue`'s delete-confirm,
-  `RecipeLibrary.vue`'s delete-confirm) duplicate its backdrop/shadow/border values by hand at
-  `14px` instead of reusing the `Modal.vue` component. Recommendation: refactor those three call
-  sites onto `Modal.vue` directly rather than hand-duplicating its styles — fixes both the radius
-  drift and the duplication.
+- [x] Modal radius drift: the shared `Modal.vue` uses `border-radius: 16px`, but ad hoc
+  `.modal-box` clones duplicate its backdrop/shadow/border values by hand at `14px` instead of
+  reusing `Modal.vue`. **Corrected and partially fixed** — the checklist's "three clones" claim
+  was stale: `RecipeEditor.vue`/`RecipeLibrary.vue` no longer contain a `.modal-box` class (grep
+  confirmed). Only `Dashboard.vue` has a real one; its radius is now `16px` to match `Modal.vue`
+  and `DESIGN.md`'s `rounded.xl`. **Not done**: refactoring `Dashboard.vue`'s modal onto
+  `Modal.vue` itself — that's a focus-trap/Teleport/Escape-key behavior change, not a radius
+  tweak, and `RecipePreviewDialog.vue` already has an unscoped `<style>` block reaching into
+  `.modal-box`, so this needs its own careful pass with manual keyboard testing, not a bundled
+  cosmetic fix.
 
-- [ ] "Elevation is modal-only" was an inaccurate claim in an earlier draft design doc — shadows
-  also legitimately appear on `ChapterCard.vue`'s overflow-menu popover, the docked
-  `BulkActionBar.vue`/`LibrarySidebarPanel.vue`, `PagePreview.vue`'s page thumbnail, and
-  `RecipeImport.vue`'s candidate cards. `DESIGN.md` now states the corrected rule (elevation for
-  floating/overlaid or permanently-docked surfaces, not static cards/buttons) — no code change
-  needed, listed here only so the correction's rationale isn't lost.
+- [x] Dead token: `--recipe-accent` is set (via inline `:style`) by `RecipeSheet.vue` but never
+  consumed by it or any of its `RecipeLayout*.vue` variants. **Fixed by removal** — deleted from
+  both the inline `:style` binding and the `<style>` block's fallback declaration. Unanimous
+  council verdict: wiring it into the title/section-header rule as originally intended is a
+  design decision nobody has made, not implied by "clean up dead code" — left undone
+  deliberately. Note: `RecipeSheet.vue`'s `accentColor` prop is now otherwise unconsumed within
+  the component (still received from `RecipePreviewDialog.vue`) — left in place rather than
+  chasing the whole prop chain, which was out of scope for this pass.
 
-- [ ] Dead token: `--recipe-accent` is set (via inline `:style`) by `RecipeSheet.vue` but never
-  consumed by it or any of its `RecipeLayout*.vue` variants — no visible effect today.
-  Recommendation: either wire it into the recipe title/section-header rule as originally intended,
-  or remove it.
+- [x] `#d97742` (terracotta, the default accent) is duplicated as a hex literal in ~9 places
+  instead of referencing `ACCENT_COLORS[0].value` from `src/js/templates.js`. **Fixed** —
+  exported `DEFAULT_ACCENT_COLOR` from `templates.js`; imported at every JS-reachable site
+  (`db.js` ×2, `CoverPage.vue`, `ChapterDividerPage.vue`, `RecipeSheet.vue`,
+  `TableOfContentsPage.vue`, `RecipePreviewDialog.vue`, `Dashboard.vue` ×4). Left as literals:
+  `tokens.css`'s `--sidebar-accent` (CSS can't import JS, and `DESIGN.md` documents it as
+  semantically distinct despite the shared hex) and each component's CSS custom-property
+  fallback inside its own `<style>` block (same reason).
 
-- [ ] `#d97742` (terracotta, the default accent) is duplicated as a hex literal in ~9 places
-  (component prop defaults in `CoverPage.vue`/`ChapterDividerPage.vue`/`RecipeSheet.vue`/
-  `TableOfContentsPage.vue`/`RecipePreviewDialog.vue`, the `db.js` default project shape, and
-  `Dashboard.vue`'s decorative-card fallback) instead of referencing `ACCENT_COLORS[0].value`
-  from `src/js/templates.js` in one place. Recommendation: export a named constant from
-  `templates.js` (e.g. `DEFAULT_ACCENT_COLOR`) and import it at each site.
+- [x] "Elevation is modal-only" — inaccurate claim already corrected in `DESIGN.md`; no code
+  change needed, kept here only for the record.
 
-- [ ] `App.vue`'s body font stack (`-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,
-  Arial,sans-serif`) duplicates `--font-main` (`system-ui, -apple-system, "Segoe UI", sans-serif`)
-  with a slightly different, unloaded stack. Recommendation: replace with `var(--font-main)`.
+- [x] `App.vue`'s body font stack duplicated `--font-main` with a slightly different, unloaded
+  stack. **Fixed** — replaced with `var(--font-main)`.
 
 - [ ] Untokenized one-off heading/body sizes recur often enough to be de facto tokens but aren't
-  named anywhere: 18px (`ChapterCard.vue`'s card title, between `.text-h2`'s 20px and
-  `.text-item-title`'s 19px), 22px (`Dashboard.vue`/`RecipeLibrary.vue` empty-state headers), and
-  15px (a muted-subtitle size repeated across ~9 files — `Dashboard.vue`, `RecipeLibrary.vue`,
-  `DecodeRecipe.vue`, `ProjectView.vue`, `RecipeEditor.vue`, `RecipeImport.vue`, `NotFound.vue`).
-  Recommendation: formalize whichever of these are still in use as new `.text-*` utility classes
-  in `tokens.css` next time one of these views is touched, rather than adding a new one-off size.
+  named anywhere: 18px, 22px, 15px (a muted-subtitle size repeated across ~9 files). **Deferred**
+  — council split on the 15px case (two of four suggested a `.text-subtitle`/`.text-subtle`
+  utility now) but converged on doing it opportunistically next time one of those views is
+  touched, per the checklist's own original recommendation, rather than adding new utilities
+  with no migration.
 
-- [ ] Translucent shadow/scrim colors (`Modal.vue`, `ChapterCard.vue`'s popover,
-  `BulkActionBar.vue`, `LibrarySidebarPanel.vue`, `Dashboard.vue`/`RecipeLibrary.vue`/
-  `RecipeEditor.vue`'s modal backdrops) hand-duplicate the `--ink-20`/`--ink-99` hue
-  (`oklch(10-20% 0.01-0.02 75 / alpha%)`) as opaque-looking literals with an alpha channel, since
-  none of the `--ink-*` tokens carry transparency. Not migrated as part of the token-literal pass
-  because forcing them onto an opaque token isn't a real "snap" — it would need either new
-  alpha-aware tokens or CSS relative-color syntax (`oklch(from var(--ink-20) l c h / 22%)`).
-  Recommendation: if/when relative-color syntax is adopted elsewhere in the app, revisit this
-  family together.
+- [ ] Translucent shadow/scrim colors hand-duplicate the `--ink-20`/`--ink-99` hue as
+  opaque-looking literals with an alpha channel. **Deferred, with a correction**: the council
+  found the literals are actually `oklch(10% 0.01 75 / …)` and `oklch(20% 0.02 75 / …)` — L=10 is
+  *not* `--ink-20` (that's `oklch(20% … )`), so the original "hand-duplicating ink-20" framing
+  was imprecise; a naive relative-color rewrite based on that framing would have silently
+  lightened every shadow. Still blocked on the same decision as before: new semantic tokens
+  (`--scrim`, `--shadow-modal`, etc.) vs. relative-color syntax, preserving the as-authored L
+  values rather than "correcting" them to the nearest `--ink-*` stop.
 
-- [ ] `RecipeImage.vue`'s `.recipe-image` defaults to `height: 100%` and only resolves to
-  `height: auto` for an explicit `imageAspectRatio`, so a lone image in a column-flex container
-  with `imageAspectRatio: 'auto'` balloons and squeezes out content below it. Already logged in
-  `AGENTS.md`'s Known Issues — cross-referenced here rather than duplicated, since it's the same
-  class of "component styling didn't get the full sweep a design pass implies" issue as the rest
-  of this list.
+- [ ] `RecipeImage.vue`'s `.recipe-image` defaults to `height: 100%`, only overridden to
+  `height: auto` for an explicit `imageAspectRatio`, causing a real layout bug (image balloons,
+  squeezes out content below it) in 3 legacy templates when `imageAspectRatio` is `'auto'`.
+  **Deferred from this pass, unanimous top priority for the next one** — every council member
+  flagged this as the only genuine user-facing *bug* on the list, not design debt, and said it
+  needs its own session with the app running: the fix requires a real choice between two
+  implementations (an `'auto'` entry in `ASPECT_RATIO_CSS` vs. explicit-height wrapper divs) and
+  visual verification across all 5 recipe layouts plus a `fitsOnPage` re-check, none of which is
+  reviewable from a diff alone. Still tracked in `AGENTS.md`'s Known Issues.

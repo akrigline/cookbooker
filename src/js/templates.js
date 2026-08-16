@@ -80,3 +80,5 @@ export const ACCENT_COLORS = [
   { id: 'slate-blue', label: 'Slate Blue', value: '#43597a' },
   { id: 'charcoal', label: 'Charcoal', value: '#3a3a3a' },
 ]
+
+export const DEFAULT_ACCENT_COLOR = ACCENT_COLORS[0].value

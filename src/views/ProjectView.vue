@@ -1105,7 +1105,6 @@ const bulkActionHandlers = {
   <RecipePreviewDialog
     v-if="previewRecipe"
     :recipe="previewRecipe"
-    :accent-color="project?.accentColor"
     :has-prev="previewIndex > 0"
     :has-next="previewIndex < previewChapterRecipes.length - 1"
     @close="closePreview"

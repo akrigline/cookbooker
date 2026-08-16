@@ -124,11 +124,11 @@ async function copyToClipboard() {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: none;
+  background: var(--ink-93);
   color: var(--ink-20);
   border: 1px solid var(--ink-84);
   border-radius: 8px;
-  padding: 11px 20px;
+  padding: 10px 20px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -136,7 +136,7 @@ async function copyToClipboard() {
 }
 
 .btn-secondary:hover {
-  background: var(--ink-93);
+  background: var(--ink-88);
 }
 
 .btn-secondary:focus-visible {

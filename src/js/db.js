@@ -1,6 +1,6 @@
 import Dexie from 'dexie'
 import { nextSequence } from './sequence'
-import { INGREDIENT_QTY_ALIGN_OPTIONS, DEFAULT_INGREDIENT_QTY_ALIGN } from './templates'
+import { INGREDIENT_QTY_ALIGN_OPTIONS, DEFAULT_INGREDIENT_QTY_ALIGN, DEFAULT_ACCENT_COLOR } from './templates'
 
 export const MISC_CHAPTER_NAME = 'Miscellaneous'
 
@@ -42,7 +42,7 @@ db.on('populate', async () => {
   const projectId = await db.projects.add({
     title: 'My First Cookbook',
     subtitle: '',
-    accentColor: '#d97742',
+    accentColor: DEFAULT_ACCENT_COLOR,
     coverTemplate: 'classic',
     pageNumbersEnabled: true,
     doubleSidedEnabled: false,
@@ -199,7 +199,7 @@ export const createProject = (project) =>
     const row = {
       title: '',
       subtitle: '',
-      accentColor: '#d97742',
+      accentColor: DEFAULT_ACCENT_COLOR,
       coverTemplate: 'classic',
       pageNumbersEnabled: true,
       doubleSidedEnabled: false,

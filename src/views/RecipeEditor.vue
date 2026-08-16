@@ -199,7 +199,7 @@ async function handleExport() {
   <main v-if="loaded && recipeNotFound" id="cm-main" class="cm-page-main cm-page-main--compact">
     <h1 class="text-page-title--compact">Recipe not found</h1>
     <p style="margin:0 0 24px; font-size:15px; color:var(--ink-46);">This recipe may have been deleted.</p>
-    <router-link to="/library" class="btn-primary" style="display:inline-flex; align-items:center; background:var(--ink-20); color:var(--ink-99); border:none; border-radius:8px; padding:11px 20px; font-size:14px; font-weight:600; text-decoration:none;">
+    <router-link to="/library" class="btn-primary" style="display:inline-flex; align-items:center; background:var(--ink-20); color:var(--ink-99); border:none; border-radius:8px; padding:10px 20px; font-size:14px; font-weight:600; text-decoration:none;">
       Back to Recipe Library
     </router-link>
   </main>
@@ -349,7 +349,7 @@ async function handleExport() {
         <h2 id="cm-del-heading" class="text-h2">Delete "{{ previewRecipe.title }}"?</h2>
         <p id="cm-del-desc" style="margin:0 0 22px; font-size:14px; color:var(--ink-42); line-height:1.5;">This permanently removes the recipe from the Global Recipe Library and withdraws it from every cookbook that includes it. This can't be undone.</p>
         <div style="display:flex; justify-content:flex-end; gap:10px;">
-          <button type="button" @click="showDeleteModal = false" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--ink-84); background:none; cursor:pointer;">Cancel</button>
+          <button type="button" @click="showDeleteModal = false" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--ink-84); background:var(--ink-93); cursor:pointer;">Cancel</button>
           <button type="button" @click="confirmDelete" :disabled="deleting" style="padding:10px 20px; font-size:14px; font-weight:600; border-radius:8px; border:none; background:var(--color-danger); color:white; cursor:pointer;">Delete permanently</button>
         </div>
       </div>

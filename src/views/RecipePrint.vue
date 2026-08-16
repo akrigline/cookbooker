@@ -42,9 +42,9 @@ function printPage() {
     <PrintToolbar :title="`Print Recipe: ${recipe.title}`" @print="printPage" />
 
     <!-- Single recipe exports carry no cover, TOC, or page number - just the
-         parent project's margins, template fidelity, and accent color. -->
+         parent project's margins and template fidelity. -->
     <PagePreview>
-      <RecipeSheet :recipe="recipe" :accent-color="project.accentColor" />
+      <RecipeSheet :recipe="recipe" />
     </PagePreview>
   </div>
   <main id="cm-main" style="max-width:1160px; margin:0 auto; padding:40px 32px 80px;" v-else>

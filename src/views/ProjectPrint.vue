@@ -148,7 +148,7 @@ onBeforeUnmount(() => gutterStyleEl?.remove())
         </PagePreview>
 
         <PagePreview v-else :page-number="entry.printedNumber">
-          <RecipeSheet :recipe="recipesById.get(entry.recipeId)" :accent-color="project.accentColor" />
+          <RecipeSheet :recipe="recipesById.get(entry.recipeId)" />
         </PagePreview>
       </template>
     </div>

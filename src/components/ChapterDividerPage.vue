@@ -1,4 +1,6 @@
 <script setup>
+import { DEFAULT_ACCENT_COLOR } from '../js/templates'
+
 defineProps({
   chapterName: {
     type: String,
@@ -6,7 +8,7 @@ defineProps({
   },
   accentColor: {
     type: String,
-    default: '#d97742',
+    default: DEFAULT_ACCENT_COLOR,
   },
 })
 </script>

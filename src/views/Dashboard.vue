@@ -2,7 +2,7 @@
 import { onMounted, ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectsStore } from '../stores/projects'
-import { ACCENT_COLORS } from '../js/templates'
+import { ACCENT_COLORS, DEFAULT_ACCENT_COLOR } from '../js/templates'
 import EditCookbookModal from '../components/EditCookbookModal.vue'
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -276,17 +276,17 @@ function handleModalKeyDown(e) {
           <!-- Classic layout: centered title + rule lines -->
           <template v-if="(project.coverTemplate || 'classic') !== 'modern'">
             <div style="height:100%; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px 20px; gap:9px;">
-              <div aria-hidden="true" :style="{ width:'34px', height:'2px', background: project.accentColor || '#d97742' }"></div>
+              <div aria-hidden="true" :style="{ width:'34px', height:'2px', background: project.accentColor || DEFAULT_ACCENT_COLOR }"></div>
               <h2 :id="`cm-title-${project.id}`" class="text-item-title" style="overflow-wrap:break-word;">{{ project.title || 'Untitled Cookbook' }}</h2>
               <p v-if="project.subtitle" style="margin:0; font-size:13px; font-style:italic; color:var(--ink-46);">{{ project.subtitle }}</p>
-              <div aria-hidden="true" :style="{ width:'34px', height:'2px', background: project.accentColor || '#d97742' }"></div>
+              <div aria-hidden="true" :style="{ width:'34px', height:'2px', background: project.accentColor || DEFAULT_ACCENT_COLOR }"></div>
             </div>
           </template>
 
           <!-- Modern layout: left-aligned, framed border -->
           <template v-else>
-            <div aria-hidden="true" :style="{ position:'absolute', inset:'10px', border:`1.5px solid ${project.accentColor || '#d97742'}` }"></div>
-            <div aria-hidden="true" :style="{ position:'absolute', left:'10px', top:'10px', bottom:'10px', width:'5px', background: project.accentColor || '#d97742' }"></div>
+            <div aria-hidden="true" :style="{ position:'absolute', inset:'10px', border:`1.5px solid ${project.accentColor || DEFAULT_ACCENT_COLOR}` }"></div>
+            <div aria-hidden="true" :style="{ position:'absolute', left:'10px', top:'10px', bottom:'10px', width:'5px', background: project.accentColor || DEFAULT_ACCENT_COLOR }"></div>
             <div style="position:relative; height:100%; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; padding:26px 30px; gap:7px;">
               <h2 :id="`cm-title-${project.id}`" class="text-item-title" style="overflow-wrap:break-word;">{{ project.title || 'Untitled Cookbook' }}</h2>
               <p v-if="project.subtitle" style="margin:0; font-size:13px; font-style:italic; color:var(--ink-46);">{{ project.subtitle }}</p>
@@ -506,7 +506,7 @@ function handleModalKeyDown(e) {
   padding: 24px; z-index: 200;
 }
 .modal-box {
-  background: var(--ink-99); border-radius: 14px;
+  background: var(--ink-99); border-radius: 16px;
   width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto;
   padding: 28px 28px 24px;
   box-shadow: 0 20px 60px oklch(20% 0.02 75 / 0.25);
@@ -524,7 +524,7 @@ function handleModalKeyDown(e) {
 /* Form elements */
 .form-input {
   width: 100%; box-sizing: border-box; padding: 10px 12px;
-  font-size: 15px; border: 1px solid var(--ink-78);
+  font-size: 15px; border: 1px solid var(--ink-84);
   border-radius: 8px; font-family: inherit;
 }
 .form-input:focus-visible {
@@ -551,9 +551,9 @@ function handleModalKeyDown(e) {
 .btn-cancel {
   padding: 10px 20px; font-size: 14px; font-weight: 600;
   border-radius: 8px; border: 1px solid var(--ink-84);
-  background: none; cursor: pointer;
+  background: var(--ink-93); cursor: pointer;
 }
-.btn-cancel:hover { background: var(--ink-93); }
+.btn-cancel:hover { background: var(--ink-88); }
 .btn-cancel:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .btn-submit {
