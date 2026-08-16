@@ -1,3 +1,9 @@
+> **Status: done (2026-08-16).** Task 1 landed earlier; Tasks 2-6 were completed (and the tokens
+> renamed `--gray-*` → `--ink-*`) alongside authoring the root `DESIGN.md`. Kept here for the
+> historical record and rationale, not as an open checklist — see `DESIGN.md` for the current
+> palette and `brainstorming/design-system-inconsistencies.md` for the (unrelated) component-level
+> inconsistencies that survived this pass.
+
 # Plan: consolidate inline `oklch()` colors into design tokens
 
 Follow-on to the color audit (see conversation / commit history around

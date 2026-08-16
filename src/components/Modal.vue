@@ -91,8 +91,8 @@ onUnmounted(() => {
 }
 
 .modal-box {
-  background: var(--gray-99);
-  border: 1px solid var(--gray-88);
+  background: var(--ink-99);
+  border: 1px solid var(--ink-88);
   border-radius: 16px;
   padding: 28px 32px;
   width: 100%;

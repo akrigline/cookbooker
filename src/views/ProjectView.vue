@@ -930,7 +930,7 @@ const bulkActionHandlers = {
 
   <!-- Not-found state -->
   <div v-if="!project" style="padding: 60px 32px; max-width: 1280px; margin: 0 auto;">
-    <p style="color: var(--gray-46);">Project not found.</p>
+    <p style="color: var(--ink-46);">Project not found.</p>
   </div>
 
   <!-- Task 1.1 + 1.2: Two-column stack layout with inline header -->
@@ -953,7 +953,7 @@ const bulkActionHandlers = {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
         </div>
-        <p v-if="project.subtitle" style="margin:0; font-size:15px; color:var(--gray-46);">{{ project.subtitle }}</p>
+        <p v-if="project.subtitle" style="margin:0; font-size:15px; color:var(--ink-46);">{{ project.subtitle }}</p>
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button type="button" class="btn-new" @click="startCookbookImport">
@@ -1118,21 +1118,21 @@ const bulkActionHandlers = {
 /* Buttons */
 .btn-new {
   display: flex; align-items: center; gap: 8px;
-  background: var(--gray-20); color: var(--gray-99);
+  background: var(--ink-20); color: var(--ink-99);
   border: none; border-radius: 8px; padding: 12px 20px;
   font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none;
 }
-.btn-new:hover { background: var(--gray-30); }
+.btn-new:hover { background: var(--ink-30); }
 .btn-new:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .btn-new:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-icon {
   display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 7px; border: 1px solid var(--gray-84);
-  background: var(--gray-96); color: var(--gray-46);
+  border-radius: 7px; border: 1px solid var(--ink-84);
+  background: var(--ink-96); color: var(--ink-46);
   cursor: pointer; transition: background 0.12s, color 0.12s;
 }
-.btn-icon:hover { background: var(--gray-93); color: var(--gray-20); }
+.btn-icon:hover { background: var(--ink-93); color: var(--ink-20); }
 
 /* ================================================================
    Shared error banner
@@ -1191,7 +1191,7 @@ const bulkActionHandlers = {
 .empty-state {
   padding: 48px 0;
   text-align: center;
-  color: var(--gray-52);
+  color: var(--ink-52);
   font-size: 15px;
 }
 

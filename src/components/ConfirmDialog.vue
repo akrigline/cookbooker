@@ -33,12 +33,12 @@ const emit = defineEmits(['close', 'confirm'])
   font-size: 20px;
   font-weight: 600;
   margin: 0 0 12px;
-  color: var(--gray-20);
+  color: var(--ink-20);
 }
 
 .modal-body {
   font-size: 14px;
-  color: var(--gray-30);
+  color: var(--ink-30);
   line-height: 1.6;
   margin: 0 0 20px;
 }
@@ -63,16 +63,16 @@ const emit = defineEmits(['close', 'confirm'])
 .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .modal-btn--ghost {
-  background: var(--gray-93);
-  color: var(--gray-20);
-  border: 1px solid var(--gray-84);
+  background: var(--ink-93);
+  color: var(--ink-20);
+  border: 1px solid var(--ink-84);
 }
 
-.modal-btn--ghost:hover:not(:disabled) { background: var(--gray-88); }
+.modal-btn--ghost:hover:not(:disabled) { background: var(--ink-88); }
 
 .modal-btn--danger {
   background: oklch(45% 0.18 25);
-  color: var(--gray-99);
+  color: var(--ink-99);
 }
 
 .modal-btn--danger:hover:not(:disabled) { background: oklch(38% 0.18 25); }

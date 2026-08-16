@@ -89,7 +89,7 @@ const emit = defineEmits(['update-field', 'close', 'save'])
   font-size: 20px;
   font-weight: 600;
   margin: 0 0 12px;
-  color: var(--gray-20);
+  color: var(--ink-20);
 }
 
 .modal-actions {
@@ -112,19 +112,19 @@ const emit = defineEmits(['update-field', 'close', 'save'])
 .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .modal-btn--primary {
-  background: var(--gray-20);
-  color: var(--gray-99);
+  background: var(--ink-20);
+  color: var(--ink-99);
 }
 
-.modal-btn--primary:hover:not(:disabled) { background: var(--gray-30); }
+.modal-btn--primary:hover:not(:disabled) { background: var(--ink-30); }
 
 .modal-btn--ghost {
-  background: var(--gray-93);
-  color: var(--gray-20);
-  border: 1px solid var(--gray-84);
+  background: var(--ink-93);
+  color: var(--ink-20);
+  border: 1px solid var(--ink-84);
 }
 
-.modal-btn--ghost:hover:not(:disabled) { background: var(--gray-88); }
+.modal-btn--ghost:hover:not(:disabled) { background: var(--ink-88); }
 
 .modal-form {
   display: flex;
@@ -147,7 +147,7 @@ const emit = defineEmits(['update-field', 'close', 'save'])
 .form-label {
   font-size: 12px;
   font-weight: 700;
-  color: var(--gray-52);
+  color: var(--ink-52);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -156,10 +156,10 @@ const emit = defineEmits(['update-field', 'close', 'save'])
   font: inherit;
   font-size: 14px;
   padding: 9px 12px;
-  border: 1px solid var(--gray-84);
+  border: 1px solid var(--ink-84);
   border-radius: 8px;
-  background: var(--gray-99);
-  color: var(--gray-20);
+  background: var(--ink-99);
+  color: var(--ink-20);
 }
 
 .form-input:focus-visible {
@@ -186,7 +186,7 @@ const emit = defineEmits(['update-field', 'close', 'save'])
 }
 
 .swatch--active {
-  border-color: var(--gray-20);
+  border-color: var(--ink-20);
   transform: scale(1.15);
 }
 

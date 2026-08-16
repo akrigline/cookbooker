@@ -172,7 +172,7 @@ async function confirmRestore() {
   <main id="cm-main" class="cm-page-main">
     <div style="margin-bottom:28px;">
       <h1 class="text-page-title">Settings</h1>
-      <p style="margin:0; font-size:15px; color:var(--gray-46);">Manage your data, exports, and database backups.</p>
+      <p style="margin:0; font-size:15px; color:var(--ink-46);">Manage your data, exports, and database backups.</p>
     </div>
 
     <section class="card-section" style="margin-bottom:24px;">
@@ -189,7 +189,7 @@ async function confirmRestore() {
           type="button"
           class="btn-secondary"
           :aria-pressed="settingsStore.ingredientQtyAlign === opt.id"
-          :style="settingsStore.ingredientQtyAlign === opt.id ? 'background:oklch(93% 0.02 250); border:1.5px solid var(--color-focus); color:var(--gray-20);' : ''"
+          :style="settingsStore.ingredientQtyAlign === opt.id ? 'background:oklch(93% 0.02 250); border:1.5px solid var(--color-focus); color:var(--ink-20);' : ''"
           @click="setIngredientQtyAlign(opt.id)"
         >
           Ingredient quantities: {{ opt.label }}
@@ -278,8 +278,8 @@ async function confirmRestore() {
 }
 
 .card-section {
-  background: var(--gray-99);
-  border: 1px solid var(--gray-88);
+  background: var(--ink-99);
+  border: 1px solid var(--ink-88);
   border-radius: 14px;
   padding: 28px 32px;
   max-width: 680px;
@@ -290,13 +290,13 @@ async function confirmRestore() {
   font-size: 20px;
   font-weight: 600;
   margin: 0 0 8px;
-  color: var(--gray-20);
+  color: var(--ink-20);
 }
 
 .section-desc {
   margin: 0 0 20px;
   font-size: 14px;
-  color: var(--gray-46);
+  color: var(--ink-46);
   line-height: 1.5;
 }
 
@@ -310,8 +310,8 @@ async function confirmRestore() {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--gray-20);
-  color: var(--gray-99);
+  background: var(--ink-20);
+  color: var(--ink-99);
   border: none;
   border-radius: 8px;
   padding: 11px 20px;
@@ -322,7 +322,7 @@ async function confirmRestore() {
 }
 
 .btn-primary:hover {
-  background: var(--gray-30);
+  background: var(--ink-30);
 }
 
 .btn-primary:focus-visible {
@@ -340,8 +340,8 @@ async function confirmRestore() {
   align-items: center;
   gap: 8px;
   background: none;
-  color: var(--gray-20);
-  border: 1px solid var(--gray-84);
+  color: var(--ink-20);
+  border: 1px solid var(--ink-84);
   border-radius: 8px;
   padding: 11px 20px;
   font-size: 14px;
@@ -351,7 +351,7 @@ async function confirmRestore() {
 }
 
 .btn-secondary:hover {
-  background: var(--gray-93);
+  background: var(--ink-93);
 }
 
 .btn-secondary:focus-visible {
@@ -367,7 +367,7 @@ async function confirmRestore() {
 .status-msg {
   margin: 16px 0 0;
   font-size: 14px;
-  color: var(--gray-46);
+  color: var(--ink-46);
 }
 
 .error {
@@ -376,7 +376,7 @@ async function confirmRestore() {
 }
 
 .success {
-  color: oklch(40% 0.12 145);
+  color: var(--color-success);
   font-weight: 600;
 }
 
@@ -385,14 +385,14 @@ async function confirmRestore() {
   font-size: 20px;
   font-weight: 600;
   margin: 0 0 10px;
-  color: var(--gray-20);
+  color: var(--ink-20);
 }
 
 .modal-body {
   margin: 0 0 18px;
   font-size: 14px;
   line-height: 1.55;
-  color: var(--gray-42);
+  color: var(--ink-42);
 }
 
 .restore-table {
@@ -406,27 +406,27 @@ async function confirmRestore() {
 .restore-table td {
   padding: 7px 10px;
   text-align: right;
-  border-bottom: 1px solid var(--gray-93);
+  border-bottom: 1px solid var(--ink-93);
 }
 
 .restore-table thead th {
   font-size: 11px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--gray-52);
+  color: var(--ink-52);
 }
 
 .restore-table th[scope='row'],
 .restore-table thead th:first-child {
   text-align: left;
   font-weight: 600;
-  color: var(--gray-30);
+  color: var(--ink-30);
 }
 
 .restore-table tfoot th,
 .restore-table tfoot td {
   border-bottom: none;
-  border-top: 1px solid var(--gray-84);
+  border-top: 1px solid var(--ink-84);
   font-weight: 600;
 }
 
@@ -438,7 +438,7 @@ async function confirmRestore() {
 
 .btn-danger {
   background: var(--color-danger);
-  color: var(--gray-99);
+  color: var(--ink-99);
   border: none;
   border-radius: 8px;
   padding: 11px 20px;

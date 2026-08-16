@@ -276,8 +276,8 @@ function dropLineBelow(pr) {
 <style scoped>
 .chapter-card {
   position: relative;
-  background: var(--gray-99);
-  border: 1px solid var(--gray-88);
+  background: var(--ink-99);
+  border: 1px solid var(--ink-88);
   border-radius: 14px;
   margin-bottom: 20px;
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -307,7 +307,7 @@ function dropLineBelow(pr) {
 
 .chapter-card__header {
   padding: 16px 20px 12px;
-  border-bottom: 1px solid var(--gray-93);
+  border-bottom: 1px solid var(--ink-93);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -327,7 +327,7 @@ function dropLineBelow(pr) {
   font-size: 18px;
   font-weight: 600;
   margin: 0;
-  color: var(--gray-20);
+  color: var(--ink-20);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -336,9 +336,9 @@ function dropLineBelow(pr) {
 .chapter-badge {
   font-size: 11px;
   font-weight: 600;
-  color: var(--gray-52);
-  background: var(--gray-93);
-  border: 1px solid var(--gray-84);
+  color: var(--ink-52);
+  background: var(--ink-93);
+  border: 1px solid var(--ink-84);
   padding: 2px 8px;
   border-radius: 99px;
   white-space: nowrap;
@@ -356,7 +356,7 @@ function dropLineBelow(pr) {
   align-items: center;
   gap: 5px;
   font-size: 13px;
-  color: var(--gray-46);
+  color: var(--ink-46);
   cursor: pointer;
   user-select: none;
 }
@@ -369,13 +369,13 @@ function dropLineBelow(pr) {
 }
 
 .chapter-action-btn {
-  background: var(--gray-96);
-  border: 1px solid var(--gray-84);
+  background: var(--ink-96);
+  border: 1px solid var(--ink-84);
   border-radius: 7px;
   padding: 5px 10px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--gray-30);
+  color: var(--ink-30);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -383,7 +383,7 @@ function dropLineBelow(pr) {
   transition: background 0.12s;
 }
 
-.chapter-action-btn:hover { background: var(--gray-93); }
+.chapter-action-btn:hover { background: var(--ink-93); }
 
 .chapter-action-btn--danger {
   background: none;
@@ -414,7 +414,7 @@ function dropLineBelow(pr) {
 
 .recipe-list__empty {
   padding: 16px 0;
-  color: var(--gray-52);
+  color: var(--ink-52);
   font-style: italic;
   font-size: 14px;
 }
@@ -425,7 +425,7 @@ function dropLineBelow(pr) {
   align-items: center;
   gap: 10px;
   padding: 10px 0;
-  border-bottom: 1px solid var(--gray-93);
+  border-bottom: 1px solid var(--ink-93);
   cursor: grab;
   border-radius: 6px;
   transition: background 0.1s;
@@ -471,7 +471,7 @@ function dropLineBelow(pr) {
 
 .recipe-row__drag {
   flex-shrink: 0;
-  color: var(--gray-78);
+  color: var(--ink-78);
   cursor: grab;
 }
 
@@ -492,12 +492,12 @@ function dropLineBelow(pr) {
   border: none;
   border-radius: 3px;
   background: transparent;
-  color: var(--gray-52);
+  color: var(--ink-52);
   cursor: pointer;
 }
 
 .recipe-row__move-btn:hover:not(:disabled) {
-  background: var(--gray-93);
+  background: var(--ink-93);
 }
 
 .recipe-row__move-btn:disabled {
@@ -518,7 +518,7 @@ function dropLineBelow(pr) {
   flex: 1;
   font-size: 14px;
   font-weight: 600;
-  color: var(--gray-20);
+  color: var(--ink-20);
   text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
@@ -543,22 +543,22 @@ function dropLineBelow(pr) {
   border-radius: 7px;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--gray-52);
+  color: var(--ink-52);
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s;
 }
 
 .recipe-row__menu-btn:hover {
-  background: var(--gray-93);
-  border-color: var(--gray-84);
+  background: var(--ink-93);
+  border-color: var(--ink-84);
 }
 
 .overflow-menu {
   position: absolute;
   right: 0;
   top: calc(100% + 4px);
-  background: var(--gray-99);
-  border: 1px solid var(--gray-88);
+  background: var(--ink-99);
+  border: 1px solid var(--ink-88);
   border-radius: 10px;
   padding: 6px;
   min-width: 180px;
@@ -578,7 +578,7 @@ function dropLineBelow(pr) {
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
-  color: var(--gray-20);
+  color: var(--ink-20);
   background: none;
   border: none;
   cursor: pointer;
@@ -588,12 +588,12 @@ function dropLineBelow(pr) {
 
 .overflow-menu button:hover,
 .overflow-menu a:hover {
-  background: var(--gray-93);
+  background: var(--ink-93);
 }
 
 .overflow-menu hr {
   border: none;
-  border-top: 1px solid var(--gray-93);
+  border-top: 1px solid var(--ink-93);
   margin: 4px 0;
 }
 
@@ -608,7 +608,7 @@ function dropLineBelow(pr) {
 .drag-handle {
   display: inline-flex;
   align-items: center;
-  color: var(--gray-78);
+  color: var(--ink-78);
   cursor: grab;
   flex-shrink: 0;
 }

@@ -162,7 +162,7 @@ onBeforeUnmount(() => gutterStyleEl?.remove())
 .print-project__preparing {
   text-align: center;
   padding: var(--space-xl, 3rem) 0;
-  color: var(--gray-46, #757575);
+  color: var(--ink-46, #757575);
 }
 
 /* PagePreview itself carries no inter-page spacing (a single preview,

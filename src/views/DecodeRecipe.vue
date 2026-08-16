@@ -45,7 +45,7 @@ async function copyToClipboard() {
   <main id="cm-main" class="cm-page-main cm-page-main--narrow">
     <div style="margin-bottom:28px;">
       <h1 class="text-page-title">Recipe QR Decoder</h1>
-      <p style="margin:0; font-size:15px; color:var(--gray-46);">
+      <p style="margin:0; font-size:15px; color:var(--ink-46);">
         Decodes a recipe shared from Cookbooker — everything happens on this device; nothing is
         uploaded anywhere.
       </p>
@@ -73,11 +73,11 @@ async function copyToClipboard() {
 
 <style scoped>
 .cm-decode-notice {
-  border: 1px dashed var(--gray-78);
+  border: 1px dashed var(--ink-78);
   border-radius: 14px;
   padding: 40px 32px;
   text-align: center;
-  color: var(--gray-46);
+  color: var(--ink-46);
 }
 
 .cm-decode-notice p {
@@ -97,8 +97,8 @@ async function copyToClipboard() {
 }
 
 .card-section {
-  background: var(--gray-99);
-  border: 1px solid var(--gray-88);
+  background: var(--ink-99);
+  border: 1px solid var(--ink-88);
   border-radius: 14px;
   padding: 28px 32px;
 }
@@ -117,7 +117,7 @@ async function copyToClipboard() {
 .cm-decode-empty-ingredients {
   margin: 0 0 20px;
   font-size: 14px;
-  color: var(--gray-46);
+  color: var(--ink-46);
 }
 
 .btn-secondary {
@@ -125,8 +125,8 @@ async function copyToClipboard() {
   align-items: center;
   gap: 8px;
   background: none;
-  color: var(--gray-20);
-  border: 1px solid var(--gray-84);
+  color: var(--ink-20);
+  border: 1px solid var(--ink-84);
   border-radius: 8px;
   padding: 11px 20px;
   font-size: 14px;
@@ -136,7 +136,7 @@ async function copyToClipboard() {
 }
 
 .btn-secondary:hover {
-  background: var(--gray-93);
+  background: var(--ink-93);
 }
 
 .btn-secondary:focus-visible {

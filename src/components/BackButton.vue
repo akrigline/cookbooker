@@ -19,10 +19,10 @@ defineProps({
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  color: var(--gray-52);
+  color: var(--ink-52);
   margin-bottom: 4px;
   transition: color 0.12s;
 }
 
-.cm-back-link:hover { color: var(--gray-20); }
+.cm-back-link:hover { color: var(--ink-20); }
 </style>

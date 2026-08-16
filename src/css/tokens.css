@@ -8,7 +8,7 @@ html {
 }
 
 :root {
-  /* The chrome palette below (--gray-*) is deliberately light-only — no
+  /* The chrome palette below (--ink-*) is deliberately light-only — no
      dark variant exists, and content that escapes the app root's inline
      color (e.g. a Teleport'd modal) falls back to this. Declaring the
      scheme keeps browsers from auto-dark-theming form controls/scrollbars
@@ -17,7 +17,7 @@ html {
      surface in the app stays locked to light. */
   color-scheme: light;
 
-  --accent-color: #d97742;
+  --sidebar-accent: #d97742;
   --bg-primary: #ffffff;
   --bg-secondary: #f7f4ef;
   --text-primary: #232323;
@@ -45,18 +45,19 @@ html {
 
   --color-success: oklch(35% 0.05 140);
   --color-success-bg: oklch(96% 0.05 140);
+  --color-success-border: oklch(85% 0.1 140);
 
-  --gray-99: oklch(99.3% 0.002 75);
-  --gray-96: oklch(96% 0.004 75);
-  --gray-93: oklch(93% 0.006 75);
-  --gray-88: oklch(88% 0.008 75);
-  --gray-84: oklch(84% 0.008 75);   /* consolidated: --gray-86 folded in, was a near-duplicate stop */
-  --gray-78: oklch(80% 0.01 75);
-  --gray-52: oklch(50% 0.01 75);
-  --gray-46: oklch(45% 0.01 75);    /* added: real 25-occurrence cluster, not in original 10 */
-  --gray-42: oklch(40% 0.01 75);
-  --gray-30: oklch(30% 0.01 75);
-  --gray-20: oklch(20% 0.01 75);
+  --ink-99: oklch(99.3% 0.002 75);
+  --ink-96: oklch(96% 0.004 75);
+  --ink-93: oklch(93% 0.006 75);
+  --ink-88: oklch(88% 0.008 75);
+  --ink-84: oklch(84% 0.008 75);   /* consolidated: --gray-86 folded in, was a near-duplicate stop */
+  --ink-78: oklch(80% 0.01 75);
+  --ink-52: oklch(50% 0.01 75);
+  --ink-46: oklch(45% 0.01 75);    /* added: real 25-occurrence cluster, not in original 10 */
+  --ink-42: oklch(40% 0.01 75);
+  --ink-30: oklch(30% 0.01 75);
+  --ink-20: oklch(20% 0.01 75);
 }
 
 /* Printable Recipe Specific Tokens (Light Theme Locked) */

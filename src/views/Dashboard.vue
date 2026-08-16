@@ -68,8 +68,8 @@ const layoutOptions = computed(() =>
   LAYOUTS.map(l => ({
     ...l,
     selected: form.value.layoutId === l.id,
-    bg:     form.value.layoutId === l.id ? 'oklch(93% 0.02 250)' : 'var(--gray-96)',
-    border: form.value.layoutId === l.id ? 'var(--color-focus)' : 'var(--gray-84)',
+    bg:     form.value.layoutId === l.id ? 'oklch(93% 0.02 250)' : 'var(--ink-96)',
+    border: form.value.layoutId === l.id ? 'var(--color-focus)' : 'var(--ink-84)',
   }))
 )
 
@@ -253,7 +253,7 @@ function handleModalKeyDown(e) {
     <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:32px; flex-wrap:wrap;">
       <div>
         <h1 class="text-page-title">Cookbooks</h1>
-        <p style="margin:0; font-size:15px; color:var(--gray-46);">{{ projectCountLabel }}</p>
+        <p style="margin:0; font-size:15px; color:var(--ink-46);">{{ projectCountLabel }}</p>
       </div>
       <button type="button" @click="openCreate" class="btn-new" :disabled="submitting">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -271,14 +271,14 @@ function handleModalKeyDown(e) {
         class="card"
       >
         <!-- Cover area -->
-        <div style="position:relative; min-height:156px; background:var(--gray-99);">
+        <div style="position:relative; min-height:156px; background:var(--ink-99);">
 
           <!-- Classic layout: centered title + rule lines -->
           <template v-if="(project.coverTemplate || 'classic') !== 'modern'">
             <div style="height:100%; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px 20px; gap:9px;">
               <div aria-hidden="true" :style="{ width:'34px', height:'2px', background: project.accentColor || '#d97742' }"></div>
               <h2 :id="`cm-title-${project.id}`" class="text-item-title" style="overflow-wrap:break-word;">{{ project.title || 'Untitled Cookbook' }}</h2>
-              <p v-if="project.subtitle" style="margin:0; font-size:13px; font-style:italic; color:var(--gray-46);">{{ project.subtitle }}</p>
+              <p v-if="project.subtitle" style="margin:0; font-size:13px; font-style:italic; color:var(--ink-46);">{{ project.subtitle }}</p>
               <div aria-hidden="true" :style="{ width:'34px', height:'2px', background: project.accentColor || '#d97742' }"></div>
             </div>
           </template>
@@ -289,13 +289,13 @@ function handleModalKeyDown(e) {
             <div aria-hidden="true" :style="{ position:'absolute', left:'10px', top:'10px', bottom:'10px', width:'5px', background: project.accentColor || '#d97742' }"></div>
             <div style="position:relative; height:100%; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; padding:26px 30px; gap:7px;">
               <h2 :id="`cm-title-${project.id}`" class="text-item-title" style="overflow-wrap:break-word;">{{ project.title || 'Untitled Cookbook' }}</h2>
-              <p v-if="project.subtitle" style="margin:0; font-size:13px; font-style:italic; color:var(--gray-46);">{{ project.subtitle }}</p>
+              <p v-if="project.subtitle" style="margin:0; font-size:13px; font-style:italic; color:var(--ink-46);">{{ project.subtitle }}</p>
             </div>
           </template>
         </div>
 
         <!-- Stats row -->
-        <div style="border-top:1px solid var(--gray-88); padding:11px 22px; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--gray-46);">
+        <div style="border-top:1px solid var(--ink-88); padding:11px 22px; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--ink-46);">
           <span>{{ recipeCountLabel(project).recipes }} · {{ recipeCountLabel(project).chapters }}</span>
         </div>
 
@@ -315,9 +315,9 @@ function handleModalKeyDown(e) {
     </div>
 
     <!-- Empty state -->
-    <div v-else style="border:1px dashed var(--gray-78); border-radius:14px; padding:64px 32px; text-align:center; background:var(--gray-99);">
+    <div v-else style="border:1px dashed var(--ink-78); border-radius:14px; padding:64px 32px; text-align:center; background:var(--ink-99);">
       <p style="font-family:'Newsreader',Georgia,serif; font-size:22px; font-weight:600; margin:0 0 8px;">No cookbooks yet</p>
-      <p style="margin:0 0 20px; font-size:15px; color:var(--gray-46);">Create your first cookbook project to start organizing recipes into chapters.</p>
+      <p style="margin:0 0 20px; font-size:15px; color:var(--ink-46);">Create your first cookbook project to start organizing recipes into chapters.</p>
       <button type="button" @click="openCreate" class="btn-new">New Cookbook</button>
     </div>
   </main>
@@ -397,7 +397,7 @@ function handleModalKeyDown(e) {
                   :style="{ background: lopt.bg, borderColor: lopt.border }"
                 >
                   {{ lopt.name }}
-                  <span style="display:block; font-weight:400; font-size:12px; color:var(--gray-46); margin-top:2px;">{{ lopt.description }}</span>
+                  <span style="display:block; font-weight:400; font-size:12px; color:var(--ink-46); margin-top:2px;">{{ lopt.description }}</span>
                 </button>
               </div>
             </div>
@@ -435,7 +435,7 @@ function handleModalKeyDown(e) {
     <div v-if="showDeleteModal" @click="closeModal" @keydown="handleModalKeyDown" class="modal-backdrop">
       <div role="alertdialog" aria-modal="true" aria-labelledby="cm-delete-heading" aria-describedby="cm-delete-desc" @click.stop class="modal-box modal-box-sm">
         <h2 id="cm-delete-heading" class="text-h2">Delete "{{ deleteTarget?.title }}"?</h2>
-        <p id="cm-delete-desc" style="margin:0 0 22px; font-size:14px; color:var(--gray-42); line-height:1.5;">
+        <p id="cm-delete-desc" style="margin:0 0 22px; font-size:14px; color:var(--ink-42); line-height:1.5;">
           This removes the cookbook project and its chapters. Its recipes stay in the Global Recipe Library and in any other cookbooks that use them. This can't be undone.
         </p>
         <p v-if="error" role="alert" style="margin:0 0 18px; font-size:14px; font-weight:600; color:var(--color-danger);">{{ error }}</p>
@@ -452,8 +452,8 @@ function handleModalKeyDown(e) {
 <style scoped>
 /* Cards */
 .card {
-  background: var(--gray-99);
-  border: 1px solid var(--gray-88);
+  background: var(--ink-99);
+  border: 1px solid var(--ink-88);
   border-radius: 14px;
   overflow: hidden;
   display: flex;
@@ -463,35 +463,35 @@ function handleModalKeyDown(e) {
 /* Buttons */
 .btn-new {
   display: flex; align-items: center; gap: 8px;
-  background: var(--gray-20); color: var(--gray-99);
+  background: var(--ink-20); color: var(--ink-99);
   border: none; border-radius: 8px; padding: 12px 20px;
   font-size: 15px; font-weight: 600; cursor: pointer;
 }
-.btn-new:hover { background: var(--gray-30); }
+.btn-new:hover { background: var(--ink-30); }
 .btn-new:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .btn-new:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-open {
-  flex: 1; background: var(--gray-93); border: 1px solid var(--gray-84);
+  flex: 1; background: var(--ink-93); border: 1px solid var(--ink-84);
   border-radius: 8px; padding: 10px 14px; font-size: 14px; font-weight: 600;
-  cursor: pointer; color: var(--gray-20); text-align: center; text-decoration: none;
+  cursor: pointer; color: var(--ink-20); text-align: center; text-decoration: none;
 }
-.btn-open:hover { background: var(--gray-88); }
+.btn-open:hover { background: var(--ink-88); }
 .btn-open:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .btn-icon {
   width: 40px; height: 40px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  background: none; border: 1px solid var(--gray-84); border-radius: 8px;
-  cursor: pointer; color: var(--gray-30);
+  background: none; border: 1px solid var(--ink-84); border-radius: 8px;
+  cursor: pointer; color: var(--ink-30);
 }
-.btn-icon:hover { background: var(--gray-93); }
+.btn-icon:hover { background: var(--ink-93); }
 .btn-icon:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .btn-icon-danger {
   width: 40px; height: 40px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  background: none; border: 1px solid var(--gray-84); border-radius: 8px;
+  background: none; border: 1px solid var(--ink-84); border-radius: 8px;
   cursor: pointer; color: oklch(45% 0.05 25);
 }
 .btn-icon-danger:hover { background: oklch(94% 0.04 25); border-color: oklch(80% 0.06 25); }
@@ -506,7 +506,7 @@ function handleModalKeyDown(e) {
   padding: 24px; z-index: 200;
 }
 .modal-box {
-  background: var(--gray-99); border-radius: 14px;
+  background: var(--ink-99); border-radius: 14px;
   width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto;
   padding: 28px 28px 24px;
   box-shadow: 0 20px 60px oklch(20% 0.02 75 / 0.25);
@@ -516,15 +516,15 @@ function handleModalKeyDown(e) {
 .btn-close {
   width: 32px; height: 32px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  background: none; border: none; border-radius: 6px; cursor: pointer; color: var(--gray-42);
+  background: none; border: none; border-radius: 6px; cursor: pointer; color: var(--ink-42);
 }
-.btn-close:hover { background: var(--gray-93); }
+.btn-close:hover { background: var(--ink-93); }
 .btn-close:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 /* Form elements */
 .form-input {
   width: 100%; box-sizing: border-box; padding: 10px 12px;
-  font-size: 15px; border: 1px solid var(--gray-78);
+  font-size: 15px; border: 1px solid var(--ink-78);
   border-radius: 8px; font-family: inherit;
 }
 .form-input:focus-visible {
@@ -542,7 +542,7 @@ function handleModalKeyDown(e) {
 
 .btn-layout {
   flex: 1; text-align: left; padding: 10px 12px; border-radius: 8px; cursor: pointer;
-  font-size: 13px; font-weight: 600; color: var(--gray-20);
+  font-size: 13px; font-weight: 600; color: var(--ink-20);
   border-width: 1.5px; border-style: solid;
   transition: background 0.15s, border-color 0.15s;
 }
@@ -550,18 +550,18 @@ function handleModalKeyDown(e) {
 
 .btn-cancel {
   padding: 10px 20px; font-size: 14px; font-weight: 600;
-  border-radius: 8px; border: 1px solid var(--gray-84);
+  border-radius: 8px; border: 1px solid var(--ink-84);
   background: none; cursor: pointer;
 }
-.btn-cancel:hover { background: var(--gray-93); }
+.btn-cancel:hover { background: var(--ink-93); }
 .btn-cancel:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .btn-submit {
   padding: 10px 20px; font-size: 14px; font-weight: 600;
   border-radius: 8px; border: none;
-  background: var(--gray-20); color: var(--gray-99); cursor: pointer;
+  background: var(--ink-20); color: var(--ink-99); cursor: pointer;
 }
-.btn-submit:hover { background: var(--gray-30); }
+.btn-submit:hover { background: var(--ink-30); }
 .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-submit:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 

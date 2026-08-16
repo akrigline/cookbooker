@@ -112,8 +112,8 @@ onUnmounted(() => {
   justify-content: space-between;
   gap: 16px;
   padding: 16px 24px;
-  border-bottom: 1px solid var(--gray-88);
-  background: var(--gray-99);
+  border-bottom: 1px solid var(--ink-88);
+  background: var(--ink-99);
 }
 
 .rpd-title {
@@ -138,8 +138,8 @@ onUnmounted(() => {
   padding: 10px 20px;
   border-radius: 8px;
   border: none;
-  background: var(--gray-20);
-  color: var(--gray-99);
+  background: var(--ink-20);
+  color: var(--ink-99);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -154,24 +154,24 @@ onUnmounted(() => {
   height: 32px;
   border-radius: 8px;
   border: none;
-  background: var(--gray-93);
-  color: var(--gray-20);
+  background: var(--ink-93);
+  color: var(--ink-20);
   cursor: pointer;
   transition: background 0.12s;
 }
 
-.rpd-nav-btn:hover:not(:disabled) { background: var(--gray-88); }
+.rpd-nav-btn:hover:not(:disabled) { background: var(--ink-88); }
 .rpd-nav-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .rpd-nav-btn:disabled { opacity: 0.35; cursor: default; }
 
-.rpd-edit-btn:hover { background: var(--gray-30); }
+.rpd-edit-btn:hover { background: var(--ink-30); }
 .rpd-edit-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .rpd-close {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--gray-42);
+  color: var(--ink-42);
   padding: 4px;
   display: flex;
   align-items: center;
@@ -180,8 +180,8 @@ onUnmounted(() => {
 }
 
 .rpd-close:hover {
-  background: var(--gray-93);
-  color: var(--gray-20);
+  background: var(--ink-93);
+  color: var(--ink-20);
 }
 
 .rpd-close:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }

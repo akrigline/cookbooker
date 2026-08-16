@@ -57,7 +57,7 @@ nav a:hover {
 }
 
 nav a.router-link-active {
-  color: var(--accent-color);
+  color: var(--sidebar-accent);
   font-weight: 600;
 }
 

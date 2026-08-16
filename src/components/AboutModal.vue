@@ -31,12 +31,12 @@ const emit = defineEmits(['close'])
   font-size: 20px;
   font-weight: 600;
   margin: 0 0 12px;
-  color: var(--gray-20);
+  color: var(--ink-20);
 }
 
 .modal-body {
   font-size: 14px;
-  color: var(--gray-30);
+  color: var(--ink-30);
   line-height: 1.6;
   margin: 0 0 16px;
 }
@@ -63,12 +63,12 @@ const emit = defineEmits(['close'])
 }
 
 .modal-btn--ghost {
-  background: var(--gray-93);
-  color: var(--gray-20);
-  border: 1px solid var(--gray-84);
+  background: var(--ink-93);
+  color: var(--ink-20);
+  border: 1px solid var(--ink-84);
 }
 
 .modal-btn--ghost:hover {
-  background: var(--gray-88);
+  background: var(--ink-88);
 }
 </style>

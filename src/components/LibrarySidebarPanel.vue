@@ -138,8 +138,8 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
 
 <style scoped>
 .pv-sidebar {
-  background: var(--gray-99);
-  border: 1px solid var(--gray-88);
+  background: var(--ink-99);
+  border: 1px solid var(--ink-88);
   border-radius: 14px;
   display: flex;
   flex-direction: column;
@@ -166,7 +166,7 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
   font-family: 'Newsreader', Georgia, serif;
   font-size: 15px;
   font-weight: 600;
-  color: var(--gray-30);
+  color: var(--ink-30);
   margin: 0;
 }
 
@@ -183,7 +183,7 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
   align-items: center;
   gap: 5px;
   font-size: 12px;
-  color: var(--gray-46);
+  color: var(--ink-46);
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
@@ -202,7 +202,7 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
 
 .sidebar-divider {
   height: 1px;
-  background: var(--gray-88);
+  background: var(--ink-88);
   margin: 0 16px;
 }
 
@@ -210,8 +210,8 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--gray-20);
-  color: var(--gray-99);
+  background: var(--ink-20);
+  color: var(--ink-99);
   border: none;
   border-radius: 8px;
   padding: 9px 14px;
@@ -222,7 +222,7 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
   white-space: nowrap;
 }
 
-.sidebar-btn:hover { background: var(--gray-30); }
+.sidebar-btn:hover { background: var(--ink-30); }
 
 .sidebar-btn--full { width: 100%; justify-content: center; }
 
@@ -230,10 +230,10 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
   font: inherit;
   font-size: 13px;
   padding: 8px 12px;
-  border: 1px solid var(--gray-84);
+  border: 1px solid var(--ink-84);
   border-radius: 8px;
-  background: var(--gray-99);
-  color: var(--gray-20);
+  background: var(--ink-99);
+  color: var(--ink-20);
   width: 100%;
   margin-bottom: 10px;
 }
@@ -255,7 +255,7 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
 .lib-list__empty {
   padding: 16px 0;
   font-size: 13px;
-  color: var(--gray-52);
+  color: var(--ink-52);
   font-style: italic;
 }
 
@@ -264,7 +264,7 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
   align-items: center;
   gap: 8px;
   padding: 8px 0;
-  border-bottom: 1px solid var(--gray-93);
+  border-bottom: 1px solid var(--ink-93);
   cursor: grab;
 }
 
@@ -293,7 +293,7 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
   flex: 1;
   font-size: 13px;
   font-weight: 500;
-  color: var(--gray-20);
+  color: var(--ink-20);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -307,21 +307,21 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  border: 1px solid var(--gray-84);
-  background: var(--gray-96);
-  color: var(--gray-30);
+  border: 1px solid var(--ink-84);
+  background: var(--ink-96);
+  color: var(--ink-30);
   cursor: pointer;
   flex-shrink: 0;
   transition: background 0.12s;
 }
 
-.lib-row__add-btn:hover { background: var(--gray-93); }
+.lib-row__add-btn:hover { background: var(--ink-93); }
 .lib-row__add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .lib-bulk-bar {
   flex-shrink: 0;
-  background: var(--gray-99);
-  border-top: 1px solid var(--gray-88);
+  background: var(--ink-99);
+  border-top: 1px solid var(--ink-88);
   padding: 10px 14px;
   display: flex;
   flex-direction: column;
@@ -332,7 +332,7 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
 .lib-bulk-bar__count {
   font-size: 12px;
   font-weight: 600;
-  color: var(--gray-46);
+  color: var(--ink-46);
 }
 
 .lib-bulk-bar__actions {
@@ -345,7 +345,7 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
 .lib-bulk-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--gray-46);
+  color: var(--ink-46);
   white-space: nowrap;
 }
 
@@ -353,10 +353,10 @@ const someSelected = computed(() => props.availableRecipes.some((r) => props.lib
   font: inherit;
   font-size: 12px;
   padding: 6px 8px;
-  border: 1px solid var(--gray-84);
+  border: 1px solid var(--ink-84);
   border-radius: 7px;
-  background: var(--gray-99);
-  color: var(--gray-20);
+  background: var(--ink-99);
+  color: var(--ink-20);
   flex: 1;
 }
 

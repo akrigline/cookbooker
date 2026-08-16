@@ -3,6 +3,14 @@
 This file is the project's committed home for project-intrinsic agent knowledge: build, test, release, architecture, and sharp-edge notes that should travel with the code.
 
 - Add durable project-specific notes here as they are discovered through real work.
+- The root `DESIGN.md` (following the [google-labs-code/design.md](https://github.com/google-labs-code/design.md)
+  spec: YAML frontmatter of `colors`/`typography`/`rounded`/`spacing`/`components` tokens, then 8
+  ordered sections) is the canonical design-system reference — colors, typography, layout,
+  elevation, shapes, and component values. It's generated from and should be kept in sync with the
+  actual CSS (`src/css/tokens.css` and component `<style>` blocks), not the other way around: if a
+  future change makes `DESIGN.md` disagree with the code, the code wins and `DESIGN.md` needs
+  updating. Known inconsistencies between components that haven't been reconciled yet are tracked
+  in `brainstorming/design-system-inconsistencies.md`, not in `DESIGN.md` itself.
 - Do not adhere to or reference any documents in `brainstorming/` unless specifically mentioned by the user for a specific task.
 - The `superpowers` plugin is a transient exploration/brainstorming tool, not the project's durable convention.
   OpenSpec is. Any superpowers output (plans, specs, SDD task artifacts) must be directed to
@@ -158,17 +166,14 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   so lowercasing alone doesn't fix it.
 
 - `src/css/tokens.css`'s chrome-palette tokens (`--color-focus`, `--color-danger*`,
-  `--color-success*`, `--gray-*`) came from `DESIGN_TOKENS_PLAN.md`'s literal-to-token migration
-  (2026-08-02) and are deliberately a light-only, minimal set — see that file for the full
-  per-family rationale. Two things a later cleanup pass should not mistake for leftover work:
-  the 11 `--gray-*` stops include one (`--gray-46`) added mid-migration because ~25 call sites
-  sat exactly at the midpoint between two of the original 10 stops (a second addition,
-  `--gray-86`, was later folded back into `--gray-84` once usage showed the two were a
-  view/component naming split rather than a real distinct tone — don't re-add it without new
-  evidence); and plenty of `oklch(...)` literals at hue 25 (danger-adjacent) and hue 250
-  (focus-adjacent) remain in components on purpose — they're hover/disabled/selection-state
-  shades distinct from the exact literal each token captures, and the plan's scope was strictly
-  "replace exact matches," not "generalize every color in the family."
+  `--color-success*`, `--ink-*`) came from `DESIGN_TOKENS_PLAN.md`'s literal-to-token migration
+  (2026-08-02, tokens renamed `--gray-*` → `--ink-*` 2026-08-16) and are deliberately a
+  light-only, minimal set — see that file for the full per-family rationale. One thing a later
+  cleanup pass should not mistake for leftover work: the 11 `--ink-*` stops include one
+  (`--ink-46`) added mid-migration because ~25 call sites sat exactly at the midpoint between two
+  of the original 10 stops (a second addition, `--ink-86`, was later folded back into `--ink-84`
+  once usage showed the two were a view/component naming split rather than a real distinct tone —
+  don't re-add it without new evidence).
 
 - `RecipePreviewDialog.vue` (opened from `ProjectView.vue`'s chapter recipe rows) stays a `Modal`
   dialog, not a slide-out panel or dedicated route — decided when adding prev/next navigation
