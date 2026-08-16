@@ -18,6 +18,11 @@ const emit = defineEmits(['print'])
         Print / Save as PDF
       </button>
     </div>
+    <p class="margin-hint">
+      In the print dialog, set <strong>Margins</strong> to <strong>None</strong> - this page
+      already lays out its own margins, and a browser-added margin on top will push everything
+      off-center.
+    </p>
   </div>
 </template>
 
@@ -33,6 +38,12 @@ const emit = defineEmits(['print'])
   justify-content: space-between;
   align-items: center;
   gap: 16px;
+}
+
+.margin-hint {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--ink-46);
 }
 
 .toolbar h1 {

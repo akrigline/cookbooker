@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useProjectsStore } from '../stores/projects'
 import { useRecipesStore } from '../stores/recipes'
 import { buildChapterPlan, layoutBookPages } from '../js/compileBook'
@@ -82,34 +82,6 @@ const pageNumbers = computed(() =>
 function printPage() {
   window.print()
 }
-
-// Real print margins for double-sided books: @page is a top-level at-rule
-// and can't be written inside this SFC's own <style> block scoped to a
-// class (Vue's compiler also rejects a <style> tag placed directly in
-// <template> - "tags with side effect are ignored"). So this manages a
-// plain <style> element in document.head imperatively, matching the
-// toggle exactly. :first pins the Title Page symmetric, overriding
-// :right's gutter for that one page.
-let gutterStyleEl = null
-watch(
-  doubleSided,
-  (enabled) => {
-    if (enabled && !gutterStyleEl) {
-      gutterStyleEl = document.createElement('style')
-      gutterStyleEl.textContent = `
-        @page :right { margin-left: 0.75in; margin-right: 0.5in; }
-        @page :left { margin-left: 0.5in; margin-right: 0.75in; }
-        @page :first { margin: 0.5in; }
-      `
-      document.head.appendChild(gutterStyleEl)
-    } else if (!enabled && gutterStyleEl) {
-      gutterStyleEl.remove()
-      gutterStyleEl = null
-    }
-  },
-  { immediate: true },
-)
-onBeforeUnmount(() => gutterStyleEl?.remove())
 </script>
 
 <template>
@@ -176,16 +148,21 @@ onBeforeUnmount(() => gutterStyleEl?.remove())
   }
 }
 
-/* Screen-preview mirror of the double-sided gutter/page-number position:
-   DOM order among .print-project__pages's .page-preview children is
-   physical page order (one child per physical page, blanks included), so
-   nth-of-type parity is exactly page parity - no JS-computed prop needed.
-   The dedicated wrapper matters: nth-of-type counts by tag name among ALL
-   siblings, not just elements matching the rest of the selector, so
-   without it PrintToolbar's own root <div> would occupy a "div" sibling
-   slot and shift every page's parity by one. :not(:first-of-type)
-   excludes the Title Page (always position 1), which stays symmetric.
-   :deep() reaches into PagePreview.vue's own scoped elements. */
+/* The real double-sided gutter/page-number mechanism, in both screen
+   preview and print - not a screen-only approximation of something else
+   real print uses, since PagePreview.vue's margin is now the same
+   .page-preview__margin padding in both modes (print.css sets @page's own
+   margin to 0, so there's no second, @page-based gutter to keep in sync
+   with this one). DOM order among .print-project__pages's .page-preview
+   children is physical page order (one child per physical page, blanks
+   included), so nth-of-type parity is exactly page parity - no
+   JS-computed prop needed. The dedicated wrapper matters: nth-of-type
+   counts by tag name among ALL siblings, not just elements matching the
+   rest of the selector, so without it PrintToolbar's own root <div> would
+   occupy a "div" sibling slot and shift every page's parity by one.
+   :not(:first-of-type) excludes the Title Page (always position 1), which
+   stays symmetric. :deep() reaches into PagePreview.vue's own scoped
+   elements. */
 .print-project--double-sided
   :deep(.print-project__pages .page-preview:not(:first-of-type):nth-of-type(odd) .page-preview__margin) {
   padding-left: 0.75in;

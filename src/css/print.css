@@ -1,26 +1,31 @@
-/* Print pagination: plain @page sizing/margins only. Page numbers are NOT
-   rendered via CSS Paged Media margin boxes (`@bottom-right` + counter(page))
-   - Chrome's support for that spec is too unreliable in practice (footer
-   content silently fails to render, and counter-reset on the UA `page`
-   counter doesn't reliably restart numbering after the Cover/TOC). Page
-   numbers are instead a normal HTML element positioned in the top-right
-   (or, for double-sided books, outer-top) corner of each page, computed in
-   JS (see compileBook.js's `layoutBookPages` and PagePreview.vue's
-   `pageNumber` prop) - the alternative this project's original design
-   explicitly passed over, but the one that actually works.
+/* Print pagination: plain @page sizing only - margin is deliberately 0, see
+   below. Page numbers are NOT rendered via CSS Paged Media margin boxes
+   (`@bottom-right` + counter(page)) - Chrome's support for that spec is too
+   unreliable in practice (footer content silently fails to render, and
+   counter-reset on the UA `page` counter doesn't reliably restart numbering
+   after the Cover/TOC). Page numbers are instead a normal HTML element
+   positioned in the bottom-right (or, for double-sided books, outer-bottom)
+   corner of each page, computed in JS (see compileBook.js's
+   `layoutBookPages` and PagePreview.vue's `pageNumber` prop) - the
+   alternative this project's original design explicitly passed over, but
+   the one that actually works.
 
-   @page's own `margin` here IS the real print margin - the sole source of
-   it. PagePreview.vue's `.page-preview__margin` padding is a screen-only
-   mockup of this (zeroed under `@media print`), not a second layer that
-   stacks with it. Double-sided books add per-parity gutter margins via
-   `@page :left`/`:right`/`:first` overrides, which unlike margin-box
-   *content* are a reliably-supported, plain-margin-only subset of the same
-   spec (see ProjectPrint.vue's conditional `<style>` block) - this base
-   rule is what's in effect when double-sided printing is off. */
+   The real print margin comes entirely from PagePreview.vue's own
+   `.page-preview__margin` padding (0.5in, or the asymmetric double-sided
+   gutter ProjectPrint.vue applies on top of it) - the SAME box in both
+   screen preview and print, not a print-only approximation of some other
+   margin. @page's own `margin` is 0 here on purpose: relying on it as a
+   second, independent margin source (the previous design) meant it had to
+   be kept in exact sync with our own CSS by hand, and its cross-browser/
+   cross-printer reliability is exactly the kind of thing this file already
+   doesn't trust for margin-box content, above. Because @page's margin is
+   0, a user's own print-dialog "Margins" setting is now the only remaining
+   place a *third* margin could sneak in - PrintToolbar.vue tells users to
+   pick "None" there so our own padding stays the sole source. */
 
 @page {
   size: 8.5in 11in;
-  margin: 0.5in;
+  margin: 0;
 }
 
 .grayscale-print {

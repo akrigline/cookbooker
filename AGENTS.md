@@ -251,10 +251,27 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   1 on the first chapter divider, per print convention and the
   `print-and-export` spec's "System Print Integration" requirement), and
   `PagePreview.vue`'s `pageNumber` prop renders them as a normal absolutely-
-  positioned element in the page's top-right corner - not a footer. `src/css/
-  print.css`'s `@page` rule is now just sizing/margins. `TableOfContentsPage.
-  vue` reads the same `assignPageNumbers()` maps to print each entry's page
-  number with a dotted leader.
+  positioned element in the page's bottom-right corner - not a footer.
+  `TableOfContentsPage.vue` reads the same `assignPageNumbers()` maps to
+  print each entry's page number with a dotted leader.
+- The print margin comes entirely from `PagePreview.vue`'s own
+  `.page-preview__margin` padding (0.5in) - the SAME box in screen preview
+  and print, not a print-only approximation of some other margin.
+  `src/css/print.css`'s `@page` rule sets `margin: 0` deliberately: an
+  earlier design used `@page`'s own margin as the real margin (with this
+  padding zeroed at print so the two didn't stack), but that meant two
+  independently-declared margins had to be kept in sync by hand, and it
+  silently broke page-number positioning + double-sided gutters when
+  `.page-preview` briefly needed a non-fixed height for other reasons -
+  see git history around `PagePreview.vue`/`ProjectPrint.vue` if this
+  surfaces again. Because `@page`'s margin is 0, a user's own print-dialog
+  "Margins" setting is the only remaining place a second margin could
+  sneak in on top of ours - `PrintToolbar.vue` tells users to pick "None".
+  Double-sided books' asymmetric binding gutter
+  (`ProjectPrint.vue`'s `nth-of-type`-based padding/page-number overrides
+  on `.page-preview__margin`) is this same mechanism, not a separate
+  print-only one - no more imperative `@page :left`/`:right` `<style>`
+  injection needed.
 
 - The table of contents can span multiple physical pages (2 columns each), not a fixed one page.
   The intra-page column split is real CSS, not hand-rolled JS: `TableOfContentsPage.vue`'s

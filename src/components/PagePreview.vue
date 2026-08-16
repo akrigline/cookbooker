@@ -23,8 +23,11 @@ defineProps({
 // Fixed page height clips overflowing content with no other visual sign
 // anything was cut off. .page-preview__content is itself height-clamped
 // (max-height: 100% + overflow: hidden, below), so its own scrollHeight vs
-// clientHeight is a direct self-overflow check - screen only, since print
-// switches to height:auto and never clips.
+// clientHeight is a direct self-overflow check - screen only because JS
+// can't observe print-media layout, but print now clips exactly the same
+// way (.page-preview keeps the same fixed box in both modes), so this
+// warning is a true preview of what print will do, not just a screen-only
+// approximation of a different print behavior.
 const contentEl = ref(null)
 const isOverflowing = ref(false)
 
@@ -145,22 +148,21 @@ onBeforeUnmount(() => {
 }
 
 @media print {
+  /* Width/height/padding are NOT overridden here - .page-preview and
+     .page-preview__margin keep the exact same 8.5in/11in/0.5in box model as
+     the screen mockup. @page's own margin is 0 (print.css), so there's no
+     second margin source left to double up with; the one real source is
+     this padding, in both modes. Only the screen-only chrome (drop shadow,
+     rounded corners, the centering margin between stacked previews, and
+     the dashed margin-guide outline) needs zeroing for print. */
   .page-preview {
     box-shadow: none;
     border-radius: 0;
     margin: 0;
-    width: auto;
-    height: auto;
     break-after: page;
   }
 
-  /* @page (print.css) is the sole source of the real print margin at print
-     time - this padding is a screen-only mockup of that margin (and, for
-     double-sided books, of the parity-swapped gutter set by ProjectPrint.vue's
-     nth-of-type CSS). Without zeroing it here, it stacked on top of @page's
-     own margin in real print output. */
   .page-preview__margin {
-    padding: 0;
     outline: none;
   }
 
