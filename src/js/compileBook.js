@@ -29,6 +29,32 @@ export function buildChapterPlan({ chapters, projectRecipes, recipesById, projec
 }
 
 /**
+ * Digit count of the largest page number the table of contents can print for
+ * this plan - what TableOfContentsPage.vue reserves its number column from.
+ *
+ * This is deliberately an upper bound computed from the plan alone, NOT the
+ * exact maximum read back from layoutBookPages. It has to be knowable before
+ * the TOC is measured, and the exact numbers aren't: page numbers come from
+ * layoutBookPages, whose blank-page insertion depends on physical page parity,
+ * which depends on how many pages the TOC itself takes - which is the thing the
+ * measurement is trying to work out. Bounding it breaks that cycle.
+ *
+ * The bound: one printed page per divider, one per recipe, plus at most one
+ * double-sided blank per divider (each of which silently consumes a number),
+ * plus slack. Overshooting by a digit costs a few px of title width;
+ * undershooting would let a number render wider than the column measured for,
+ * which is the bug this exists to prevent - so the bound is one-directional on
+ * purpose. Numbering restarts at 1 on the first divider regardless of TOC
+ * length, so the TOC's own page count is correctly absent from this.
+ */
+export function maxPageNumberDigits(chapterPlan) {
+  const dividers = chapterPlan.length
+  const recipes = chapterPlan.reduce((sum, { recipes: r }) => sum + r.length, 0)
+  const upperBound = dividers * 2 + recipes + 2
+  return String(Math.max(1, upperBound)).length
+}
+
+/**
  * Lays out a chapter plan's printed pages (in order, after the Title Page,
  * which callers render separately since it's always exactly one page) and
  * numbers them, per print convention: numbering begins on the first page of

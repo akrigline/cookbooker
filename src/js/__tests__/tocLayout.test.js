@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildTocRows, measureTocLayout } from '../tocLayout'
+import { maxPageNumberDigits } from '../compileBook'
 
 const chapterPlan = [
   {
@@ -37,18 +38,36 @@ describe('buildTocRows', () => {
   })
 })
 
-// The real pagination/column-splitting logic now lives entirely in CSS
+// The real pagination/column-splitting logic lives entirely in CSS
 // (`.toc-rows`'s `columns: 2; column-fill: auto` - see TableOfContentsPage.vue)
-// rather than hand-rolled JS, so there's no pure height-summing function left
-// to unit test. happy-dom also has no real layout engine (getBoundingClientRect
+// rather than hand-rolled JS, so there's no pure height-summing function to
+// unit test. happy-dom also has no real layout engine (getBoundingClientRect
 // always returns 0), so these plumbing tests can only exercise mount/measure/
-// unmount behavior, not real column-fill placement - that's verified by hand
-// against a real browser instead.
+// unmount behavior, not real column-fill placement.
+//
+// That gap is real and has cost us: every TOC clipping bug so far came from the
+// measurement being handed geometry that differs from what renders, and no test
+// here could catch it. The two defenses that DO cover it live elsewhere - the
+// pure inputs are unit-tested (maxPageNumberDigits in compileBook.test.js,
+// pageContentBox in pageDimensions.test.js), and ProjectPrint.vue's dev-only
+// warnOnClippedTocRows fails loudly in a real browser when they disagree.
 describe('measureTocLayout', () => {
   it('returns a single empty page for an empty chapter plan', async () => {
     const result = await measureTocLayout([])
     expect(result.pages).toHaveLength(1)
     expect(result.pages[0].rows).toEqual([])
+  })
+
+  // ProjectPrint.vue must render with the same number-column width the split
+  // was measured with; returning it here is what keeps the two from drifting.
+  it('reports the number-column digit count it measured with', async () => {
+    const result = await measureTocLayout(chapterPlan)
+    expect(result.numberDigits).toBe(maxPageNumberDigits(chapterPlan))
+  })
+
+  it('reports a digit count for an empty plan too', async () => {
+    const result = await measureTocLayout([])
+    expect(result.numberDigits).toBeGreaterThanOrEqual(1)
   })
 
   it('places every row somewhere across the returned pages, in order, for a real plan', async () => {

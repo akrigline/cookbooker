@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildChapterPlan, layoutBookPages } from './compileBook'
+import { buildChapterPlan, layoutBookPages, maxPageNumberDigits } from './compileBook'
 
 const recipesById = new Map([
   [1, { id: 1, title: 'Pancakes' }],
@@ -153,5 +153,51 @@ describe('layoutBookPages', () => {
     expect(recipePages.get('12:3')).toBe(5)
     // Physical pages: Title(1), toc(2,3,4), divider(5), recipe(6,7), divider(8), recipe(9).
     expect(pages.find((p) => p.chapterId === 11 && p.type === 'divider').page).toBe(5)
+  })
+})
+
+// The number column TocRecipeRow/TocChapterRow reserve is sized from this. It
+// must be an upper bound and never an underestimate: too wide costs a few px of
+// title space, too narrow lets a rendered number outgrow the width the TOC was
+// measured with, which silently over-fills pages (see tocLayout.js).
+describe('maxPageNumberDigits', () => {
+  const planOf = (chapters) =>
+    chapters.map((count, i) => ({
+      chapter: { id: i + 1, name: `Chapter ${i + 1}` },
+      recipes: Array.from({ length: count }, (_, r) => ({ id: `${i}-${r}`, title: 'r' })),
+    }))
+
+  it('never underestimates the largest number layoutBookPages can print', () => {
+    for (const chapters of [[0], [1, 1], [5, 5, 5], [40, 40, 40], [3, 0, 7, 12]]) {
+      const plan = planOf(chapters)
+      for (const doubleSided of [false, true]) {
+        const { dividerPages, recipePages } = layoutBookPages(plan, {
+          doubleSided,
+          tocPageCount: 2,
+        })
+        const largest = Math.max(0, ...dividerPages.values(), ...recipePages.values())
+        expect(maxPageNumberDigits(plan)).toBeGreaterThanOrEqual(String(largest).length)
+      }
+    }
+  })
+
+  it('does not depend on how many pages the table of contents takes', () => {
+    // This is what breaks the circular dependency: the number column has to be
+    // sized before the TOC is measured, so it cannot be a function of the
+    // TOC's own length.
+    const plan = planOf([10, 10])
+    expect(maxPageNumberDigits(plan)).toBe(maxPageNumberDigits(plan))
+    const { dividerPages: a } = layoutBookPages(plan, { tocPageCount: 1 })
+    const { dividerPages: b } = layoutBookPages(plan, { tocPageCount: 9 })
+    expect(a.get(1)).toBe(b.get(1))
+  })
+
+  it('returns at least one digit for an empty plan', () => {
+    expect(maxPageNumberDigits([])).toBe(1)
+  })
+
+  it('grows with the book', () => {
+    expect(maxPageNumberDigits(planOf([2]))).toBe(1)
+    expect(maxPageNumberDigits(planOf([200, 200]))).toBe(3)
   })
 })

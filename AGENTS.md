@@ -275,35 +275,50 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 - The table of contents can span multiple physical pages (2 columns each), not a fixed one page.
   The intra-page column split is real CSS, not hand-rolled JS: `TableOfContentsPage.vue`'s
-  `.toc-rows` is `columns: 2; column-fill: auto; height: 100%` (`calc(100% - 60px)` via the
-  `.toc-rows--with-heading` modifier when `showHeading` is true, to leave room for the "Table of
-  Contents" heading - column-fill:auto is only honored by Chrome/WebKit when the container has an
-  explicit height, W3C csswg-drafts #4689), and each row component has `break-inside: avoid` so a
-  wrapped multi-line title never splits across the column boundary. An earlier version reimplemented
+  `.toc-rows` is `columns: 2; column-fill: auto`, sized by `.toc-page`'s
+  `grid-template-rows: auto 1fr` (heading row, then rows row - `.toc-rows` is pinned to
+  `grid-row: 2` so continuation pages without an `<h2>` still land in the `1fr` track). That grid
+  replaced a hand-tuned `calc(100% - 60px)` heading reserve, which was 3px wrong and was a constant
+  someone had to re-derive whenever the heading's type changed; `auto 1fr` is correct by
+  construction. It must stay a *definite* height - `column-fill: auto` is only honored by
+  Chrome/WebKit when the multicol container's height resolves (W3C csswg-drafts #4689), which a
+  `1fr` track in a fixed-height grid does. Each row component has `break-inside: avoid` so a wrapped
+  multi-line title never splits across the column boundary. An earlier version reimplemented
   column-balancing by hand in JS from measured row heights (e.g. gluing a chapter header to its
   first recipe so neither would be stranded cost ~6 lines of blank space whenever a fresh chapter
   started near a column's end) - trust the browser's layout for this, don't rebuild it.
   `src/js/tocLayout.js`'s `measureTocLayout` only has to find the *page* cut points: it mounts
-  `TableOfContentsPage` off-screen in a plain div sized to `CONTENT_WIDTH_IN`/`CONTENT_HEIGHT_PX`
-  (matching the real page's content box, so `.toc-rows`'s `height: 100%`/`calc()` resolves the same
-  off-screen as it does inside `PagePreview.vue`'s real box), with every remaining row in that same
-  real `columns: 2; column-fill: auto` flow, and - since CSS multicol lets content that overflows N
-  columns spill into repeating column "runs" extending sideways past the container's own width,
-  rather than clipping it, in continuous (non-paginated) media - reads back each row's rendered x
-  position to know which column (and via `Math.floor(columnIndex / 2)`, which page) real
-  column-fill layout placed it on. `CONTENT_HEIGHT_PX` must equal exactly what the real page
-  resolves - verified with `document.querySelector('.toc-rows').clientHeight` on an actual rendered
-  print preview (960px on an 8.5x11in/0.5in-margin page, 900px with the heading), not assumed from
-  `inches * 96px/in` math alone. **A stray `+ 90` correction was briefly added here and made things
-  worse, not better**: it was a fix for a *different*, since-removed bug (a separately-measured,
-  inaccurate JS heading height, back when `.toc-rows`'s height was still JS-computed rather than
-  this CSS `100%`/`calc()`); once that was replaced, the `+90` just made the measurement think more
-  rows fit than the real page's `overflow: hidden` actually allows, silently clipping the excess
-  rather than under-filling the page - worse than the bug it was chasing, and much less visible.
-  **If a future "N off, tweak this number" report comes in, re-derive the correction from
-  `clientHeight` on the real page again rather than reapplying an old offset** - the two are only
-  guaranteed to agree right after they were checked together; either side of this can drift
-  independently as the surrounding code changes. This needs only two off-screen mounts total
+  `TableOfContentsPage` off-screen in a plain div sized by `pageDimensions.js`'s `pageContentBox()`,
+  with every remaining row in that same real `columns: 2; column-fill: auto` flow, and - since CSS
+  multicol lets content that overflows N columns spill into repeating column "runs" extending
+  sideways past the container's own width, rather than clipping it, in continuous (non-paginated)
+  media - reads back each row's rendered x position to know which column (and via
+  `Math.floor(columnIndex / 2)`, which page) real column-fill layout placed it on. That inference
+  has been checked against N separate real 2-column pages and is exact; **when the TOC drops
+  entries, the bug is almost never the algorithm - it is that measurement was handed geometry or
+  content that differs from what renders.** Three separate instances of exactly that shipped:
+  - **Content width.** `ProjectPrint.vue` widens one side's padding to `PAGE_GUTTER` on every page
+    after the cover, so a double-sided book's content box is 7.25in, not 7.5in - on *both* rectos
+    and versos, since the gutter just swaps sides. Measuring 7.5in wrapped titles later than the
+    page does. This is why `measureTocLayout` takes `{ doubleSided }`, and why `ProjectPrint.vue`
+    keys its gutter CSS off `--page-gutter`/`--page-margin` bound from `pageDimensions.js` rather
+    than re-typing the literals - one source, so the two cannot drift.
+  - **Page numbers.** Real numbers come from `layoutBookPages`, which needs the TOC's page count,
+    which is what the measurement computes - so measurement renders a placeholder (`1`). That is
+    only safe because `TocRecipeRow`/`TocChapterRow` reserve a fixed number column
+    (`--toc-number-width` from `compileBook.js`'s `maxPageNumberDigits`, plus `tabular-nums`): with
+    an auto-width number, a rendered 3-digit number is wider than the measured `1`, squeezes
+    `.toc-title`, and tips borderline titles onto a second line. `maxPageNumberDigits` is
+    deliberately an over-estimating bound computed from the plan alone, because it must be knowable
+    *before* the measurement - don't "tighten" it into a function of the real numbers, that
+    reintroduces the cycle.
+  - **A `+ 90` fudge** in the old `CONTENT_HEIGHT_PX`, added to make page 1 look right, which
+    over-filled every page by ~90px. That constant and `CONTENT_WIDTH_IN` are both gone.
+  All three were invisible: `PagePreview` clips with `overflow: hidden` and TOC pages suppress its
+  overflow warning (below). `ProjectPrint.vue`'s dev-only `warnOnClippedTocRows` is the replacement
+  signal - it console-warns when any rendered row escapes its `.page-preview__content` box. Reach
+  for it first when this area misbehaves, and trust it over reasoning.
+  Measurement needs only two off-screen mounts total
   regardless of how many pages result: one with the heading shown (page 1) to find how many rows
   fit there, and one without (every subsequent page) for whatever didn't fit, since column-fill is
   monotonic and overflow just keeps spilling sideways through as many page-worth column-pairs as

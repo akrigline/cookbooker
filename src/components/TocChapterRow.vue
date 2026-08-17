@@ -43,8 +43,12 @@ defineProps({
   opacity: 0.5;
 }
 
+/* Fixed-width number column - see the same rule in TocRecipeRow.vue for why
+   this must not depend on the number's digit count. */
 .toc-page-number {
   flex: 0 0 auto;
+  min-width: var(--toc-number-width, 2ch);
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 </style>

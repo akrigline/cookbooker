@@ -40,8 +40,20 @@ defineProps({
   opacity: 0.5;
 }
 
+/* Fixed-width number column (see TableOfContentsPage.vue's --toc-number-width).
+   Not cosmetic: with an auto-width number, a 3-digit page number is wider than
+   a 1-digit one, which shrinks .toc-title and can tip a borderline title onto a
+   second line. tocLayout.js has to measure this row before real page numbers
+   exist (they depend on the TOC's own length), so it measures with a
+   placeholder - and any value-dependent width makes the measured row shorter
+   than the rendered one, silently over-filling the page. Reserving the column
+   makes row height independent of the number's value, which is what lets that
+   placeholder be correct. tabular-nums because `ch` is the width of "0" and
+   proportional digits aren't all that wide. */
 .toc-page-number {
   flex: 0 0 auto;
+  min-width: var(--toc-number-width, 2ch);
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 </style>

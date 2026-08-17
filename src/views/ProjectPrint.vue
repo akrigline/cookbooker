@@ -1,9 +1,10 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useProjectsStore } from '../stores/projects'
 import { useRecipesStore } from '../stores/recipes'
 import { buildChapterPlan, layoutBookPages } from '../js/compileBook'
 import { measureTocLayout } from '../js/tocLayout'
+import { PAGE_GUTTER, PAGE_MARGIN } from '../js/pageDimensions'
 import PagePreview from '../components/PagePreview.vue'
 import PrintToolbar from '../components/PrintToolbar.vue'
 import CoverPage from '../components/CoverPage.vue'
@@ -51,21 +52,57 @@ const chaptersById = computed(() => new Map(chapterPlan.value.map((e) => [e.chap
 // `tocReady` so a stale/undercounted TOC page count is never shown, even
 // briefly. `tocMeasureToken` drops the result of a superseded async run if
 // the chapter plan changes again before a previous measurement resolves.
+// `doubleSided` is a real dependency here, not just a rendering flag: it changes
+// the page's content width via the binding gutter below, so toggling it has to
+// re-measure or the TOC keeps a split computed for the other width.
 const tocPages = ref([])
+const tocNumberDigits = ref(2)
 const tocReady = ref(false)
 let tocMeasureToken = 0
 watch(
-  [chapterPlan, showToc],
-  async ([plan, enabled]) => {
+  [chapterPlan, showToc, doubleSided],
+  async ([plan, enabled, isDoubleSided]) => {
     const token = ++tocMeasureToken
     tocReady.value = false
-    const pages = enabled ? (await measureTocLayout(plan)).pages : []
+    const result = enabled
+      ? await measureTocLayout(plan, { doubleSided: isDoubleSided })
+      : { pages: [], numberDigits: 2 }
     if (token !== tocMeasureToken) return
-    tocPages.value = pages
+    tocPages.value = result.pages
+    // Render with the value the split was measured with, rather than
+    // recomputing - a mismatch would reintroduce measured-vs-rendered drift.
+    tocNumberDigits.value = result.numberDigits
     tocReady.value = true
+    if (import.meta.env.DEV) nextTick(() => warnOnClippedTocRows())
   },
   { immediate: true },
 )
+
+// TOC pages set `hide-overflow-warning` (correctly - they pack right to the
+// column edge, which trips PagePreview's own scrollHeight heuristic as a false
+// positive), so a genuinely over-filled TOC page has no visible symptom at all:
+// PagePreview just clips it. Every TOC clipping bug found so far was silent for
+// exactly that reason. This is the replacement signal - dev-only, since it costs
+// a layout read per row.
+function warnOnClippedTocRows() {
+  for (const page of document.querySelectorAll('.print-project__pages .page-preview')) {
+    const content = page.querySelector('.page-preview__content')
+    const rows = page.querySelectorAll('.toc-rows > *')
+    if (!content || rows.length === 0) continue
+    const box = content.getBoundingClientRect()
+    const clipped = Array.from(rows).filter((row) => {
+      const r = row.getBoundingClientRect()
+      return r.bottom > box.bottom + 0.5 || r.right > box.right + 0.5
+    })
+    if (clipped.length > 0) {
+      console.warn(
+        `[toc] ${clipped.length} row(s) assigned to a TOC page that cannot display them - ` +
+          'measured page geometry disagrees with rendered geometry (see tocLayout.js).',
+        clipped.map((el) => el.textContent.trim()),
+      )
+    }
+  }
+}
 
 // Numbering begins at 1 on the first chapter divider (the Title Page and
 // Table of Contents are unnumbered front matter, per print-and-export
@@ -85,7 +122,15 @@ function printPage() {
 </script>
 
 <template>
-  <div v-if="project" class="print-project" :class="{ 'print-project--double-sided': doubleSided }">
+  <!-- The gutter/margin widths come from pageDimensions.js rather than being
+       re-typed as literals in the CSS below, because tocLayout.js has to
+       measure against the exact same numbers - see pageContentBox(). -->
+  <div
+    v-if="project"
+    class="print-project"
+    :class="{ 'print-project--double-sided': doubleSided }"
+    :style="{ '--page-gutter': PAGE_GUTTER, '--page-margin': PAGE_MARGIN }"
+  >
     <PrintToolbar :title="`Print Preview: ${project.title}`" @print="printPage" />
 
     <p v-if="!tocReady" class="print-project__preparing">Preparing print preview…</p>
@@ -109,6 +154,7 @@ function printPage() {
             :show-heading="entry.tocPageIndex === 0"
             :page-numbers="pageNumbers"
             :accent-color="project.accentColor"
+            :number-digits="tocNumberDigits"
           />
         </PagePreview>
 
@@ -165,17 +211,17 @@ function printPage() {
    elements. */
 .print-project--double-sided
   :deep(.print-project__pages .page-preview:not(:first-of-type):nth-of-type(odd) .page-preview__margin) {
-  padding-left: 0.75in;
-  padding-right: 0.5in;
+  padding-left: var(--page-gutter);
+  padding-right: var(--page-margin);
 }
 .print-project--double-sided
   :deep(.print-project__pages .page-preview:nth-of-type(even) .page-preview__margin) {
-  padding-left: 0.5in;
-  padding-right: 0.75in;
+  padding-left: var(--page-margin);
+  padding-right: var(--page-gutter);
 }
 .print-project--double-sided
   :deep(.print-project__pages .page-preview:nth-of-type(even) .page-preview__page-number) {
   right: auto;
-  left: 0.5in;
+  left: var(--page-margin);
 }
 </style>

@@ -1,20 +1,7 @@
 import { createApp, h, nextTick } from 'vue'
 import TableOfContentsPage from '../components/TableOfContentsPage.vue'
-import { PAGE_MARGIN_IN, PAGE_HEIGHT_IN, PAGE_WIDTH_IN, CSS_PX_PER_IN } from './pageDimensions.js'
-
-const CONTENT_WIDTH_IN = PAGE_WIDTH_IN - PAGE_MARGIN_IN * 2
-// Verified against the real, live page: PagePreview.vue's `.toc-rows`
-// resolves to exactly this (960px on an 8.5x11in/0.5in-margin page) via its
-// own `height: 100%` chain (see TableOfContentsPage.vue) - checked with
-// `el.clientHeight` on an actual rendered `.toc-page` in the browser, not
-// assumed. This container's explicit height must match that number exactly
-// so `.toc-rows`'s `height: 100%` / `calc(100% - 60px)` resolves off-screen
-// the same way it does on the real page - if it drifts, rows silently get
-// assigned to a page that can't actually fit them (invisibly clipped by
-// PagePreview's `overflow: hidden`), which is worse than under-filling a
-// page. Re-verify with `document.querySelector('.toc-rows').clientHeight`
-// on a real print preview before changing this.
-const CONTENT_HEIGHT_PX = (PAGE_HEIGHT_IN - PAGE_MARGIN_IN * 2) * CSS_PX_PER_IN + 90
+import { maxPageNumberDigits } from './compileBook.js'
+import { pageContentBox } from './pageDimensions.js'
 
 /**
  * Flattens a chapter plan (buildChapterPlan's output) into an ordered list of
@@ -31,18 +18,26 @@ export function buildTocRows(chapterPlan) {
   return rows
 }
 
-// Explicit width AND height (not just width) so `.toc-rows`'s own `height:
-// 100%` / `calc(100% - 60px)` (see TableOfContentsPage.vue) has something
-// real to resolve against off-screen, the same as it would inside
-// PagePreview.vue's real box on the actual page.
-function createMeasureContainer() {
+// Explicit width AND height (not just width) so TableOfContentsPage's own
+// `height: 100%` / `grid-template-rows: auto 1fr` chain has something real to
+// resolve against off-screen, exactly as it would inside PagePreview.vue's box
+// on the actual page.
+//
+// The width is the part that bites: it comes from pageDimensions.js's
+// pageContentBox(), which accounts for the double-sided binding gutter. Measure
+// a 7.5in line for a book that prints 7.25in and titles wrap later here than
+// they do on the page, so rows measure shorter than they render and each page
+// gets over-filled - invisibly, because PagePreview clips with `overflow:
+// hidden` and TOC pages suppress its overflow warning.
+function createMeasureContainer({ doubleSided }) {
+  const { widthIn, heightPx } = pageContentBox({ doubleSided })
   const el = document.createElement('div')
   el.style.position = 'fixed'
   el.style.top = '-9999px'
   el.style.left = '-9999px'
   el.style.visibility = 'hidden'
-  el.style.width = `${CONTENT_WIDTH_IN}in`
-  el.style.height = `${CONTENT_HEIGHT_PX}px`
+  el.style.width = `${widthIn}in`
+  el.style.height = `${heightPx}px`
   document.body.appendChild(el)
   return el
 }
@@ -60,7 +55,19 @@ async function waitForFonts() {
   if (typeof document !== 'undefined' && document.fonts) await document.fonts.ready
 }
 
-function fakePageNumbers(rows) {
+// Real page numbers can't exist yet: they come from layoutBookPages, which needs
+// the TOC's page count, which is what this module is computing. So measurement
+// renders a placeholder number instead.
+//
+// That's only sound because TocRecipeRow/TocChapterRow reserve a fixed-width
+// number column (`--toc-number-width`, from maxPageNumberDigits) - row geometry
+// no longer depends on the number's value, so a placeholder measures exactly as
+// wide as the real number will render. Before that column existed, this
+// placeholder was the single largest source of TOC clipping: measuring "1"
+// against rendered 3-digit numbers left titles more room here than on the page,
+// dropping ~1 entry per page. Don't reintroduce a value-dependent number width
+// without also removing this placeholder.
+function placeholderPageNumbers(rows) {
   const pageNumbers = { dividerPages: new Map(), recipePages: new Map() }
   for (const row of rows) {
     if (row.type === 'chapter') pageNumbers.dividerPages.set(row.chapter.id, 1)
@@ -80,12 +87,18 @@ function fakePageNumbers(rows) {
 // in JS. Returns one column index per row (0-based, monotonic non-decreasing
 // since column-fill fills sequentially): 0-1 is "page one" of this batch,
 // 2-3 the next, and so on.
-async function measureColumnIndexes(rows, showHeading) {
-  const container = createMeasureContainer()
+async function measureColumnIndexes(rows, showHeading, { doubleSided, numberDigits }) {
+  const container = createMeasureContainer({ doubleSided })
   let app = null
   try {
     app = createApp({
-      render: () => h(TableOfContentsPage, { rows, showHeading, pageNumbers: fakePageNumbers(rows) }),
+      render: () =>
+        h(TableOfContentsPage, {
+          rows,
+          showHeading,
+          numberDigits,
+          pageNumbers: placeholderPageNumbers(rows),
+        }),
     })
     app.mount(container)
     await nextTick()
@@ -120,12 +133,21 @@ async function measureColumnIndexes(rows, showHeading) {
  * ready for ProjectPrint.vue to hand one per TableOfContentsPage instance.
  * An empty plan still yields one empty page, matching the old fixed
  * one-TOC-page behavior for a book with no chapters.
+ *
+ * `doubleSided` is not optional in practice: it changes the page's content
+ * width (binding gutter), and measuring the wrong width silently over-fills
+ * every page. Callers must pass the project's real setting. `numberDigits` is
+ * returned alongside the pages so ProjectPrint.vue renders with the exact value
+ * that was measured with, rather than recomputing it and risking a mismatch.
  */
-export async function measureTocLayout(chapterPlan) {
+export async function measureTocLayout(chapterPlan, { doubleSided = false } = {}) {
+  const numberDigits = maxPageNumberDigits(chapterPlan)
   const rows = buildTocRows(chapterPlan)
-  if (rows.length === 0) return { pages: [{ rows: [] }] }
+  if (rows.length === 0) return { pages: [{ rows: [] }], numberDigits }
 
-  const firstPageIndexes = await measureColumnIndexes(rows, true)
+  const options = { doubleSided, numberDigits }
+
+  const firstPageIndexes = await measureColumnIndexes(rows, true, options)
   const splitAt = firstPageIndexes.findIndex((columnIndex) => columnIndex > 1)
   const firstPageRowCount = splitAt === -1 ? rows.length : splitAt
 
@@ -133,12 +155,12 @@ export async function measureTocLayout(chapterPlan) {
 
   const remaining = rows.slice(firstPageRowCount)
   if (remaining.length > 0) {
-    const indexes = await measureColumnIndexes(remaining, false)
+    const indexes = await measureColumnIndexes(remaining, false, options)
     const pageCount = Math.max(...indexes.map((columnIndex) => Math.floor(columnIndex / 2))) + 1
     for (let p = 0; p < pageCount; p++) {
       pages.push({ rows: remaining.filter((_, i) => Math.floor(indexes[i] / 2) === p) })
     }
   }
 
-  return { pages }
+  return { pages, numberDigits }
 }

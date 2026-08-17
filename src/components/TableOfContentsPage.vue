@@ -32,13 +32,24 @@ defineProps({
     type: String,
     default: DEFAULT_ACCENT_COLOR,
   },
+  // Digits to reserve for the page-number column (compileBook.js's
+  // maxPageNumberDigits). Must be the same value when tocLayout.js measures
+  // this component and when ProjectPrint.vue renders it - see TocRecipeRow.vue
+  // for what goes wrong otherwise.
+  numberDigits: {
+    type: Number,
+    default: 2,
+  },
 })
 </script>
 
 <template>
-  <div class="toc-page" :style="{ '--toc-accent': accentColor }">
+  <div
+    class="toc-page"
+    :style="{ '--toc-accent': accentColor, '--toc-number-width': `${numberDigits}ch` }"
+  >
     <h2 v-if="showHeading">Table of Contents</h2>
-    <ul class="toc-rows" :class="{ 'toc-rows--with-heading': showHeading }">
+    <ul class="toc-rows">
       <component
         :is="row.type === 'chapter' ? TocChapterRow : TocRecipeRow"
         v-for="row in rows"
@@ -59,10 +70,21 @@ defineProps({
 </template>
 
 <style scoped>
+/* Grid rather than plain block so the rows track gets exactly the height the
+   heading leaves over. This used to be a hand-tuned `calc(100% - 60px)` on
+   .toc-rows, which was wrong by 3px (the heading really occupies 63px) and,
+   worse, was a constant that had to be re-derived by hand whenever the heading's
+   type or spacing changed. `auto 1fr` is correct by construction and resolves
+   identically off-screen (tocLayout.js's measurement container) and on the real
+   page. It must stay a *definite* height: `column-fill: auto` on .toc-rows is
+   only honored by Chrome/WebKit when the multicol container's height resolves
+   (W3C csswg-drafts #4689), and a 1fr track in a fixed-height grid does. */
 .toc-page {
   --toc-accent: #d97742;
   width: 100%;
   height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
 }
 
 .toc-page h2 {
@@ -72,20 +94,19 @@ defineProps({
   padding-bottom: var(--space-sm);
 }
 
+/* Pinned to row 2 so continuation pages (no <h2>) still get the 1fr track
+   rather than falling into the `auto` one and collapsing to content height.
+   With no heading rendered, row 1 simply has no items and sizes to 0.
+   min-height: 0 stops the default `min-height: auto` on a grid item from
+   letting the column content push the track taller than the page. */
 .toc-rows {
-  height: 100%;
+  grid-row: 2;
+  min-height: 0;
   columns: 2;
   column-fill: auto;
   column-gap: var(--space-lg);
   list-style: none;
   margin: 0;
   padding: 0;
-}
-
-/* Leaves room for the "Table of Contents" heading above it, which only
-   page 1 renders - see tocLayout.js for why this is a plain constant
-   rather than a JS-measured heading height. */
-.toc-rows--with-heading {
-  height: calc(100% - 60px);
 }
 </style>
