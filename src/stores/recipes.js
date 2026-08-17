@@ -64,6 +64,22 @@ export const useRecipesStore = defineStore('recipes', {
     remeasureAllFits() {
       for (const recipe of this.recipes) this.triggerFitMeasurement(recipe.id, recipe)
     },
+    /**
+     * Persists a parsed `cookbook/1` import as a brand-new cookbook (see
+     * cookbookImport.js's parseCookbookImportHtml). Mirrors every row
+     * db.importCookbook actually wrote - the project/chapters/placements into
+     * the projects store, the recipes here - rather than recomputing any of
+     * it, per CLAUDE.md's store/db.js invariant. Triggers the usual
+     * fire-and-forget fit measurement for each newly created recipe, the same
+     * mechanism createRecipe/bulk recipe-import already use.
+     */
+    async importCookbook(data) {
+      const { project, chapters, recipes, placements } = await db.importCookbook(data)
+      useProjectsStore().mirrorImportedCookbook({ project, chapters, placements })
+      this.recipes.push(...recipes)
+      for (const recipe of recipes) this.triggerFitMeasurement(recipe.id, recipe)
+      return { project, recipes }
+    },
     async removeRecipe(id) {
       // db.deleteRecipe cascades to project_recipes inside its transaction;
       // without the matching in-memory prune the projects store keeps rows

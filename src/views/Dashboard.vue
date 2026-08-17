@@ -255,10 +255,16 @@ function handleModalKeyDown(e) {
         <h1 class="text-page-title">Cookbooks</h1>
         <p class="text-subtitle" style="margin:0;">{{ projectCountLabel }}</p>
       </div>
-      <button type="button" @click="openCreate" class="btn-new" :disabled="submitting">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        New Cookbook
-      </button>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <router-link to="/import-cookbook" class="btn-secondary-header">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Import Cookbook
+        </router-link>
+        <button type="button" @click="openCreate" class="btn-new" :disabled="submitting">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          New Cookbook
+        </button>
+      </div>
     </div>
 
     <!-- Project grid -->
@@ -470,6 +476,15 @@ function handleModalKeyDown(e) {
 .btn-new:hover { background: var(--ink-30); }
 .btn-new:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .btn-new:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary-header {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--ink-93); color: var(--ink-20);
+  border: 1px solid var(--ink-84); border-radius: 8px; padding: 12px 20px;
+  font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none;
+}
+.btn-secondary-header:hover { background: var(--ink-88); }
+.btn-secondary-header:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 .btn-open {
   flex: 1; background: var(--ink-93); border: 1px solid var(--ink-84);

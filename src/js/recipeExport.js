@@ -1,6 +1,8 @@
 import { DEFAULT_PLACEMENT } from './templates'
 
-function escapeHtml(unsafe) {
+// Exported so cookbookExport.js can reuse the exact same escaping instead of
+// maintaining a second copy that could drift.
+export function escapeHtml(unsafe) {
   return (unsafe ?? '')
     .toString()
     .replace(/&/g, "&amp;")

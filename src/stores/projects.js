@@ -85,6 +85,20 @@ export const useProjectsStore = defineStore('projects', {
     pruneRecipeAssociations(recipeId) {
       this.projectRecipes = this.projectRecipes.filter((pr) => pr.recipeId !== recipeId)
     },
+    /**
+     * Mirrors the project/chapters/placements rows `db.importCookbook` wrote,
+     * so the newly imported cookbook shows up without a full reload. Called
+     * by the recipes store's `importCookbook` action, which also owns
+     * mirroring the recipe rows themselves - the same
+     * recipes-store-calls-into-projects-store direction `pruneRecipeAssociations`
+     * already uses (recipes.js already depends on projects.js, so this avoids
+     * a new circular import in the other direction).
+     */
+    mirrorImportedCookbook({ project, chapters, placements }) {
+      this.projects.push(project)
+      this.chapters.push(...chapters)
+      this.projectRecipes.push(...placements)
+    },
     async addRecipeToProject(projectId, recipeId, chapterId = null) {
       let row
       try {

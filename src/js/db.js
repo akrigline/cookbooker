@@ -283,6 +283,80 @@ export const deleteProject = (id) =>
     await db.projects.delete(id)
   })
 
+// Creates a brand-new project (never merges into an existing one) from a
+// parsed `cookbook/1` document (cookbookImport.js's `parseCookbookImportHtml`
+// output shape: `{ title, subtitle, accentColor, coverTemplate,
+// pageNumbersEnabled, doubleSidedEnabled, chapters: [{ name, sequence,
+// recipes: [...] }] }`, chapters/recipes already in their intended order).
+// Every row is a fresh insert, so there is no autoincrement-id collision to
+// remap - see cookbook-export-import's design.md Decision 3.
+//
+// The first parsed chapter reuses the project's required default-chapter
+// slot (isDefault: true) instead of a second db.chapters.add call, so the
+// single-default-chapter invariant getMiscChapter/deleteChapter rely on
+// still holds; a cookbook with zero parsed chapters still gets one, matching
+// createProject's own guarantee. Every recipe is inserted with
+// fitsOnPage: null regardless of any value implied by the import (Decision
+// 4 - a nullable/derived field, not authored data), and imagePlacement/
+// notesPlacement default the same way addRecipe's do.
+//
+// Returns `{ project, chapters, recipes, placements }` - the actual
+// persisted rows, per CLAUDE.md's store/db.js mirroring invariant.
+export const importCookbook = (data) =>
+  db.transaction('rw', db.projects, db.chapters, db.recipes, db.project_recipes, async () => {
+    const projectRow = {
+      title: data.title || '',
+      subtitle: data.subtitle || '',
+      accentColor: data.accentColor || DEFAULT_ACCENT_COLOR,
+      coverTemplate: data.coverTemplate || 'classic',
+      pageNumbersEnabled: data.pageNumbersEnabled ?? true,
+      doubleSidedEnabled: data.doubleSidedEnabled ?? false,
+    }
+    const projectId = await db.projects.add(projectRow)
+
+    const chapters = []
+    const recipes = []
+    const placements = []
+    const parsedChapters = data.chapters?.length ? data.chapters : [{ name: MISC_CHAPTER_NAME, recipes: [] }]
+
+    for (let chapterIndex = 0; chapterIndex < parsedChapters.length; chapterIndex++) {
+      const parsedChapter = parsedChapters[chapterIndex]
+      const chapterRow = {
+        projectId,
+        name: parsedChapter.name || MISC_CHAPTER_NAME,
+        sequence: chapterIndex,
+        isDefault: chapterIndex === 0,
+      }
+      const chapterId = await db.chapters.add(chapterRow)
+      chapters.push({ ...chapterRow, id: chapterId })
+
+      const parsedRecipes = parsedChapter.recipes ?? []
+      for (let recipeIndex = 0; recipeIndex < parsedRecipes.length; recipeIndex++) {
+        // Routed through addRecipe (not a hand-rolled db.recipes.add) so its
+        // imagePlacement/notesPlacement defaults - and any future default it
+        // grows - can't drift from this call site; fitsOnPage: null is forced
+        // explicitly regardless of what's spread in, since a parsed recipe
+        // must never carry over a stale fit measurement (Decision 4). Reading
+        // the row back guarantees the returned object matches exactly what
+        // was persisted rather than re-deriving it.
+        const recipeId = await addRecipe({ ...parsedRecipes[recipeIndex], fitsOnPage: null })
+        const recipeRow = await db.recipes.get(recipeId)
+        recipes.push(recipeRow)
+
+        const placementRow = { projectId, recipeId, chapterId, sequence: recipeIndex }
+        const placementId = await db.project_recipes.add(placementRow)
+        placements.push({ ...placementRow, id: placementId })
+      }
+    }
+
+    return {
+      project: { ...projectRow, id: projectId },
+      chapters,
+      recipes,
+      placements,
+    }
+  })
+
 // ---------------------------------------------------------------------------
 // Chapters
 // ---------------------------------------------------------------------------

@@ -63,6 +63,24 @@ describe('recipes store', () => {
     expect(await getRecipe(id)).toBeUndefined()
   })
 
+  it('importCookbook mirrors the project/chapters/placements into the projects store and recipes here', async () => {
+    const recipesStore = useRecipesStore()
+    const projectsStore = useProjectsStore()
+    await projectsStore.load()
+
+    const { project, recipes } = await recipesStore.importCookbook({
+      title: 'Imported',
+      chapters: [
+        { name: 'Desserts', sequence: 0, recipes: [makeRecipe({ title: 'Cake' })] },
+      ],
+    })
+
+    expect(projectsStore.projects.find((p) => p.id === project.id)).toBeDefined()
+    expect(projectsStore.chaptersForProject(project.id)).toHaveLength(1)
+    expect(projectsStore.projectRecipesForProject(project.id)).toHaveLength(1)
+    expect(recipesStore.recipes.find((r) => r.id === recipes[0].id)).toMatchObject({ title: 'Cake' })
+  })
+
   it('removeRecipe cascades to the projects store, mirroring the DB cascade', async () => {
     // db.deleteRecipe deletes the recipe's project_recipes rows in the same
     // transaction. Without the matching in-memory prune, projectsStore kept

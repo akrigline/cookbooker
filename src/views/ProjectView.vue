@@ -14,6 +14,7 @@ import BackButton from '../components/BackButton.vue'
 import { sequenceForInsertAfter } from '../js/sequence'
 import { applyRange } from '../js/rangeSelect'
 import { intersectExistingRecipeIds } from '../js/cookbookImportShortcut'
+import { exportCookbookToHtml, cookbookExportFilename } from '../js/cookbookExport'
 import { LAYOUT_TEMPLATES } from '../js/templates'
 
 // ---------------------------------------------------------------------------
@@ -34,6 +35,7 @@ onMounted(async () => {
   if (!recipesStore.loaded) await recipesStore.load()
   checkReopenRecipe()
   applyAutoSelectIds()
+  applyImportFailures()
 })
 
 // The recipe editor's "Back to Cookbook"/save-return path appends
@@ -86,6 +88,27 @@ function applyAutoSelectIds() {
   }
 
   history.replaceState({ ...history.state, autoSelectIds: undefined }, '')
+}
+
+// ---------------------------------------------------------------------------
+// Cookbook import summary (openspec: cookbook-export-import)
+// ---------------------------------------------------------------------------
+
+// Consumes `history.state.importFailures` left behind by ImportCookbook.vue's
+// post-import redirect - same one-shot history.state mechanism
+// applyAutoSelectIds above uses, since this is ephemeral data about a just-
+// completed navigation, not a navigable location on its own.
+const importFailuresSummary = ref(null)
+const importFailuresTotal = ref(null)
+
+function applyImportFailures() {
+  const failures = history.state?.importFailures
+  const total = history.state?.importFailuresTruncated
+  history.replaceState({ ...history.state, importFailures: undefined, importFailuresTruncated: undefined }, '')
+  if (Array.isArray(failures) && failures.length) {
+    importFailuresSummary.value = failures
+    importFailuresTotal.value = typeof total === 'number' ? total : null
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -343,6 +366,30 @@ function editPreviewRecipe() {
 // ---------------------------------------------------------------------------
 // Cookbook actions
 // ---------------------------------------------------------------------------
+
+// Gathers this cookbook's settings, chapters, and their recipes (each
+// already in sequence order via chaptersForProject/recipesInChapter) and
+// downloads a `cookbook/1` HTML file - same URL.createObjectURL + synthetic
+// <a> download pattern Settings.vue's whole-database export uses.
+async function handleExportCookbook() {
+  if (!project.value) return
+  try {
+    const chapters = projectsStore.chaptersForProject(projectIdNum.value)
+    const recipesByChapter = new Map(
+      chapters.map((chapter) => [chapter.id, recipesInChapter(chapter.id).map((entry) => entry.recipe)]),
+    )
+    const html = await exportCookbookToHtml(project.value, chapters, recipesByChapter)
+    const blob = new Blob([html], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = cookbookExportFilename(project.value.title)
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    errorMsg.value = `Could not export this cookbook: ${err.message}`
+  }
+}
 
 async function confirmDeleteChapter() {
   if (modalBusy.value || !modal.deletingChapter) return
@@ -960,6 +1007,10 @@ const bulkActionHandlers = {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Import Recipes
         </button>
+        <button type="button" class="btn-new" @click="handleExportCookbook">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export Cookbook
+        </button>
         <router-link class="btn-new" :to="`/projects/${project.id}/print`">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
           Print Preview
@@ -977,6 +1028,30 @@ const bulkActionHandlers = {
         class="pv-error__dismiss"
         aria-label="Dismiss error"
         @click="errorMsg = ''"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- One-shot summary shown after ImportCookbook.vue redirects here; see
+         applyImportFailures. Listed by chapter since a recipe's parse failure
+         is only meaningful in the context of which chapter it was under. -->
+    <div v-if="importFailuresSummary" class="pv-error" role="status" style="margin-bottom: 24px; border-radius: 8px;">
+      <div class="pv-error__text">
+        <p style="margin:0 0 6px; font-weight:600;">
+          {{ importFailuresTotal ?? importFailuresSummary.length }} recipe{{ (importFailuresTotal ?? importFailuresSummary.length) === 1 ? '' : 's' }} could not be imported{{ importFailuresTotal ? ` (showing first ${importFailuresSummary.length})` : '' }}:
+        </p>
+        <ul style="margin:0; padding-left:18px;">
+          <li v-for="(f, i) in importFailuresSummary" :key="i">
+            <strong>{{ f.chapterName }}</strong> — {{ f.label }}: {{ f.reason }}
+          </li>
+        </ul>
+      </div>
+      <button
+        type="button"
+        class="pv-error__dismiss"
+        aria-label="Dismiss import summary"
+        @click="importFailuresSummary = null"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
