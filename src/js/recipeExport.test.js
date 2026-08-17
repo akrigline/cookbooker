@@ -27,6 +27,8 @@ describe('exportRecipeToHtml and parseRecipeImportHtml', () => {
       layoutTemplate: 'column-optimized',
       ingredientColumns: 2,
       imageAspectRatio: '1:1',
+      imagePlacement: 'left',
+      notesPlacement: 'right',
       image: imageBlob
     }
 
@@ -46,6 +48,8 @@ describe('exportRecipeToHtml and parseRecipeImportHtml', () => {
     expect(parsed.layoutTemplate).toBe(recipe.layoutTemplate)
     expect(parsed.ingredientColumns).toBe(recipe.ingredientColumns)
     expect(parsed.imageAspectRatio).toBe(recipe.imageAspectRatio)
+    expect(parsed.imagePlacement).toBe(recipe.imagePlacement)
+    expect(parsed.notesPlacement).toBe(recipe.notesPlacement)
 
     expect(parsed.image).not.toBeNull()
     const parsedText = await parsed.image.text()

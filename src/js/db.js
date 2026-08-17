@@ -1,6 +1,11 @@
 import Dexie from 'dexie'
 import { nextSequence } from './sequence'
-import { INGREDIENT_QTY_ALIGN_OPTIONS, DEFAULT_INGREDIENT_QTY_ALIGN, DEFAULT_ACCENT_COLOR } from './templates'
+import {
+  INGREDIENT_QTY_ALIGN_OPTIONS,
+  DEFAULT_INGREDIENT_QTY_ALIGN,
+  DEFAULT_ACCENT_COLOR,
+  DEFAULT_PLACEMENT,
+} from './templates'
 
 export const MISC_CHAPTER_NAME = 'Miscellaneous'
 
@@ -32,10 +37,44 @@ db.version(2).stores({ settings: 'key' })
 db.version(3).upgrade((tx) => tx.table('recipes').toCollection().modify({ fitsOnPage: null }))
 
 // Backfill for the two-column layout's per-recipe image/notes placement config
-// (see openspec/changes/two-column-configurable-layout). 'none' is a no-op
-// under every template that doesn't read these fields.
+// (see openspec/changes/archive/2026-08-16-two-column-configurable-layout). 'none' is a
+// no-op under every template that doesn't read these fields.
 db.version(4).upgrade((tx) =>
   tx.table('recipes').toCollection().modify({ imagePlacement: 'none', notesPlacement: 'none' }),
+)
+
+// v4 backfilled every recipe to 'none'. Promoting the default to 'hero' (see
+// templates.js's DEFAULT_PLACEMENT) only reaches new recipes via the `?? DEFAULT_PLACEMENT`
+// fallback in RecipeLayoutTwoColumn.vue/RecipeEditor.vue - rows v4 already wrote 'none'
+// into need an explicit migration to pick it up. Also covers `undefined`: recipe-import
+// never wrote these fields at all (see recipeImport.js), so imported recipes from before
+// this fix carry the same "not really chosen" gap as the v4-backfilled 'none' rows - both
+// get promoted here so no row is left relying on the runtime fallback. Conditional, not a
+// blanket overwrite: 'none' is a real, user-selectable value (PLACEMENT_OPTIONS), so this
+// only promotes rows still on the migrated-in/never-set default, never ones anyone has
+// since deliberately chosen. Also resets fitsOnPage to null (matching v3's precedent)
+// since adding a hero image/notes block changes a recipe's rendered height and the old
+// fit measurement no longer applies.
+//
+// Exported so db.test.js can exercise the promotion logic directly: fake-indexeddb
+// replays the whole version chain from v1 on the shared test database's first open, so
+// there's no clean way to inspect an intermediate version's on-disk state from a test.
+export function promoteLegacyPlacement(recipe) {
+  let touched = false
+  if (recipe.imagePlacement === 'none' || recipe.imagePlacement === undefined) {
+    recipe.imagePlacement = 'hero'
+    touched = true
+  }
+  if (recipe.notesPlacement === 'none' || recipe.notesPlacement === undefined) {
+    recipe.notesPlacement = 'hero'
+    touched = true
+  }
+  if (touched) recipe.fitsOnPage = null
+  return recipe
+}
+
+db.version(5).upgrade((tx) =>
+  tx.table('recipes').toCollection().modify(promoteLegacyPlacement),
 )
 
 db.on('populate', async () => {
@@ -62,8 +101,8 @@ db.on('populate', async () => {
     layoutTemplate: 'hero-split-balanced',
     ingredientColumns: 1,
     imageAspectRatio: 'auto',
-    imagePlacement: 'none',
-    notesPlacement: 'none',
+    imagePlacement: DEFAULT_PLACEMENT,
+    notesPlacement: DEFAULT_PLACEMENT,
     fitsOnPage: null,
   })
   await db.project_recipes.add({ projectId, chapterId, recipeId, sequence: 0 })
@@ -165,7 +204,13 @@ export const updateSettings = (patch) =>
 // ---------------------------------------------------------------------------
 export const getAllRecipes = () => db.recipes.toArray()
 export const getRecipe = (id) => db.recipes.get(id)
-export const addRecipe = (recipe) => db.recipes.add({ fitsOnPage: null, ...recipe })
+export const addRecipe = (recipe) =>
+  db.recipes.add({
+    fitsOnPage: null,
+    imagePlacement: DEFAULT_PLACEMENT,
+    notesPlacement: DEFAULT_PLACEMENT,
+    ...recipe,
+  })
 export const updateRecipe = (id, changes) => updateOrThrow(db.recipes, 'recipe', id, changes)
 
 export const deleteRecipe = (id) =>

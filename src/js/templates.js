@@ -46,7 +46,7 @@ export const PLACEMENT_OPTIONS = [
   { id: 'right', label: 'Right column' },
 ]
 
-export const DEFAULT_PLACEMENT = 'none'
+export const DEFAULT_PLACEMENT = 'hero'
 
 export const COVER_TEMPLATES = [
   { id: 'classic', label: 'Classic Border' },

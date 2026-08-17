@@ -2,12 +2,14 @@ import { parseIngredientsText } from './conversions'
 import {
   LAYOUT_TEMPLATES, DEFAULT_LAYOUT_TEMPLATE,
   INGREDIENT_COLUMN_OPTIONS,
-  IMAGE_ASPECT_RATIOS
+  IMAGE_ASPECT_RATIOS,
+  PLACEMENT_OPTIONS, DEFAULT_PLACEMENT,
 } from './templates'
 
 const KNOWN_LAYOUT_IDS = new Set(LAYOUT_TEMPLATES.map((tpl) => tpl.id))
 const KNOWN_COLUMNS = new Set(INGREDIENT_COLUMN_OPTIONS.map(String))
 const KNOWN_ASPECT_RATIOS = new Set(IMAGE_ASPECT_RATIOS.map((o) => o.id))
+const KNOWN_PLACEMENTS = new Set(PLACEMENT_OPTIONS.map((o) => o.id))
 
 export function dataUriToBlob(dataUri) {
   try {
@@ -82,6 +84,16 @@ function extractImageAspectRatio(root) {
   return KNOWN_ASPECT_RATIOS.has(content) ? content : 'auto'
 }
 
+function extractImagePlacement(root) {
+  const content = root.querySelector('.cm-image-placement')?.getAttribute('content')
+  return KNOWN_PLACEMENTS.has(content) ? content : DEFAULT_PLACEMENT
+}
+
+function extractNotesPlacement(root) {
+  const content = root.querySelector('.cm-notes-placement')?.getAttribute('content')
+  return KNOWN_PLACEMENTS.has(content) ? content : DEFAULT_PLACEMENT
+}
+
 /**
  * Parses one `data-cm-format="recipe"` root element into either a candidate
  * recipe or a failure reason - mirrors the required-field validation
@@ -103,6 +115,8 @@ function parseRecipeElement(root, index) {
   const image = extractImage(root)
   const ingredientColumns = extractIngredientColumns(root)
   const imageAspectRatio = extractImageAspectRatio(root)
+  const imagePlacement = extractImagePlacement(root)
+  const notesPlacement = extractNotesPlacement(root)
 
   if (!title) {
     return { failure: { label, reason: 'Missing or empty title (.cm-title)' } }
@@ -121,6 +135,8 @@ function parseRecipeElement(root, index) {
       image,
       ingredientColumns,
       imageAspectRatio,
+      imagePlacement,
+      notesPlacement,
     },
   }
 }

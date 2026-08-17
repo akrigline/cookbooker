@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseRecipeImportHtml } from './recipeImport'
-import { DEFAULT_LAYOUT_TEMPLATE } from './templates'
+import { DEFAULT_LAYOUT_TEMPLATE, DEFAULT_PLACEMENT } from './templates'
 
 function wrapDocument(body) {
   return `<!DOCTYPE html>
@@ -32,6 +32,8 @@ const SINGLE_RECIPE = wrapDocument(`
       <p>A family favorite from <strong>Grandma Ruth</strong>.</p>
     </section>
     <meta class="cm-layout" content="text-only">
+    <meta class="cm-image-placement" content="left">
+    <meta class="cm-notes-placement" content="right">
   </article>
 `)
 
@@ -67,6 +69,8 @@ describe('parseRecipeImportHtml', () => {
     expect(recipe.image).toBeNull()
     expect(recipe.ingredientColumns).toBe(1)
     expect(recipe.imageAspectRatio).toBe('auto')
+    expect(recipe.imagePlacement).toBe('left')
+    expect(recipe.notesPlacement).toBe('right')
     expect(recipe.ingredientQtyAlign).toBeUndefined()
   })
 
@@ -81,6 +85,12 @@ describe('parseRecipeImportHtml', () => {
   it('defaults layoutTemplate to the registry default when omitted', () => {
     const { recipes } = parseRecipeImportHtml(BATCH_RECIPES)
     expect(recipes[0].layoutTemplate).toBe(DEFAULT_LAYOUT_TEMPLATE)
+  })
+
+  it('defaults imagePlacement/notesPlacement to DEFAULT_PLACEMENT when omitted, as a file exported before placement meta tags existed would be', () => {
+    const { recipes } = parseRecipeImportHtml(BATCH_RECIPES)
+    expect(recipes[0].imagePlacement).toBe(DEFAULT_PLACEMENT)
+    expect(recipes[0].notesPlacement).toBe(DEFAULT_PLACEMENT)
   })
 
   it('ignores a legacy cm-ingredient-qty-align meta element from a file exported before this change', () => {

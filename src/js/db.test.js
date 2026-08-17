@@ -24,8 +24,10 @@ import {
   updateChapter,
   updateProject,
   updateRecipe,
+  promoteLegacyPlacement,
   db,
 } from './db.js'
+import { DEFAULT_PLACEMENT } from './templates.js'
 
 // Each test creates its own project, so records stay scoped by projectId
 // even though they share one fake-indexeddb database across the file.
@@ -295,5 +297,67 @@ describe('db.js batch placement writes', () => {
     for (const field of Object.keys(RETIRED_RECIPE_FIELDS)) {
       expect(row).not.toHaveProperty(field)
     }
+  })
+})
+
+// addRecipe fills in fitsOnPage: null for a caller that omits it; these two fields get
+// the same treatment so no creation path can ever leave a recipe's placement undefined.
+describe('db.js recipe placement defaults', () => {
+  it('defaults imagePlacement/notesPlacement when a caller omits them', async () => {
+    const id = await addRecipe({ title: 'No Placement Given', instructions: 'Mix.', ingredients: [] })
+    const row = await getRecipe(id)
+    expect(row.imagePlacement).toBe(DEFAULT_PLACEMENT)
+    expect(row.notesPlacement).toBe(DEFAULT_PLACEMENT)
+  })
+
+  it('lets an explicit caller-supplied placement win over the default', async () => {
+    const id = await addRecipe({
+      title: 'Explicit Placement',
+      instructions: 'Mix.',
+      ingredients: [],
+      imagePlacement: 'left',
+      notesPlacement: 'right',
+    })
+    const row = await getRecipe(id)
+    expect(row.imagePlacement).toBe('left')
+    expect(row.notesPlacement).toBe('right')
+  })
+})
+
+// The v5 migration's .modify() callback, tested directly rather than by simulating a
+// real cross-version IndexedDB upgrade: fake-indexeddb replays the whole version chain
+// on the shared test database's first open, so there's no way for a test to observe
+// what an intermediate version (e.g. a client that just ran v4) actually persisted.
+describe('db.js promoteLegacyPlacement (v5 migration logic)', () => {
+  it('promotes a v4-backfilled "none"/"none" row to hero and resets fitsOnPage', () => {
+    const recipe = { imagePlacement: 'none', notesPlacement: 'none', fitsOnPage: true }
+    promoteLegacyPlacement(recipe)
+    expect(recipe.imagePlacement).toBe('hero')
+    expect(recipe.notesPlacement).toBe('hero')
+    expect(recipe.fitsOnPage).toBeNull()
+  })
+
+  it('promotes a row with the fields entirely missing (pre-fix recipe-import rows)', () => {
+    const recipe = { title: 'Imported before placement fields existed', fitsOnPage: true }
+    promoteLegacyPlacement(recipe)
+    expect(recipe.imagePlacement).toBe('hero')
+    expect(recipe.notesPlacement).toBe('hero')
+    expect(recipe.fitsOnPage).toBeNull()
+  })
+
+  it('never touches a row already on a deliberately-chosen placement', () => {
+    const recipe = { imagePlacement: 'left', notesPlacement: 'right', fitsOnPage: true }
+    promoteLegacyPlacement(recipe)
+    expect(recipe.imagePlacement).toBe('left')
+    expect(recipe.notesPlacement).toBe('right')
+    expect(recipe.fitsOnPage).toBe(true)
+  })
+
+  it('promotes only the field still on the legacy default, leaving the other and still resetting fitsOnPage', () => {
+    const recipe = { imagePlacement: 'none', notesPlacement: 'left', fitsOnPage: true }
+    promoteLegacyPlacement(recipe)
+    expect(recipe.imagePlacement).toBe('hero')
+    expect(recipe.notesPlacement).toBe('left')
+    expect(recipe.fitsOnPage).toBeNull()
   })
 })
