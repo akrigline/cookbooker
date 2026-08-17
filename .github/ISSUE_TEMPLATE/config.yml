@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Feature requests
+    url: https://github.com/akrigline/cookbooker/blob/main/CONTRIBUTING.md#project-status-feature-complete
+    about: This project's planned feature set is complete and it isn't accepting new feature ideas — see CONTRIBUTING.md before filing one.

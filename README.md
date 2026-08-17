@@ -2,6 +2,8 @@
 
 Cookbook Maker is a client-side web application for managing recipes and organizing them into custom cookbooks. It runs entirely in the browser using IndexedDB for local data storage, meaning no backend server or user account is required to use the application.
 
+**Project status: feature-complete.** The planned feature set below is done and there's no open roadmap. The project is still maintained for bug fixes and dependency updates — see [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR (an issue must be opened first).
+
 ## Features
 
 - **Recipe Library & Editor**: Create, edit, and manage your recipe collection, featuring automatic ingredient parsing and fraction handling.
@@ -45,3 +47,5 @@ Cookbook Maker is a client-side web application for managing recipes and organiz
 
 - **Specifications**: This project follows spec-driven development using the OpenSpec CLI. All capability specifications are located in the `openspec/specs/` directory.
 - **Architecture & Agent Notes**: Crucial architectural invariants, technical setup instructions (like MCP and Dexie gotchas), and project rules are maintained in `AGENTS.md`. Always refer to `AGENTS.md` when making architectural changes.
+- **Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md) — in particular, an issue must be opened and acknowledged before a PR is submitted.
+- **Security**: See [SECURITY.md](SECURITY.md) to report a vulnerability privately.
