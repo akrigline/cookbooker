@@ -12,7 +12,7 @@ beforeEach(async () => {
 
 describe('settings store', () => {
   it('load populates state from the database', async () => {
-    await db.settings.put({ key: 'app', ingredientQtyAlign: 'left' })
+    await db.settings.put({ key: 'app', ingredientQtyAlign: 'left', pageSize: 'a4' })
     const store = useSettingsStore()
     expect(store.loaded).toBe(false)
 
@@ -20,6 +20,16 @@ describe('settings store', () => {
 
     expect(store.loaded).toBe(true)
     expect(store.ingredientQtyAlign).toBe('left')
+    expect(store.pageSize).toBe('a4')
+  })
+
+  it('load defaults pageSize to letter when the stored row predates this setting', async () => {
+    await db.settings.put({ key: 'app', ingredientQtyAlign: 'left' })
+    const store = useSettingsStore()
+
+    await store.load()
+
+    expect(store.pageSize).toBe('letter')
   })
 
   it('load is memoized: concurrent callers share one read', async () => {
@@ -44,6 +54,16 @@ describe('settings store', () => {
     expect(store.ingredientQtyAlign).toBe('left')
     const settings = await getSettings()
     expect(settings.ingredientQtyAlign).toBe('left')
+  })
+
+  it('setPageSize writes via db.updateSettings and mirrors the persisted return value', async () => {
+    const store = useSettingsStore()
+
+    await store.setPageSize('a4')
+
+    expect(store.pageSize).toBe('a4')
+    const settings = await getSettings()
+    expect(settings.pageSize).toBe('a4')
   })
 
   it('reload re-reads from the database, bypassing the load() memo', async () => {

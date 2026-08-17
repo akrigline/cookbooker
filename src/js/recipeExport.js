@@ -22,19 +22,19 @@ export async function blobToDataUri(blob) {
   return `data:${blob.type};base64,${btoa(binary)}`;
 }
 
-export async function exportRecipeToHtml(recipe) {
+export async function buildRecipeArticleHtml(recipe) {
   const titleHtml = escapeHtml(recipe.title);
-  
+
   const ingredientsHtml = (recipe.ingredients || [])
     .map(ing => `<li>${escapeHtml(ing.raw)}</li>`)
     .join('\n      ');
-    
+
   const instructionsHtml = (recipe.instructions || '')
     .split('\n')
     .filter(line => line.trim())
     .map(line => `<li>${escapeHtml(line)}</li>`)
     .join('\n      ');
-    
+
   const notesHtml = escapeHtml(recipe.notes || '');
 
   const layout = escapeHtml(recipe.layoutTemplate || 'hero-split-balanced');
@@ -50,6 +50,32 @@ export async function exportRecipeToHtml(recipe) {
     imageHtml += `\n    <meta class="cm-image-aspect-ratio" content="${aspect}">`;
   }
 
+  return `<article class="cm-recipe" data-cm-format="recipe" data-cm-version="1">
+    <h1 class="cm-title">${titleHtml}</h1>
+    <meta class="cm-layout" content="${layout}">
+    <meta class="cm-ingredient-columns" content="${cols}">
+    <meta class="cm-image-placement" content="${imagePlacement}">
+    <meta class="cm-notes-placement" content="${notesPlacement}">${imageHtml}
+
+    <h2>Ingredients</h2>
+    <ul class="cm-ingredients">
+      ${ingredientsHtml}
+    </ul>
+
+    <h2>Instructions</h2>
+    <ol class="cm-instructions">
+      ${instructionsHtml}
+    </ol>
+
+    <h2>Chef's Notes</h2>
+    <div class="cm-notes">${notesHtml}</div>
+  </article>`;
+}
+
+export async function exportRecipeToHtml(recipe) {
+  const titleHtml = escapeHtml(recipe.title);
+  const articleHtml = await buildRecipeArticleHtml(recipe);
+
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -58,26 +84,7 @@ export async function exportRecipeToHtml(recipe) {
   <meta name="cookbooker-format" content="recipe/1">
 </head>
 <body>
-  <article class="cm-recipe" data-cm-format="recipe" data-cm-version="1">
-    <h1 class="cm-title">${titleHtml}</h1>
-    <meta class="cm-layout" content="${layout}">
-    <meta class="cm-ingredient-columns" content="${cols}">
-    <meta class="cm-image-placement" content="${imagePlacement}">
-    <meta class="cm-notes-placement" content="${notesPlacement}">${imageHtml}
-    
-    <h2>Ingredients</h2>
-    <ul class="cm-ingredients">
-      ${ingredientsHtml}
-    </ul>
-    
-    <h2>Instructions</h2>
-    <ol class="cm-instructions">
-      ${instructionsHtml}
-    </ol>
-    
-    <h2>Chef's Notes</h2>
-    <div class="cm-notes">${notesHtml}</div>
-  </article>
+  ${articleHtml}
 </body>
 </html>`;
 }

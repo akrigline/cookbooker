@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { blobToDataUri, exportRecipeToHtml } from './recipeExport'
+import { blobToDataUri, buildRecipeArticleHtml, exportRecipeToHtml } from './recipeExport'
 import { parseRecipeImportHtml } from './recipeImport'
 
 describe('blobToDataUri', () => {
@@ -63,5 +63,36 @@ describe('exportRecipeToHtml and parseRecipeImportHtml', () => {
       instructions: 'Step one.',
     })
     expect(html).not.toContain('cm-ingredient-qty-align')
+  })
+
+  // Locks the exact document shape post-refactor (buildRecipeArticleHtml
+  // extraction, see cookbook-export-import's design.md Decision 2) - the
+  // article markup and its surrounding document shell must stay
+  // byte-identical to before the split.
+  it('wraps buildRecipeArticleHtml unchanged inside the single-recipe document shell', async () => {
+    const recipe = {
+      title: 'Test Recipe',
+      ingredients: [{ raw: '1 cup flour' }],
+      instructions: 'Mix well.',
+      notes: 'Notes here.',
+    }
+    const [html, articleHtml] = await Promise.all([
+      exportRecipeToHtml(recipe),
+      buildRecipeArticleHtml(recipe),
+    ])
+
+    expect(html).toBe(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Test Recipe</title>
+  <meta name="cookbooker-format" content="recipe/1">
+</head>
+<body>
+  ${articleHtml}
+</body>
+</html>`)
+    expect(articleHtml).toContain('<article class="cm-recipe" data-cm-format="recipe" data-cm-version="1">')
+    expect(articleHtml).toContain('<h1 class="cm-title">Test Recipe</h1>')
   })
 })

@@ -1,7 +1,9 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useProjectsStore } from '../stores/projects'
 import { useRecipesStore } from '../stores/recipes'
+import { useSettingsStore } from '../stores/settings'
+import { applyPageSizeOverride, clearPageSizeOverride } from '../js/pageSizeOverride'
 import PagePreview from '../components/PagePreview.vue'
 import PrintToolbar from '../components/PrintToolbar.vue'
 import RecipeSheet from '../components/RecipeSheet.vue'
@@ -19,6 +21,7 @@ const props = defineProps({
 
 const projectsStore = useProjectsStore()
 const recipesStore = useRecipesStore()
+const settingsStore = useSettingsStore()
 
 onMounted(async () => {
   if (!projectsStore.loaded) await projectsStore.load()
@@ -31,6 +34,10 @@ const project = computed(() =>
 const recipe = computed(() =>
   recipesStore.recipes.find((r) => r.id === Number(props.recipeId)),
 )
+const pageSize = computed(() => settingsStore.pageSize)
+
+watch(pageSize, applyPageSizeOverride, { immediate: true })
+onBeforeUnmount(clearPageSizeOverride)
 
 function printPage() {
   window.print()
@@ -43,7 +50,7 @@ function printPage() {
 
     <!-- Single recipe exports carry no cover, TOC, or page number - just the
          parent project's margins and template fidelity. -->
-    <PagePreview>
+    <PagePreview :paper-size="pageSize">
       <RecipeSheet :recipe="recipe" />
     </PagePreview>
   </div>

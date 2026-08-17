@@ -1,5 +1,6 @@
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
+import { useSettingsStore } from '../stores/settings'
 import Modal from './Modal.vue'
 import RecipeSheet from './RecipeSheet.vue'
 import PagePreview from './PagePreview.vue'
@@ -20,6 +21,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'edit', 'navigate'])
+
+const settingsStore = useSettingsStore()
+const pageSize = computed(() => settingsStore.pageSize)
 
 function onKeydown(event) {
   if (event.target.matches('input, textarea, [contenteditable]')) return
@@ -73,7 +77,7 @@ onUnmounted(() => {
         </div>
       </header>
       <div class="rpd-content">
-        <PagePreview>
+        <PagePreview :paper-size="pageSize">
           <RecipeSheet :recipe="recipe" />
         </PagePreview>
       </div>

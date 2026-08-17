@@ -23,6 +23,14 @@
    place a *third* margin could sneak in - PrintToolbar.vue tells users to
    pick "None" there so our own padding stays the sole source. */
 
+/* Letter is the static default. The global Paper Size setting (app-settings
+   spec) overrides this per-print by having ProjectPrint.vue inject a second
+   `<style id="cm-page-size-override">` element into document.head with the
+   resolved `@page { size }` for the configured size, only when it isn't
+   Letter - `@page`'s `size` can't resolve a CSS custom property and `@page`
+   itself has no class/attribute selector scoping, so a runtime-injected
+   style rule is the only way to vary it per the app setting. See
+   pageDimensions.js's PAPER_SIZES for the size table. */
 @page {
   size: 8.5in 11in;
   margin: 0;

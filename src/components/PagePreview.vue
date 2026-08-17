@@ -1,13 +1,22 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { pageWidth, pageHeight } from '../js/pageDimensions.js'
 
-defineProps({
+const props = defineProps({
   // Printed page number to display in the bottom-right corner. null/undefined
   // renders no badge at all (cover, TOC, chapter-divider/recipe pages when
   // the project has page numbers toggled off, single-recipe exports).
   pageNumber: {
     type: Number,
     default: null,
+  },
+  // 'letter' or 'a4' - see pageDimensions.js's PAPER_SIZES. Only width/height
+  // vary by paper size; the 0.5in margin band and page-number offsets below
+  // stay literal since they're a fixed absolute convention, not proportional
+  // to sheet size.
+  paperSize: {
+    type: String,
+    default: 'letter',
   },
   // TOC pages are intentionally packed to fill their column height as
   // closely as possible (see tocLayout.js's measureTocLayout), which can
@@ -30,6 +39,11 @@ defineProps({
 // approximation of a different print behavior.
 const contentEl = ref(null)
 const isOverflowing = ref(false)
+
+const pageSizeVars = computed(() => ({
+  '--pp-width': pageWidth(props.paperSize),
+  '--pp-height': pageHeight(props.paperSize),
+}))
 
 function checkOverflow() {
   if (!contentEl.value) return
@@ -75,7 +89,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="page-preview">
+  <div class="page-preview" :style="pageSizeVars">
     <div class="page-preview__margin">
       <div class="page-preview__content" ref="contentEl">
         <slot />
@@ -90,8 +104,8 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .page-preview {
-  width: 8.5in;
-  height: 11in;
+  width: var(--pp-width);
+  height: var(--pp-height);
   max-width: 100%;
   flex-shrink: 0;
   background: #fff;
@@ -149,8 +163,9 @@ onBeforeUnmount(() => {
 
 @media print {
   /* Width/height/padding are NOT overridden here - .page-preview and
-     .page-preview__margin keep the exact same 8.5in/11in/0.5in box model as
-     the screen mockup. @page's own margin is 0 (print.css), so there's no
+     .page-preview__margin keep the exact same paper-size-driven box model
+     (--pp-width/--pp-height, 0.5in margin) as the screen mockup. @page's own
+     margin is 0 (print.css), so there's no
      second margin source left to double up with; the one real source is
      this padding, in both modes. Only the screen-only chrome (drop shadow,
      rounded corners, the centering margin between stacked previews, and

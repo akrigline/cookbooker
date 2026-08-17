@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import * as db from '../js/db'
 import { useProjectsStore } from './projects'
+import { useSettingsStore } from './settings'
 import { measureRecipeFit } from '../js/recipeFitMeasure'
 
 export const useRecipesStore = defineStore('recipes', {
@@ -46,7 +47,8 @@ export const useRecipesStore = defineStore('recipes', {
     // case fitsOnPage is left as whatever it already was rather than persisted.
     triggerFitMeasurement(id, recipe) {
       if (!recipe) return
-      measureRecipeFit(recipe)
+      const paperSize = useSettingsStore().pageSize
+      measureRecipeFit(recipe, { paperSize })
         .then((fits) => {
           if (fits === null) return
           return db.updateRecipe(id, { fitsOnPage: fits }).then(() => this.patchRecipe(id, { fitsOnPage: fits }))
@@ -55,6 +57,12 @@ export const useRecipesStore = defineStore('recipes', {
         // (or otherwise no longer exists) before measurement resolves must
         // not surface as an unhandled rejection.
         .catch(() => {})
+    },
+    // Fire-and-forget per recipe (same contract as triggerFitMeasurement) so
+    // the Settings paper-size toggle completes immediately - badges update as
+    // each measurement resolves rather than blocking on all of them.
+    remeasureAllFits() {
+      for (const recipe of this.recipes) this.triggerFitMeasurement(recipe.id, recipe)
     },
     async removeRecipe(id) {
       // db.deleteRecipe cascades to project_recipes inside its transaction;

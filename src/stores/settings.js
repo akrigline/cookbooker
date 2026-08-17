@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import * as db from '../js/db'
 import { DEFAULT_INGREDIENT_QTY_ALIGN } from '../js/templates'
+import { DEFAULT_PAPER_SIZE } from '../js/pageDimensions'
 
 export const useSettingsStore = defineStore('settings', {
   // loadPromise lives in state, not module scope: Pinia creates a fresh store
@@ -12,6 +13,7 @@ export const useSettingsStore = defineStore('settings', {
   // doesn't break its `.then` chain.
   state: () => ({
     ingredientQtyAlign: DEFAULT_INGREDIENT_QTY_ALIGN,
+    pageSize: DEFAULT_PAPER_SIZE,
     loaded: false,
     loadPromise: null,
   }),
@@ -26,6 +28,7 @@ export const useSettingsStore = defineStore('settings', {
       if (!this.loadPromise) {
         this.loadPromise = db.getSettings().then((settings) => {
           this.ingredientQtyAlign = settings.ingredientQtyAlign
+          this.pageSize = settings.pageSize
           this.loaded = true
         }).catch((err) => {
           this.loadPromise = null
@@ -44,6 +47,10 @@ export const useSettingsStore = defineStore('settings', {
     async setIngredientQtyAlign(value) {
       const row = await db.updateSettings({ ingredientQtyAlign: value })
       this.ingredientQtyAlign = row.ingredientQtyAlign
+    },
+    async setPageSize(value) {
+      const row = await db.updateSettings({ pageSize: value })
+      this.pageSize = row.pageSize
     },
   },
 })

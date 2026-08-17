@@ -97,9 +97,11 @@ function extractNotesPlacement(root) {
 /**
  * Parses one `data-cm-format="recipe"` root element into either a candidate
  * recipe or a failure reason - mirrors the required-field validation
- * RecipeEditor.vue applies on manual save.
+ * RecipeEditor.vue applies on manual save. Exported so cookbookImport.js can
+ * call it directly per recipe article nested inside a `cookbook/1` file,
+ * without going through parseRecipeImportHtml's whole-document contract.
  */
-function parseRecipeElement(root, index) {
+export function parseRecipeElement(root, index) {
   const label = `Recipe ${index + 1}`
 
   const version = root.getAttribute('data-cm-version')

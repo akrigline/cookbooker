@@ -2,6 +2,7 @@
 import { computed, markRaw, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
+import { useSettingsStore } from '../stores/settings'
 import { parseRecipeImportHtml } from '../js/recipeImport'
 import { RECIPE_IMPORT_PROMPT } from '../js/recipeImportPrompt'
 import { computeImportReturnContext } from '../js/returnContext'
@@ -12,6 +13,8 @@ import BackButton from '../components/BackButton.vue'
 const router = useRouter()
 const route = useRoute()
 const recipesStore = useRecipesStore()
+const settingsStore = useSettingsStore()
+const pageSize = computed(() => settingsStore.pageSize)
 
 // Caller context set by ProjectView's "Import Recipes" shortcut
 // (openspec: cookbook-import-shortcut), via a `?returnToProject` query param —
@@ -205,7 +208,7 @@ function handleCancelReview() {
               <label :for="`cm-inc-${c.key}`" style="font-size:13px; font-weight:600; cursor:pointer;">Include "{{ c.recipe.title }}"</label>
             </div>
             <div style="padding: 20px;">
-              <PagePreview>
+              <PagePreview :paper-size="pageSize">
                 <RecipeSheet :recipe="c.recipe" />
               </PagePreview>
             </div>

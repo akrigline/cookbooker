@@ -10,6 +10,7 @@ import { useRecipesStore } from '../stores/recipes'
 import { useProjectsStore } from '../stores/projects'
 import { useSettingsStore } from '../stores/settings'
 import { INGREDIENT_QTY_ALIGN_OPTIONS } from '../js/templates'
+import { PAPER_SIZES } from '../js/pageDimensions'
 import Modal from '../components/Modal.vue'
 
 const recipesStore = useRecipesStore()
@@ -49,6 +50,20 @@ async function setIngredientQtyAlign(value) {
   error.value = null
   try {
     await settingsStore.setIngredientQtyAlign(value)
+  } catch (err) {
+    error.value = `Could not save this setting: ${err.message}`
+  }
+}
+
+// Un-awaited on success: re-measuring every recipe's fitsOnPage against the
+// new paper size can take a noticeable amount of time for a large library,
+// and this toggle should complete immediately - badges update as each
+// measurement resolves (see recipes.js's remeasureAllFits).
+async function setPageSize(value) {
+  error.value = null
+  try {
+    await settingsStore.setPageSize(value)
+    recipesStore.remeasureAllFits()
   } catch (err) {
     error.value = `Could not save this setting: ${err.message}`
   }
@@ -193,6 +208,20 @@ async function confirmRestore() {
           @click="setIngredientQtyAlign(opt.id)"
         >
           Ingredient quantities: {{ opt.label }}
+        </button>
+      </div>
+
+      <div role="group" aria-label="Paper size" class="actions" style="margin-top:12px;">
+        <button
+          v-for="opt in Object.values(PAPER_SIZES)"
+          :key="opt.id"
+          type="button"
+          class="btn-secondary"
+          :aria-pressed="settingsStore.pageSize === opt.id"
+          :style="settingsStore.pageSize === opt.id ? 'background:oklch(93% 0.02 250); border:1.5px solid var(--color-focus); color:var(--ink-20);' : ''"
+          @click="setPageSize(opt.id)"
+        >
+          Paper size: {{ opt.label }}
         </button>
       </div>
     </section>

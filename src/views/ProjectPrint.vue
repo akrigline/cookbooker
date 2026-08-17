@@ -1,10 +1,12 @@
 <script setup>
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useProjectsStore } from '../stores/projects'
 import { useRecipesStore } from '../stores/recipes'
+import { useSettingsStore } from '../stores/settings'
 import { buildChapterPlan, layoutBookPages } from '../js/compileBook'
 import { measureTocLayout } from '../js/tocLayout'
 import { PAGE_GUTTER, PAGE_MARGIN } from '../js/pageDimensions'
+import { applyPageSizeOverride, clearPageSizeOverride } from '../js/pageSizeOverride'
 import PagePreview from '../components/PagePreview.vue'
 import PrintToolbar from '../components/PrintToolbar.vue'
 import CoverPage from '../components/CoverPage.vue'
@@ -21,11 +23,14 @@ const props = defineProps({
 
 const projectsStore = useProjectsStore()
 const recipesStore = useRecipesStore()
+const settingsStore = useSettingsStore()
 
 onMounted(async () => {
   if (!projectsStore.loaded) await projectsStore.load()
   if (!recipesStore.loaded) await recipesStore.load()
 })
+
+const pageSize = computed(() => settingsStore.pageSize)
 
 const projectIdNum = computed(() => Number(props.projectId))
 const project = computed(() => projectsStore.projects.find((p) => p.id === projectIdNum.value))
@@ -54,18 +59,20 @@ const chaptersById = computed(() => new Map(chapterPlan.value.map((e) => [e.chap
 // the chapter plan changes again before a previous measurement resolves.
 // `doubleSided` is a real dependency here, not just a rendering flag: it changes
 // the page's content width via the binding gutter below, so toggling it has to
-// re-measure or the TOC keeps a split computed for the other width.
+// re-measure or the TOC keeps a split computed for the other width. `pageSize`
+// is the same story - it changes the content box's width AND height, so a
+// paper-size change has to re-measure too.
 const tocPages = ref([])
 const tocNumberDigits = ref(2)
 const tocReady = ref(false)
 let tocMeasureToken = 0
 watch(
-  [chapterPlan, showToc, doubleSided],
-  async ([plan, enabled, isDoubleSided]) => {
+  [chapterPlan, showToc, doubleSided, pageSize],
+  async ([plan, enabled, isDoubleSided, size]) => {
     const token = ++tocMeasureToken
     tocReady.value = false
     const result = enabled
-      ? await measureTocLayout(plan, { doubleSided: isDoubleSided })
+      ? await measureTocLayout(plan, { doubleSided: isDoubleSided, pageSize: size })
       : { pages: [], numberDigits: 2 }
     if (token !== tocMeasureToken) return
     tocPages.value = result.pages
@@ -119,6 +126,12 @@ const pageNumbers = computed(() =>
 function printPage() {
   window.print()
 }
+
+// Symmetric create/update in the watcher, teardown on unmount - see
+// pageSizeOverride.js for why this is a `<style>` injection rather than a
+// CSS variable.
+watch(pageSize, applyPageSizeOverride, { immediate: true })
+onBeforeUnmount(clearPageSizeOverride)
 </script>
 
 <template>
@@ -141,14 +154,14 @@ function printPage() {
          wrapper) renders its own root <div>, which would otherwise count
          toward the same "div" nth-of-type sequence and throw off parity. -->
     <div v-else class="print-project__pages">
-      <PagePreview>
+      <PagePreview :paper-size="pageSize">
         <CoverPage :project="project" />
       </PagePreview>
 
       <template v-for="entry in bookLayout.pages" :key="`${entry.type}-${entry.page}`">
-        <PagePreview v-if="entry.type === 'blank'" />
+        <PagePreview v-if="entry.type === 'blank'" :paper-size="pageSize" />
 
-        <PagePreview v-else-if="entry.type === 'toc'" hide-overflow-warning>
+        <PagePreview v-else-if="entry.type === 'toc'" :paper-size="pageSize" hide-overflow-warning>
           <TableOfContentsPage
             :rows="tocPages[entry.tocPageIndex].rows"
             :show-heading="entry.tocPageIndex === 0"
@@ -158,14 +171,14 @@ function printPage() {
           />
         </PagePreview>
 
-        <PagePreview v-else-if="entry.type === 'divider'" :page-number="entry.printedNumber">
+        <PagePreview v-else-if="entry.type === 'divider'" :paper-size="pageSize" :page-number="entry.printedNumber">
           <ChapterDividerPage
             :chapter-name="chaptersById.get(entry.chapterId).name"
             :accent-color="project.accentColor"
           />
         </PagePreview>
 
-        <PagePreview v-else :page-number="entry.printedNumber">
+        <PagePreview v-else :paper-size="pageSize" :page-number="entry.printedNumber">
           <RecipeSheet :recipe="recipesById.get(entry.recipeId)" />
         </PagePreview>
       </template>

@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
+import { useSettingsStore } from '../stores/settings'
 import { parseIngredientsText } from '../js/conversions'
 import { exportRecipeToHtml } from '../js/recipeExport'
 import {
@@ -27,6 +28,8 @@ const props = defineProps({
 const router = useRouter()
 const route = useRoute()
 const recipesStore = useRecipesStore()
+const settingsStore = useSettingsStore()
+const pageSize = computed(() => settingsStore.pageSize)
 
 const isEditing = computed(() => props.recipeId != null)
 
@@ -337,7 +340,7 @@ async function handleExport() {
 
       <div class="cm-preview-column" style="position:sticky; top:24px; min-width:0;">
         <p class="cm-preview-label" style="margin:0 0 10px; font-size:12px; font-weight:600; color:var(--ink-52); text-transform:uppercase; letter-spacing:0.04em;">Live preview</p>
-        <PagePreview>
+        <PagePreview :paper-size="pageSize">
           <RecipeSheet :recipe="previewRecipe" />
         </PagePreview>
       </div>

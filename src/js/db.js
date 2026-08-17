@@ -6,6 +6,7 @@ import {
   DEFAULT_ACCENT_COLOR,
   DEFAULT_PLACEMENT,
 } from './templates'
+import { PAPER_SIZES, DEFAULT_PAPER_SIZE } from './pageDimensions'
 
 export const MISC_CHAPTER_NAME = 'Miscellaneous'
 
@@ -152,9 +153,13 @@ const updateOrThrow = async (table, kind, id, changes) => {
 // ---------------------------------------------------------------------------
 // Settings (singleton row, key 'app')
 // ---------------------------------------------------------------------------
-export const DEFAULT_SETTINGS = { ingredientQtyAlign: DEFAULT_INGREDIENT_QTY_ALIGN }
+export const DEFAULT_SETTINGS = {
+  ingredientQtyAlign: DEFAULT_INGREDIENT_QTY_ALIGN,
+  pageSize: DEFAULT_PAPER_SIZE,
+}
 const SETTINGS_KEY = 'app'
 const KNOWN_QTY_ALIGNS = new Set(INGREDIENT_QTY_ALIGN_OPTIONS.map((o) => o.id))
+const KNOWN_PAPER_SIZES = new Set(Object.keys(PAPER_SIZES))
 
 // Validates, rather than only spreading defaults: a hand-edited backup can carry
 // `ingredientQtyAlign: 'centre'`. recipe-import already requires "unrecognized
@@ -168,6 +173,9 @@ const validateSettings = (row) => {
   const validated = { ...row }
   if ('ingredientQtyAlign' in validated && !KNOWN_QTY_ALIGNS.has(validated.ingredientQtyAlign)) {
     validated.ingredientQtyAlign = DEFAULT_INGREDIENT_QTY_ALIGN
+  }
+  if ('pageSize' in validated && !KNOWN_PAPER_SIZES.has(validated.pageSize)) {
+    validated.pageSize = DEFAULT_PAPER_SIZE
   }
   return validated
 }

@@ -1,15 +1,15 @@
 import { createApp, h, nextTick } from 'vue'
 import RecipeSheet from '../components/RecipeSheet.vue'
-import { PAGE_WIDTH, PAGE_HEIGHT, PAGE_MARGIN } from './pageDimensions.js'
+import { pageWidth, pageHeight, PAGE_MARGIN, DEFAULT_PAPER_SIZE } from './pageDimensions.js'
 
-function createContainer() {
+function createContainer(paperSize) {
   const container = document.createElement('div')
   container.style.position = 'fixed'
   container.style.top = '-9999px'
   container.style.left = '-9999px'
   container.style.visibility = 'hidden'
-  container.style.width = PAGE_WIDTH
-  container.style.height = PAGE_HEIGHT
+  container.style.width = pageWidth(paperSize)
+  container.style.height = pageHeight(paperSize)
   container.style.boxSizing = 'border-box'
   container.style.padding = PAGE_MARGIN
   container.style.overflow = 'hidden'
@@ -19,11 +19,14 @@ function createContainer() {
 
 // `component`/`props` are overridable so tests can mount a lightweight stub
 // instead of the full RecipeSheet + layout-template + settings-store stack.
-export async function measureRecipeFit(recipe, { component = RecipeSheet, props = {} } = {}) {
+export async function measureRecipeFit(
+  recipe,
+  { component = RecipeSheet, props = {}, paperSize = DEFAULT_PAPER_SIZE } = {},
+) {
   let container = null
   let app = null
   try {
-    container = createContainer()
+    container = createContainer(paperSize)
     app = createApp({
       render: () => h(component, { recipe, ...props }),
     })
