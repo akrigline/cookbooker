@@ -17,8 +17,8 @@ recipe page — not in a modal or overlay — and remain at or below Version 15 
 reliable scanning by standard smartphone cameras.
 
 The QR code SHALL be visible in the on-screen print preview as well as in the physical printed
-output, positioned unobtrusively in the bottom-right corner of the recipe article so it does not
-obscure layout content.
+output, rendered inline alongside the recipe's ingredient list so it does not obscure other layout
+content; exact placement within the ingredients section varies by the recipe's layout template.
 
 When the full ingredient list would produce a QR code denser than Version 15, the system SHALL
 progressively drop ingredients from the end of the list — largest prefix first — until the remaining

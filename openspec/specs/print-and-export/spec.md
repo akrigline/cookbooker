@@ -60,8 +60,23 @@ When a project has double-sided printing enabled, the system SHALL insert a blan
 - **WHEN** double-sided printing is enabled and a Chapter Divider already falls on an odd (right-hand) physical page
 - **THEN** no blank page is inserted before it
 
+### Requirement: Multi-Page Table of Contents Pagination
+The Table of Contents SHALL NOT be constrained to a single physical page. Its rows SHALL render in a two-column-per-page layout, filling the first column of a page before flowing into the second, and overflowing into as many additional two-column pages as needed to list every chapter and recipe. Only the first Table of Contents page SHALL display the "Table of Contents" heading; continuation pages SHALL omit it. A row (chapter header or recipe title, including a wrapped multi-line title) SHALL NOT be split across a column or page boundary. Because pagination depends on rendered layout, the system SHALL determine actual page/column boundaries by measuring an off-screen render of the real Table of Contents markup at the project's configured paper size and margins (including the double-sided binding gutter, when enabled) rather than by an estimated or hand-computed row count per page.
+
+#### Scenario: Table of contents spans multiple pages
+- **WHEN** a cookbook has enough chapters and recipes that their entries cannot fit in one page's two columns
+- **THEN** the Table of Contents continues onto additional pages, each laid out in two columns, until every entry is listed
+
+#### Scenario: Heading only on the first page
+- **WHEN** the Table of Contents spans more than one page
+- **THEN** only the first page shows the "Table of Contents" heading; subsequent pages show only rows
+
+#### Scenario: Row does not split across a column or page break
+- **WHEN** a chapter or recipe row (including one with a wrapped, multi-line title) would otherwise be split by a column or page boundary
+- **THEN** the entire row is pushed to the start of the next column or page instead of being divided
+
 ### Requirement: Single-Page Recipe Layout Constraint
-Every recipe page SHALL be styled to render as a single printed page at the app's currently configured global paper size (see `app-settings`'s Global Paper Size requirement). Page breaks MUST be enforced to prevent content from spilling across pages. Each recipe page SHALL include an inline QR code widget in the bottom-right corner of the recipe article, encoding the recipe's ingredient list for easy transfer to a shopping list application (see `recipe-qr-sharing` for the widget's truncation and fallback behavior). The system SHALL proactively surface a violation of this constraint by persisting a nullable `fitsOnPage` boolean field on each recipe record, computed by measuring the recipe's rendered sheet against a single print page at the current global paper size, after any write that creates or modifies the recipe, and after the global paper size itself changes. This lets list views warn the user before print time, rather than the recipe silently bleeding onto a second sheet only discovered when printed.
+Every recipe page SHALL be styled to render as a single printed page at the app's currently configured global paper size (see `app-settings`'s Global Paper Size requirement). Page breaks MUST be enforced to prevent content from spilling across pages. Each recipe page SHALL include an inline QR code widget alongside the ingredient list, encoding the recipe's ingredient list for easy transfer to a shopping list application (see `recipe-qr-sharing` for the widget's placement, truncation, and fallback behavior). The system SHALL proactively surface a violation of this constraint by persisting a nullable `fitsOnPage` boolean field on each recipe record, computed by measuring the recipe's rendered sheet against a single print page at the current global paper size, after any write that creates or modifies the recipe, and after the global paper size itself changes. This lets list views warn the user before print time, rather than the recipe silently bleeding onto a second sheet only discovered when printed.
 
 #### Scenario: Print Page Break Isolation
 - **WHEN** the cookbook is printed or previewed
@@ -104,7 +119,7 @@ The system SHALL derive every page's physical dimensions — the screen preview 
 - **THEN** the absolute margin and double-sided binding-gutter widths remain the same on both sizes
 
 ### Requirement: Single Recipe Export
-The system SHALL support exporting a single recipe. Individual recipe exports MUST match the margins, template, and accent color of their parent project, and SHALL NOT display page numbers.
+The system SHALL support exporting a single recipe. Individual recipe exports MUST match the margins and layout template of their parent project, and SHALL NOT display page numbers. Accent color is a cover/Table-of-Contents/chapter-divider styling property only and does not apply to individual recipe sheets.
 
 #### Scenario: Single Recipe Print Generation
 - **WHEN** the user exports a single recipe from Project A

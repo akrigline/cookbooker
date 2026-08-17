@@ -18,7 +18,7 @@ The application SHALL register global CSS custom properties (in `tokens.css`) fo
 
 #### Scenario: Accent Color Configuration
 - **WHEN** a Vue component's `<style scoped>` block loads
-- **THEN** it resolves styling values from the global custom properties such as `--accent-color`, `--font-main`, and `--bg-primary` defined in `tokens.css`.
+- **THEN** it resolves styling values from the global custom properties such as `--sidebar-accent`, `--font-main`, and `--bg-primary` defined in `tokens.css`.
 
 ### Requirement: Shared Reactive State Layer
 The application SHALL maintain shared application data (recipes, projects, chapters, and their associations) in a Pinia store layer backed by `db.js`, so that any change made through one view is reflected in every other mounted view referencing the same data.
@@ -35,7 +35,7 @@ The user interface SHALL render a split-pane layout consisting of a side-nav bar
 - **THEN** the sidebar menu collapses automatically and a hamburger toggle button becomes interactive.
 
 ### Requirement: Routed Client-Side View Navigation
-The application SHALL use Vue Router to navigate between views (Dashboard, Recipe Library, an individual recipe, a Project view, its Print view, and Settings) without executing full page reloads, with each view addressable by its own URL.
+The application SHALL use Vue Router to navigate between views (Dashboard, Recipe Library, an individual recipe, recipe import, cookbook import, a Project view, its Print view, an individual recipe's Print view, Settings, and the QR-share decode view) without executing full page reloads, with each view addressable by its own URL.
 
 #### Scenario: Switching tabs in sidebar
 - **WHEN** the user clicks "Recipe Library" in the side-nav

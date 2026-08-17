@@ -6,12 +6,12 @@ Cookbook Maker is a client-side web application for managing recipes and organiz
 
 ## Features
 
-- **Recipe Library & Editor**: Create, edit, and manage your recipe collection, featuring automatic ingredient parsing and fraction handling.
-- **Cookbook Management**: Group recipes into structured projects or books, complete with chapters, custom ordering, and bulk operations.
-- **Recipe Import**: Import recipes using AI prompts and automated parsing.
-- **Ingredient Conversions**: Automatically parse and scale ingredients.
-- **Recipe QR sharing**: Recipes can be shared to a phone as a scannable QR code ("Share via QR" in the recipe view) — the ingredient list and title are compressed and encoded entirely in the QR code's URL, so no server or account is involved. Scanning opens this app's own `/decode` route to display the recipe.
-- **Print & Export**: Format recipes and cookbooks for printing, and export/import full database backups.
+- **Recipe Library & Editor**: Create, edit, and manage your recipe collection, featuring automatic ingredient parsing, fraction handling, and a choice of print layout templates (including a configurable two-column layout with independent image/notes placement).
+- **Cookbook Management**: Group recipes into structured projects or books, complete with chapters, custom ordering, bulk operations, cover templates, accent colors, and optional double-sided/booklet printing.
+- **Recipe Import**: Import recipes using AI prompts and automated parsing, either into your library or directly into a cookbook.
+- **Ingredient Conversions**: Automatically parse ingredients and convert between US and metric units.
+- **Recipe QR Code**: Every recipe sheet includes a QR code alongside its ingredients — the ingredient list and title are compressed and encoded entirely in the QR code's URL, so no server or account is involved. Scanning opens this app's own `/decode` route to display the recipe as a shopping-list-friendly view.
+- **Print & Export**: Format recipes and cookbooks for printing (Letter or A4), export a single recipe or an entire cookbook as a self-contained, re-importable HTML file, and export/import full database backups.
 
 ## Tech Stack
 

@@ -15,7 +15,11 @@ The system SHALL allow users to select multiple recipes across various chapters 
 
 #### Scenario: Bulk remove from cookbook
 - **WHEN** the user selects multiple recipes and chooses "Remove from cookbook"
-- **THEN** the system prompts for double confirmation before removing the recipes from the cookbook
+- **THEN** the system prompts for confirmation before removing the recipes from the cookbook
+
+#### Scenario: Bulk apply layout template
+- **WHEN** the user selects multiple recipes within a cookbook and chooses a layout template from the bulk action bar
+- **THEN** all selected recipes are updated to use the chosen layout template
 
 #### Scenario: Bulk new chapter from cookbook selection
 - **WHEN** the user selects multiple recipes across chapters and chooses "New chapter from these"

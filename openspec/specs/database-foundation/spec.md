@@ -10,10 +10,10 @@ Establishes the local Dexie/IndexedDB database for the DIY Cookbook Creator, set
 The system SHALL initialize a local IndexedDB database named `cookbook_maker_db`, defined via
 Dexie.js, containing relational tables for recipes (`recipes`, auto-increment key `id`),
 cookbook projects (`projects`, auto-increment key `id`), chapters (`chapters`, auto-increment key
-`id`, indexed on `projectId`, with an `order` field for chapter sequencing and an `isDefault`
+`id`, indexed on `projectId`, with a `sequence` field for chapter sequencing and an `isDefault`
 boolean marking the protected "Miscellaneous" chapter), recipe-to-project mappings
 (`project_recipes`, auto-increment key `id`, indexed on `projectId`, `recipeId`, and `chapterId`,
-with an `order` field for recipe sequencing within a chapter), and app-wide settings (`settings`,
+with a `sequence` field for recipe sequencing within a chapter), and app-wide settings (`settings`,
 string primary key `key`, holding a single settings row). Later schema versions MAY add further
 tables; this requirement SHALL NOT be read as capping the table count.
 

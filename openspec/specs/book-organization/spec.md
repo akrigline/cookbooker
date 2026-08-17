@@ -49,7 +49,7 @@ The system SHALL allow users to define a custom sequential order for chapters wi
 - **THEN** the system saves the new sequence and updates the print layout order accordingly
 
 ### Requirement: Removing a Recipe from a Cookbook
-The user SHALL be able to remove a recipe from a specific cookbook, but the system MUST require explicit double confirmation before performing the removal. Removing a recipe from a cookbook MUST NOT delete it from other cookbooks or from the central Global Recipe Library.
+The user SHALL be able to remove a recipe from a specific cookbook, but the system MUST require confirmation before performing the removal. Removing a recipe from a cookbook MUST NOT delete it from other cookbooks or from the central Global Recipe Library.
 
 #### Scenario: Removing a recipe from a cookbook
 - **WHEN** the user attempts to remove "Grandma's Apple Pie" from the "Holiday Baking" cookbook

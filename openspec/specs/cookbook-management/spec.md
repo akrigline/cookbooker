@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Creates and manages multiple independent cookbook projects, including project metadata (title, subtitle), cover layout and accent color styling, a global page-number toggle, and curating which recipes from the Global Recipe Library belong to each project.
+Creates and manages multiple independent cookbook projects, including project metadata (title, subtitle), cover layout and accent color styling, a per-project page-number toggle, and curating which recipes from the Global Recipe Library belong to each project. The per-project double-sided/booklet printing toggle is configured from the same cookbook-editing modal as the page-number toggle, but its full behavior (gutter margins, recto-forced section starts, mirrored page numbers) is specified under `print-and-export`.
 ## Requirements
 ### Requirement: Cookbook Project CRUD
 The system SHALL support creating, listing, updating, and deleting multiple independent cookbook projects. Deleting a cookbook project MUST NOT delete recipes from the Global Recipe Library.
@@ -30,7 +30,7 @@ Each cookbook project SHALL allow the selection of a primary accent color from a
 - **THEN** the project configuration updates and the real-time print preview reflects these style properties.
 
 ### Requirement: Page Number Configuration Toggle
-A cookbook project SHALL support a boolean setting to toggle page numbers on or off globally.
+A cookbook project SHALL support a boolean setting to toggle page numbers on or off for that project.
 
 #### Scenario: Enabling page numbers
 - **WHEN** the user sets page numbers to ON for a cookbook project
