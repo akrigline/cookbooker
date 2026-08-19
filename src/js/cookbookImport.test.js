@@ -12,6 +12,26 @@ const project = {
 }
 
 describe('parseCookbookImportHtml', () => {
+  it('falls back to an empty favoriteIcon for an unrecognized icon value, as a hand-edited file might carry', () => {
+    const html = `<!DOCTYPE html><html><body>
+      <section data-cm-format="cookbook" data-cm-version="1">
+        <meta class="cm-cookbook-favorite-icon" content="rainbow">
+      </section>
+    </body></html>`
+    const { cookbook } = parseCookbookImportHtml(html)
+    expect(cookbook.favoriteIcon).toBe('')
+  })
+
+  it('accepts a known favoriteIcon value', () => {
+    const html = `<!DOCTYPE html><html><body>
+      <section data-cm-format="cookbook" data-cm-version="1">
+        <meta class="cm-cookbook-favorite-icon" content="sock">
+      </section>
+    </body></html>`
+    const { cookbook } = parseCookbookImportHtml(html)
+    expect(cookbook.favoriteIcon).toBe('sock')
+  })
+
   it('rejects a file with no cookbook/1 root', () => {
     const result = parseCookbookImportHtml('<html><body><p>Not a cookbook</p></body></html>')
     expect(result.rejected).toBe(true)

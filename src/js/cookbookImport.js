@@ -1,5 +1,8 @@
 import { parseRecipeElement } from './recipeImport'
 import { DEFAULT_ACCENT_COLOR } from './templates'
+import { FAVORITE_ICONS } from './favorites'
+
+const KNOWN_FAVORITE_ICONS = new Set(FAVORITE_ICONS.map((i) => i.id))
 
 function metaContent(root, selector) {
   return root.querySelector(selector)?.getAttribute('content') ?? ''
@@ -52,7 +55,8 @@ export function parseCookbookImportHtml(text) {
   const coverTemplate = metaContent(root, '.cm-cookbook-cover-template') || 'classic'
   const pageNumbersEnabled = metaBool(root, '.cm-cookbook-page-numbers', true)
   const doubleSidedEnabled = metaBool(root, '.cm-cookbook-double-sided', false)
-  const favoriteIcon = metaContent(root, '.cm-cookbook-favorite-icon')
+  const favoriteIconContent = metaContent(root, '.cm-cookbook-favorite-icon')
+  const favoriteIcon = KNOWN_FAVORITE_ICONS.has(favoriteIconContent) ? favoriteIconContent : ''
   const favoriteTerminology = metaContent(root, '.cm-cookbook-favorite-terminology')
 
   const chapterEls = [...root.children].filter((el) => el.matches('.cm-chapter'))
