@@ -16,6 +16,7 @@ import { applyRange } from '../js/rangeSelect'
 import { intersectExistingRecipeIds } from '../js/cookbookImportShortcut'
 import { exportCookbookToHtml, cookbookExportFilename } from '../js/cookbookExport'
 import { LAYOUT_TEMPLATES } from '../js/templates'
+import { loadCollapsedChapterIds, saveCollapsedChapterIds } from '../js/chapterCollapse'
 
 // ---------------------------------------------------------------------------
 // Props / stores
@@ -215,6 +216,16 @@ function toggleLibSelect(recipeId, event) {
   else s.add(recipeId)
   libSelectedIds.value = s
   lastClickedLibId.value = recipeId
+}
+
+const collapsedChapterIds = ref(loadCollapsedChapterIds())
+
+function toggleChapterCollapsed(chapterId) {
+  const next = new Set(collapsedChapterIds.value)
+  if (next.has(chapterId)) next.delete(chapterId)
+  else next.add(chapterId)
+  collapsedChapterIds.value = next
+  saveCollapsedChapterIds(next)
 }
 
 function selectAllInChapter(chapterId) {
@@ -942,6 +953,7 @@ const chapterCardHandlers = {
   onToggleChapterMenu: toggleChapterMenu,
   onMoveRecipeToChapter: moveRecipeToChapter,
   onOpenRemoveRecipe: openRemoveRecipe,
+  onToggleCollapse: toggleChapterCollapsed,
 }
 
 const librarySidebarHandlers = {
@@ -1073,6 +1085,7 @@ const bulkActionHandlers = {
           :open-menu-pr-id="openMenuPrId"
           :open-menu-chapter-id="openMenuChapterId"
           :project-id="project.id"
+          :collapsed="collapsedChapterIds.has(chapter.id)"
           :drag-state="dragState"
           :handlers="chapterCardHandlers"
         />

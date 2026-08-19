@@ -13,6 +13,7 @@ const props = defineProps({
   openMenuPrId: { type: [Number, String, null], default: null },
   openMenuChapterId: { type: [Number, String, null], default: null },
   projectId: { type: [Number, String], required: true },
+  collapsed: { type: Boolean, default: false },
   // { dragChapterId, dropChapterAfterId, dragRecipePrId, dropChapterId, dropAfterPrId }
   dragState: { type: Object, required: true },
   // Grouped callbacks - ProjectView.vue keeps ownership of every store write
@@ -75,7 +76,20 @@ function dropLineBelow(pr) {
         >
           <svg width="12" height="18" viewBox="0 0 12 18" fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="9" r="1.5"/><circle cx="9" cy="9" r="1.5"/><circle cx="3" cy="15" r="1.5"/><circle cx="9" cy="15" r="1.5"/></svg>
         </span>
-        <h2 class="chapter-card__name">{{ chapter.name }}</h2>
+        <button
+          type="button"
+          class="chapter-card__collapse-toggle"
+          :aria-expanded="!collapsed"
+          :aria-label="`${collapsed ? 'Expand' : 'Collapse'} chapter '${chapter.name}'`"
+          @click="handlers.onToggleCollapse(chapter.id)"
+        >
+          <svg
+            class="chapter-card__chevron"
+            :class="{ 'chapter-card__chevron--collapsed': collapsed }"
+            width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+          ><polyline points="6 9 12 15 18 9"/></svg>
+          <h2 class="chapter-card__name">{{ chapter.name }}</h2>
+        </button>
         <span v-if="chapter.isDefault" class="chapter-badge">Default</span>
       </div>
       <div class="chapter-card__controls">
@@ -151,6 +165,7 @@ function dropLineBelow(pr) {
 
     <!-- Recipe list drop zone -->
     <ul
+      v-if="!collapsed"
       class="recipe-list"
       :class="{ 'recipe-list--drop-active': dragState.dropChapterId === chapter.id }"
       @dragover="handlers.onRecipeDragOver($event, chapter.id)"
@@ -331,6 +346,29 @@ function dropLineBelow(pr) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.chapter-card__collapse-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  background: none;
+  border: none;
+  padding: 2px 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.chapter-card__chevron {
+  flex-shrink: 0;
+  color: var(--ink-52);
+  transition: transform 0.15s;
+}
+
+.chapter-card__chevron--collapsed {
+  transform: rotate(-90deg);
 }
 
 .chapter-badge {
