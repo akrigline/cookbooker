@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import QRCode from 'qrcode'
-import { generateQRURL, getIngredientLines, getIngredientTextLength, INGREDIENT_WARNING_LENGTH } from '../js/qrShare'
+import { generateQRURL, getIngredientLines } from '../js/qrShare'
 
 const props = defineProps({
   recipe: {
@@ -14,13 +14,31 @@ const svgContent = ref('')
 
 const ingredientLines = computed(() => getIngredientLines(props.recipe))
 
+// The real scannability constraint is the encoded QR *version* (module count)
+// at a fixed 1.25in print size — not the pre-compression character count. A
+// short-but-low-repetition ingredient list (few repeated words, unicode
+// punctuation/fractions) can compress poorly enough to tip past version 15
+// while sitting nowhere near INGREDIENT_WARNING_LENGTH, so a character-count
+// prefix search under-truncates and falls straight to the "too long" notice
+// instead of dropping a line or two. Search by version directly instead.
+function versionForCount(n) {
+  const candidateUrl = generateQRURL(props.recipe, { maxIngredients: n })
+  try {
+    return QRCode.create(candidateUrl, { errorCorrectionLevel: 'L' }).version
+  } catch {
+    return null
+  }
+}
+
 // Rather than falling back outright once the full ingredient list is too
-// long to encode reliably, find the largest prefix of the list that fits
-// under the warning threshold (down to 0) and encode that instead.
+// dense to encode reliably, find the largest prefix of the list whose QR
+// stays within a reliably-scannable version (down to 0) and encode that
+// instead.
 const includedIngredientCount = computed(() => {
   const lines = ingredientLines.value
   for (let n = lines.length; n > 0; n--) {
-    if (getIngredientTextLength(props.recipe, n) <= INGREDIENT_WARNING_LENGTH) return n
+    const version = versionForCount(n)
+    if (version != null && version <= 15) return n
   }
   return 0
 })
@@ -29,15 +47,7 @@ const wasTruncated = computed(() => includedIngredientCount.value < ingredientLi
 
 const url = computed(() => generateQRURL(props.recipe, { maxIngredients: includedIngredientCount.value }))
 
-// Check actual QR version, not just the character-count heuristic (same logic
-// as the old QRCodeShare modal — see qrShare.js and design.md Decision 3).
-const qrVersion = computed(() => {
-  try {
-    return QRCode.create(url.value, { errorCorrectionLevel: 'L' }).version
-  } catch {
-    return null
-  }
-})
+const qrVersion = computed(() => versionForCount(includedIngredientCount.value))
 
 const tooDenseToScan = computed(() => qrVersion.value == null || qrVersion.value > 15)
 const showFallback = computed(() => tooDenseToScan.value)
