@@ -11,6 +11,10 @@ defineProps({
     type: Object,
     required: true,
   },
+  favoriteSettings: {
+    type: Object,
+    required: true,
+  },
 })
 </script>
 
@@ -18,7 +22,7 @@ defineProps({
   <div class="layout-default">
     <div v-if="recipe.image" class="layout-default__top">
       <div class="layout-default__top-text">
-        <RecipeTitle :title="recipe.title" />
+        <RecipeTitle :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" />
         <RecipeNotes v-if="recipe.notes" :notes="recipe.notes" />
       </div>
       <RecipeImage
@@ -29,7 +33,7 @@ defineProps({
       />
     </div>
     <template v-else>
-      <RecipeTitle :title="recipe.title" />
+      <RecipeTitle :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" />
       <RecipeNotes v-if="recipe.notes" :notes="recipe.notes" />
     </template>
 

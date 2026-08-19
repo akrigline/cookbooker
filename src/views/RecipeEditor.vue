@@ -17,6 +17,7 @@ import { computeReturnContext, returnContextBackTo } from '../js/returnContext'
 import RecipeSheet from '../components/RecipeSheet.vue'
 import PagePreview from '../components/PagePreview.vue'
 import BackButton from '../components/BackButton.vue'
+import FavoriteToggle from '../components/FavoriteToggle.vue'
 
 const props = defineProps({
   recipeId: {
@@ -51,6 +52,7 @@ const ingredientColumns = ref(1)
 const imageAspectRatio = ref('auto')
 const imagePlacement = ref(DEFAULT_PLACEMENT)
 const notesPlacement = ref(DEFAULT_PLACEMENT)
+const favorite = ref(false)
 const imageFile = ref(null)
 const existingImage = ref(null)
 const notesTextarea = ref(null)
@@ -84,6 +86,7 @@ onMounted(async () => {
       imagePlacement.value = recipe.imagePlacement ?? DEFAULT_PLACEMENT
       notesPlacement.value = recipe.notesPlacement ?? DEFAULT_PLACEMENT
       existingImage.value = recipe.image ?? null
+      favorite.value = recipe.favorite ?? false
     } else {
       recipeNotFound.value = true
     }
@@ -110,6 +113,7 @@ const previewRecipe = computed(() => ({
   imagePlacement: imagePlacement.value,
   notesPlacement: notesPlacement.value,
   image: imageFile.value ?? existingImage.value ?? null,
+  favorite: favorite.value,
 }))
 
 function handleImageChange(event) {
@@ -224,6 +228,7 @@ async function handleExport() {
           <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
           Print recipe
         </button>
+        <FavoriteToggle :favorite="favorite" @toggle="favorite = !favorite" />
         <button type="button" :disabled="saving" @click="save" :style="saving ? 'opacity:0.55; cursor:not-allowed;' : 'cursor:pointer;'" style="padding:12px 20px; font-size:15px; font-weight:600; border-radius:8px; border:none; background:var(--ink-20); color:var(--ink-99);">{{ saving ? 'Saving…' : 'Save' }}</button>
       </div>
     </div>

@@ -1,5 +1,8 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+import FavoriteBadge from './FavoriteBadge.vue'
+
+const props = defineProps({
   title: {
     type: String,
     required: true,
@@ -8,12 +11,30 @@ defineProps({
     type: Number,
     default: null,
   },
+  favorite: {
+    type: Boolean,
+    default: false,
+  },
+  // { icon, prefix } from getFavoriteSettings(project) - see src/js/favorites.js
+  favoriteSettings: {
+    type: Object,
+    default: () => ({ icon: 'heart', prefix: '' }),
+  },
 })
+
+const displayTitle = computed(() =>
+  props.favorite && props.favoriteSettings.prefix
+    ? `${props.favoriteSettings.prefix}: ${props.title}`
+    : props.title,
+)
 </script>
 
 <template>
   <li class="toc-recipe-row">
-    <span class="toc-title">{{ title }}</span>
+    <span class="toc-title">
+      <FavoriteBadge v-if="favorite" :icon="favoriteSettings.icon" />
+      {{ displayTitle }}
+    </span>
     <span v-if="pageNumber !== null" class="toc-leader" aria-hidden="true"></span>
     <span v-if="pageNumber !== null" class="toc-page-number">{{ pageNumber }}</span>
   </li>

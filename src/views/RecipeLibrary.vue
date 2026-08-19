@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useRecipesStore } from '../stores/recipes'
 import RecipeThumbnail from '../components/RecipeThumbnail.vue'
 import RecipeFitWarningBadge from '../components/RecipeFitWarningBadge.vue'
+import FavoriteToggle from '../components/FavoriteToggle.vue'
 
 const router = useRouter()
 const recipesStore = useRecipesStore()
@@ -123,7 +124,8 @@ async function confirmDelete() {
           <p :title="getIngredientSummary(recipe)" style="margin:0; font-size:13px; color:var(--ink-46); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">{{ getIngredientPreview(recipe) }}</p>
         </div>
 
-        <div style="display:flex; gap:8px; flex-shrink:0; align-self:center;" @click.stop>
+        <div style="display:flex; gap:8px; flex-shrink:0; align-self:center; align-items:center;" @click.stop>
+          <FavoriteToggle :favorite="!!recipe.favorite" @toggle="recipesStore.toggleFavorite(recipe.id)" />
           <router-link :to="`/library/${recipe.id}`" class="btn-open">
             Open recipe
           </router-link>

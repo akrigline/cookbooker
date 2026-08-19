@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { DEFAULT_LAYOUT_TEMPLATE } from '../js/templates'
+import { getFavoriteSettings } from '../js/favorites'
 import { useSettingsStore } from '../stores/settings'
 import RecipeLayoutDefault from './RecipeLayoutDefault.vue'
 import RecipeLayoutTwoColumn from './RecipeLayoutTwoColumn.vue'
@@ -37,6 +38,13 @@ const props = defineProps({
     type: String,
     default: undefined,
   },
+  // The active cookbook project, when rendering within one (null/undefined
+  // outside any cookbook context, e.g. the standalone editor preview) - see
+  // getFavoriteSettings in src/js/favorites.js for the resulting icon rule.
+  project: {
+    type: Object,
+    default: null,
+  },
 })
 
 const settingsStore = useSettingsStore()
@@ -45,6 +53,7 @@ const activeLayout = computed(
   () => LAYOUT_COMPONENTS[props.recipe.layoutTemplate] ?? LAYOUT_COMPONENTS[DEFAULT_LAYOUT_TEMPLATE],
 )
 const resolvedQtyAlign = computed(() => props.qtyAlign ?? settingsStore.ingredientQtyAlign)
+const favoriteSettings = computed(() => getFavoriteSettings(props.project))
 </script>
 
 <template>
@@ -53,7 +62,7 @@ const resolvedQtyAlign = computed(() => props.qtyAlign ?? settingsStore.ingredie
     :data-qty-align="resolvedQtyAlign"
     :style="{ '--recipe-qty-align': resolvedQtyAlign }"
   >
-    <component :is="activeLayout" :recipe="recipe" />
+    <component :is="activeLayout" :recipe="recipe" :favorite-settings="favoriteSettings" />
   </article>
 </template>
 

@@ -51,7 +51,7 @@ function printPage() {
     <!-- Single recipe exports carry no cover, TOC, or page number - just the
          parent project's margins and template fidelity. -->
     <PagePreview :paper-size="pageSize">
-      <RecipeSheet :recipe="recipe" />
+      <RecipeSheet :recipe="recipe" :project="project" />
     </PagePreview>
   </div>
   <main id="cm-main" style="max-width:1160px; margin:0 auto; padding:40px 32px 80px;" v-else>

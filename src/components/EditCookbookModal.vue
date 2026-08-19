@@ -1,11 +1,15 @@
 <script setup>
 import Modal from './Modal.vue'
+import FavoriteBadge from './FavoriteBadge.vue'
 import { ACCENT_COLORS, COVER_TEMPLATES } from '../js/templates'
+import { FAVORITE_ICONS } from '../js/favorites'
 
 defineProps({
   coverTemplate: { type: String, default: null },
   pageNumbersEnabled: { type: Boolean, default: false },
   doubleSidedEnabled: { type: Boolean, default: false },
+  favoriteIcon: { type: String, default: null },
+  favoriteTerminology: { type: String, default: '' },
   busy: { type: Boolean, default: false },
 })
 
@@ -70,6 +74,33 @@ const emit = defineEmits(['update-field', 'close', 'save'])
           @change="emit('update-field', 'doubleSidedEnabled', $event.target.checked)"
         />
         <span>Double-sided printing</span>
+      </label>
+      <div class="form-field">
+        <span class="form-label">Favorites Icon</span>
+        <div class="swatches">
+          <button
+            v-for="opt in FAVORITE_ICONS"
+            :key="opt.id"
+            type="button"
+            class="icon-swatch"
+            :class="{ 'icon-swatch--active': favoriteIcon === opt.id }"
+            :title="opt.label"
+            :aria-pressed="favoriteIcon === opt.id"
+            @click="emit('update-field', 'favoriteIcon', opt.id)"
+          >
+            <FavoriteBadge :icon="opt.id" :label="opt.label" />
+          </button>
+        </div>
+      </div>
+      <label class="form-field">
+        <span class="form-label">Favorites Title Prefix (optional)</span>
+        <input
+          type="text"
+          class="form-input"
+          placeholder="e.g. Sacred — leave blank for icon only"
+          :value="favoriteTerminology"
+          @change="emit('update-field', 'favoriteTerminology', $event.target.value)"
+        />
       </label>
     </div>
     <div class="modal-actions">
@@ -191,4 +222,26 @@ const emit = defineEmits(['update-field', 'close', 'save'])
 }
 
 .swatch:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.icon-swatch {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 1.5px solid var(--ink-84);
+  background: var(--ink-96);
+  color: var(--ink-46);
+  cursor: pointer;
+}
+
+.icon-swatch--active {
+  border-color: var(--color-focus);
+  background: oklch(93% 0.02 250);
+  color: var(--ink-20);
+}
+
+.icon-swatch:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 </style>

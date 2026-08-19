@@ -18,6 +18,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  project: {
+    type: Object,
+    default: null,
+  },
 })
 
 const emit = defineEmits(['close', 'edit', 'navigate'])
@@ -78,7 +82,7 @@ onUnmounted(() => {
       </header>
       <div class="rpd-content">
         <PagePreview :paper-size="pageSize">
-          <RecipeSheet :recipe="recipe" />
+          <RecipeSheet :recipe="recipe" :project="project" />
         </PagePreview>
       </div>
     </div>

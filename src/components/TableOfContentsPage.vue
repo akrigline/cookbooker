@@ -40,6 +40,13 @@ defineProps({
     type: Number,
     default: 2,
   },
+  // { icon, prefix } from getFavoriteSettings(project) - a single value for
+  // the whole page, since favorites display is configured per-cookbook, not
+  // per-row. See src/js/favorites.js.
+  favoriteSettings: {
+    type: Object,
+    default: () => ({ icon: 'heart', prefix: '' }),
+  },
 })
 </script>
 
@@ -64,6 +71,8 @@ defineProps({
               ? pageNumbers.recipePages.get(`${row.chapter.id}:${row.recipe.id}`)
               : null
         "
+        :favorite="row.type === 'recipe' ? !!row.recipe.favorite : false"
+        :favorite-settings="favoriteSettings"
       />
     </ul>
   </div>

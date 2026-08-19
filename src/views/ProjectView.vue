@@ -17,6 +17,7 @@ import { intersectExistingRecipeIds } from '../js/cookbookImportShortcut'
 import { exportCookbookToHtml, cookbookExportFilename } from '../js/cookbookExport'
 import { LAYOUT_TEMPLATES } from '../js/templates'
 import { loadCollapsedChapterIds, saveCollapsedChapterIds } from '../js/chapterCollapse'
+import { getFavoriteSettings } from '../js/favorites'
 
 // ---------------------------------------------------------------------------
 // Props / stores
@@ -118,6 +119,7 @@ function applyImportFailures() {
 
 const projectIdNum = computed(() => Number(props.projectId))
 const project = computed(() => projectsStore.projects.find((p) => p.id === projectIdNum.value))
+const favoriteSettings = computed(() => getFavoriteSettings(project.value))
 
 const orderedChapters = computed(() => {
   const all = projectsStore.chaptersForProject(projectIdNum.value)
@@ -954,6 +956,7 @@ const chapterCardHandlers = {
   onMoveRecipeToChapter: moveRecipeToChapter,
   onOpenRemoveRecipe: openRemoveRecipe,
   onToggleCollapse: toggleChapterCollapsed,
+  onToggleFavorite: (recipeId) => recipesStore.toggleFavorite(recipeId),
 }
 
 const librarySidebarHandlers = {
@@ -1087,6 +1090,7 @@ const bulkActionHandlers = {
           :project-id="project.id"
           :collapsed="collapsedChapterIds.has(chapter.id)"
           :drag-state="dragState"
+          :favorite-settings="favoriteSettings"
           :handlers="chapterCardHandlers"
         />
 
@@ -1173,6 +1177,8 @@ const bulkActionHandlers = {
     :cover-template="project?.coverTemplate"
     :page-numbers-enabled="project?.pageNumbersEnabled"
     :double-sided-enabled="project?.doubleSidedEnabled"
+    :favorite-icon="project?.favoriteIcon"
+    :favorite-terminology="project?.favoriteTerminology"
     :busy="modalBusy"
     @update-field="updateField"
     @close="closeModal"
@@ -1195,6 +1201,7 @@ const bulkActionHandlers = {
     :recipe="previewRecipe"
     :has-prev="previewIndex > 0"
     :has-next="previewIndex < previewChapterRecipes.length - 1"
+    :project="project"
     @close="closePreview"
     @edit="editPreviewRecipe"
     @navigate="navigatePreview"

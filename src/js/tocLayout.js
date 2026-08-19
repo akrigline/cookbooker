@@ -2,6 +2,7 @@ import { createApp, h, nextTick } from 'vue'
 import TableOfContentsPage from '../components/TableOfContentsPage.vue'
 import { maxPageNumberDigits } from './compileBook.js'
 import { pageContentBox, DEFAULT_PAPER_SIZE } from './pageDimensions.js'
+import { OUTSIDE_CONTEXT_ICON } from './favorites.js'
 
 /**
  * Flattens a chapter plan (buildChapterPlan's output) into an ordered list of
@@ -87,7 +88,7 @@ function placeholderPageNumbers(rows) {
 // in JS. Returns one column index per row (0-based, monotonic non-decreasing
 // since column-fill fills sequentially): 0-1 is "page one" of this batch,
 // 2-3 the next, and so on.
-async function measureColumnIndexes(rows, showHeading, { doubleSided, numberDigits, pageSize }) {
+async function measureColumnIndexes(rows, showHeading, { doubleSided, numberDigits, pageSize, favoriteSettings }) {
   const container = createMeasureContainer({ doubleSided, pageSize })
   let app = null
   try {
@@ -98,6 +99,7 @@ async function measureColumnIndexes(rows, showHeading, { doubleSided, numberDigi
           showHeading,
           numberDigits,
           pageNumbers: placeholderPageNumbers(rows),
+          favoriteSettings,
         }),
     })
     app.mount(container)
@@ -140,12 +142,19 @@ async function measureColumnIndexes(rows, showHeading, { doubleSided, numberDigi
  * returned alongside the pages so ProjectPrint.vue renders with the exact value
  * that was measured with, rather than recomputing it and risking a mismatch.
  */
-export async function measureTocLayout(chapterPlan, { doubleSided = false, pageSize = DEFAULT_PAPER_SIZE } = {}) {
+export async function measureTocLayout(
+  chapterPlan,
+  {
+    doubleSided = false,
+    pageSize = DEFAULT_PAPER_SIZE,
+    favoriteSettings = { icon: OUTSIDE_CONTEXT_ICON, prefix: '' },
+  } = {},
+) {
   const numberDigits = maxPageNumberDigits(chapterPlan)
   const rows = buildTocRows(chapterPlan)
   if (rows.length === 0) return { pages: [{ rows: [] }], numberDigits }
 
-  const options = { doubleSided, numberDigits, pageSize }
+  const options = { doubleSided, numberDigits, pageSize, favoriteSettings }
 
   const firstPageIndexes = await measureColumnIndexes(rows, true, options)
   const splitAt = firstPageIndexes.findIndex((columnIndex) => columnIndex > 1)

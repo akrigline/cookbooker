@@ -5,6 +5,7 @@ import { useRecipesStore } from '../stores/recipes'
 import { useSettingsStore } from '../stores/settings'
 import { buildChapterPlan, layoutBookPages } from '../js/compileBook'
 import { measureTocLayout } from '../js/tocLayout'
+import { getFavoriteSettings } from '../js/favorites'
 import { PAGE_GUTTER, PAGE_MARGIN } from '../js/pageDimensions'
 import { applyPageSizeOverride, clearPageSizeOverride } from '../js/pageSizeOverride'
 import PagePreview from '../components/PagePreview.vue'
@@ -34,6 +35,7 @@ const pageSize = computed(() => settingsStore.pageSize)
 
 const projectIdNum = computed(() => Number(props.projectId))
 const project = computed(() => projectsStore.projects.find((p) => p.id === projectIdNum.value))
+const favoriteSettings = computed(() => getFavoriteSettings(project.value))
 const recipesById = computed(() => new Map(recipesStore.recipes.map((r) => [r.id, r])))
 
 const chapterPlan = computed(() =>
@@ -67,12 +69,12 @@ const tocNumberDigits = ref(2)
 const tocReady = ref(false)
 let tocMeasureToken = 0
 watch(
-  [chapterPlan, showToc, doubleSided, pageSize],
-  async ([plan, enabled, isDoubleSided, size]) => {
+  [chapterPlan, showToc, doubleSided, pageSize, favoriteSettings],
+  async ([plan, enabled, isDoubleSided, size, favSettings]) => {
     const token = ++tocMeasureToken
     tocReady.value = false
     const result = enabled
-      ? await measureTocLayout(plan, { doubleSided: isDoubleSided, pageSize: size })
+      ? await measureTocLayout(plan, { doubleSided: isDoubleSided, pageSize: size, favoriteSettings: favSettings })
       : { pages: [], numberDigits: 2 }
     if (token !== tocMeasureToken) return
     tocPages.value = result.pages
@@ -168,6 +170,7 @@ onBeforeUnmount(clearPageSizeOverride)
             :page-numbers="pageNumbers"
             :accent-color="project.accentColor"
             :number-digits="tocNumberDigits"
+            :favorite-settings="favoriteSettings"
           />
         </PagePreview>
 
@@ -179,7 +182,7 @@ onBeforeUnmount(clearPageSizeOverride)
         </PagePreview>
 
         <PagePreview v-else :paper-size="pageSize" :page-number="entry.printedNumber">
-          <RecipeSheet :recipe="recipesById.get(entry.recipeId)" />
+          <RecipeSheet :recipe="recipesById.get(entry.recipeId)" :project="project" />
         </PagePreview>
       </template>
     </div>

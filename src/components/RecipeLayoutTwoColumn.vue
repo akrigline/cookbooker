@@ -13,6 +13,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  favoriteSettings: {
+    type: Object,
+    required: true,
+  },
 })
 
 const imagePlacement = computed(() => props.recipe.imagePlacement ?? DEFAULT_PLACEMENT)
@@ -21,7 +25,7 @@ const notesPlacement = computed(() => props.recipe.notesPlacement ?? DEFAULT_PLA
 
 <template>
   <div class="layout-two-column">
-    <RecipeTitle :title="recipe.title" />
+    <RecipeTitle :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" />
 
     <div v-if="recipe.image && imagePlacement === 'hero'" class="layout-two-column__hero-image">
       <RecipeImage :image="recipe.image" :aspect-ratio="recipe.imageAspectRatio" :title="recipe.title" />

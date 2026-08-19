@@ -10,12 +10,16 @@ defineProps({
     type: Object,
     required: true,
   },
+  favoriteSettings: {
+    type: Object,
+    required: true,
+  },
 })
 </script>
 
 <template>
   <div class="layout-dual-column-bottom-split">
-    <RecipeTitle class="layout-dual-column-bottom-split__title" :title="recipe.title" />
+    <RecipeTitle class="layout-dual-column-bottom-split__title" :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" />
     <RecipeIngredients :recipe="recipe" :ingredients="recipe.ingredients" :columns="recipe.ingredientColumns" />
     <div class="layout-dual-column-bottom-split__split">
       <div class="layout-dual-column-bottom-split__col">

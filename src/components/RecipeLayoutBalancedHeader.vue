@@ -10,13 +10,17 @@ defineProps({
     type: Object,
     required: true,
   },
+  favoriteSettings: {
+    type: Object,
+    required: true,
+  },
 })
 </script>
 
 <template>
   <div class="layout-balanced-header">
     <div class="layout-balanced-header__row">
-      <RecipeTitle class="layout-balanced-header__title" :title="recipe.title" />
+      <RecipeTitle class="layout-balanced-header__title" :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" />
       <RecipeImage
         class="layout-balanced-header__image"
         :image="recipe.image"

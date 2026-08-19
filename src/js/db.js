@@ -7,6 +7,7 @@ import {
   DEFAULT_PLACEMENT,
 } from './templates'
 import { PAPER_SIZES, DEFAULT_PAPER_SIZE } from './pageDimensions'
+import { DEFAULT_FAVORITE_ICON } from './favorites'
 
 export const MISC_CHAPTER_NAME = 'Miscellaneous'
 
@@ -86,6 +87,8 @@ db.on('populate', async () => {
     coverTemplate: 'classic',
     pageNumbersEnabled: true,
     doubleSidedEnabled: false,
+    favoriteIcon: DEFAULT_FAVORITE_ICON,
+    favoriteTerminology: '',
   })
   const chapterId = await db.chapters.add({
     projectId,
@@ -105,6 +108,7 @@ db.on('populate', async () => {
     imagePlacement: DEFAULT_PLACEMENT,
     notesPlacement: DEFAULT_PLACEMENT,
     fitsOnPage: null,
+    favorite: false,
   })
   await db.project_recipes.add({ projectId, chapterId, recipeId, sequence: 0 })
 })
@@ -217,6 +221,7 @@ export const addRecipe = (recipe) =>
     fitsOnPage: null,
     imagePlacement: DEFAULT_PLACEMENT,
     notesPlacement: DEFAULT_PLACEMENT,
+    favorite: false,
     ...recipe,
   })
 export const updateRecipe = (id, changes) => updateOrThrow(db.recipes, 'recipe', id, changes)
@@ -256,6 +261,8 @@ export const createProject = (project) =>
       coverTemplate: 'classic',
       pageNumbersEnabled: true,
       doubleSidedEnabled: false,
+      favoriteIcon: DEFAULT_FAVORITE_ICON,
+      favoriteTerminology: '',
       ...project,
     }
     const projectId = await db.projects.add(row)
@@ -311,6 +318,8 @@ export const importCookbook = (data) =>
       coverTemplate: data.coverTemplate || 'classic',
       pageNumbersEnabled: data.pageNumbersEnabled ?? true,
       doubleSidedEnabled: data.doubleSidedEnabled ?? false,
+      favoriteIcon: data.favoriteIcon || DEFAULT_FAVORITE_ICON,
+      favoriteTerminology: data.favoriteTerminology || '',
     }
     const projectId = await db.projects.add(projectRow)
 

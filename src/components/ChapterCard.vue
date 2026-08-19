@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import RecipeThumbnail from './RecipeThumbnail.vue'
 import RecipeFitWarningBadge from './RecipeFitWarningBadge.vue'
+import FavoriteToggle from './FavoriteToggle.vue'
 
 const props = defineProps({
   chapter: { type: Object, required: true },
@@ -16,6 +17,9 @@ const props = defineProps({
   collapsed: { type: Boolean, default: false },
   // { dragChapterId, dropChapterAfterId, dragRecipePrId, dropChapterId, dropAfterPrId }
   dragState: { type: Object, required: true },
+  // { icon, prefix } from getFavoriteSettings(project) - the active cookbook's
+  // configured favorites icon, used for the row favorite toggle.
+  favoriteSettings: { type: Object, required: true },
   // Grouped callbacks - ProjectView.vue keeps ownership of every store write
   // and the shared error/announce plumbing; this component only forwards
   // interactions, so extracting it isn't a change in behavior, just markup.
@@ -234,6 +238,13 @@ function dropLineBelow(pr) {
           {{ recipe.title }}
           <RecipeFitWarningBadge v-if="recipe.fitsOnPage === false" />
         </a>
+        <!-- Favorite toggle -->
+        <FavoriteToggle
+          :icon="favoriteSettings.icon"
+          :favorite="!!recipe.favorite"
+          @toggle="handlers.onToggleFavorite(recipe.id)"
+          @click.stop
+        />
         <!-- Overflow menu -->
         <div class="recipe-row__menu-wrap" @click.stop>
           <button

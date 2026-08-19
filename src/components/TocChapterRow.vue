@@ -1,4 +1,9 @@
 <script setup>
+// favorite/favoriteSettings aren't rendered here - chapters can't be
+// favorited - but are declared so TableOfContentsPage.vue's dynamic
+// `:is="row.type === 'chapter' ? TocChapterRow : TocRecipeRow"` can pass
+// the same prop set to both without either leaking onto the root <li> as a
+// non-standard HTML attribute.
 defineProps({
   title: {
     type: String,
@@ -7,6 +12,14 @@ defineProps({
   pageNumber: {
     type: Number,
     default: null,
+  },
+  favorite: {
+    type: Boolean,
+    default: false,
+  },
+  favoriteSettings: {
+    type: Object,
+    default: () => ({ icon: 'heart', prefix: '' }),
   },
 })
 </script>

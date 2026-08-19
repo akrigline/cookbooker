@@ -53,6 +53,26 @@ describe('recipes store', () => {
     expect(fromDb.title).toBe('Updated')
   })
 
+  it('toggleFavorite flips false/undefined to true, persisted and mirrored', async () => {
+    const store = useRecipesStore()
+    const id = await store.createRecipe(makeRecipe({ title: 'Unfavorited' }))
+
+    await store.toggleFavorite(id)
+
+    expect(store.recipes.find((r) => r.id === id).favorite).toBe(true)
+    expect((await getRecipe(id)).favorite).toBe(true)
+  })
+
+  it('toggleFavorite flips true back to false', async () => {
+    const store = useRecipesStore()
+    const id = await store.createRecipe(makeRecipe({ title: 'Favorited', favorite: true }))
+
+    await store.toggleFavorite(id)
+
+    expect(store.recipes.find((r) => r.id === id).favorite).toBe(false)
+    expect((await getRecipe(id)).favorite).toBe(false)
+  })
+
   it('removeRecipe deletes from the DB and removes from state', async () => {
     const store = useRecipesStore()
     const id = await store.createRecipe(makeRecipe({ title: 'To Delete' }))
