@@ -19,10 +19,10 @@ describe('formatQuantity', () => {
 })
 
 describe('convertIngredient - dual unit display (spec scenarios)', () => {
-  it('converts 1 cup butter to 1 cup (227 g) butter', () => {
+  it('converts 1 cup butter to 1 cup (226 g) butter', () => {
     const result = convertIngredient({ quantity: '1', symbol: 'c', ingredient: 'butter' })
     expect(result.us).toBe('1 cup')
-    expect(result.metric).toBe('227 g')
+    expect(result.metric).toBe('226 g')
   })
 
   it('falls back to volume-to-volume for unrecognized ingredients', () => {
@@ -40,7 +40,7 @@ describe('convertIngredient - dual unit display (spec scenarios)', () => {
   it('converts small quantities of brown sugar to grams instead of ml ("3 tbsp brown sugar")', () => {
     const result = convertIngredient({ quantity: '3', symbol: 'tbs', ingredient: 'brown sugar' })
     expect(result.us).toBe('3 tbsp')
-    expect(result.metric).toBe('41 g')
+    expect(result.metric).toBe('40 g')
   })
 
   it('converts yeast volume to weight ("2 1/4 tsp yeast")', () => {
@@ -92,7 +92,7 @@ describe('convertIngredient - dual unit display (spec scenarios)', () => {
   it('treats an equal minQty/maxQty as a single quantity, not a range', () => {
     const result = convertIngredient({ quantity: '1', minQty: '1', maxQty: '1', symbol: 'c', ingredient: 'butter' })
     expect(result.us).toBe('1 cup')
-    expect(result.metric).toBe('227 g')
+    expect(result.metric).toBe('226 g')
   })
 })
 
@@ -114,7 +114,7 @@ describe('formatIngredientLine', () => {
   it('renders dual-unit text for recognized units', () => {
     expect(
       formatIngredientLine({ quantity: '1', symbol: 'c', unit: 'cup', ingredient: 'butter' }),
-    ).toBe('1 cup (227 g) butter')
+    ).toBe('1 cup (226 g) butter')
   })
 
   it('renders raw text for unrecognized units', () => {

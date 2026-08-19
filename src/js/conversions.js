@@ -48,36 +48,43 @@ const METRIC_VOLUME_SYMBOLS = new Set(['ml', 'lt'])
 const US_WEIGHT_SYMBOLS = new Set(['oz', 'lb'])
 const METRIC_WEIGHT_SYMBOLS = new Set(['g', 'kg', 'mg'])
 
-// Grams-per-US-cup for common baking ingredients. Order matters: more
-// specific keywords must be listed before their more generic substrings
-// (e.g. "brown sugar" before "sugar") since matching is first-substring-wins.
+// Grams-per-US-cup for common baking ingredients, sourced from King Arthur
+// Baking's ingredient weight chart (https://www.kingarthurbaking.com/learn/
+// ingredient-weight-chart) rather than the older USDA/Betty Crocker figures
+// this table used to carry - King Arthur's numbers are what home bakers
+// following King Arthur-style recipes (and most modern US recipe sites)
+// expect. Order matters: more specific keywords must be listed before their
+// more generic substrings (e.g. "brown sugar" before "sugar") since matching
+// is first-substring-wins.
 const DENSITY_TABLE = [
-  ['brown sugar', 220],
-  ['powdered sugar', 120],
-  ['confectioners sugar', 120],
-  ['granulated sugar', 200],
-  ['sugar', 200],
-  ['bread flour', 127],
-  ['cake flour', 114],
-  ['whole wheat flour', 132],
+  ['brown sugar', 213],
+  ['powdered sugar', 113],
+  ['confectioners sugar', 113],
+  ['granulated sugar', 198],
+  ['sugar', 198],
+  ['bread flour', 120],
+  ['cake flour', 120],
+  ['whole wheat flour', 113],
   ['all-purpose flour', 120],
   ['flour', 120],
-  ['peanut butter', 258],
-  ['buttermilk', 245],
-  ['butter', 227],
-  ['vegetable oil', 218],
-  ['olive oil', 216],
-  ['oil', 218],
-  ['honey', 340],
-  ['milk', 240],
+  ['peanut butter', 270],
+  ['buttermilk', 227],
+  ['butter', 226],
+  ['vegetable oil', 198],
+  ['olive oil', 200],
+  ['oil', 198],
+  ['honey', 336],
+  ['milk', 227],
+  ['chocolate chips', 170],
+  ['cranberries', 114],
   ['cocoa powder', 84],
-  ['cornstarch', 120],
-  ['rice', 185],
-  ['oats', 90],
-  ['baking soda', 220],
+  ['cornstarch', 112],
+  ['rice', 198],
+  ['oats', 89],
+  ['baking soda', 288],
   ['baking powder', 192],
-  ['salt', 292],
-  ['yeast', 150],
+  ['salt', 288],
+  ['yeast', 144],
 ]
 
 export function findDensity(ingredientName) {
