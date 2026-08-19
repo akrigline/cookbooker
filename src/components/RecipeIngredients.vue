@@ -98,8 +98,8 @@ const parsedIngredients = computed(() => props.ingredients.map(getIngredientPart
 }
 
 .qty-secondary {
-  font-size: 12px;
-  font-weight: 400;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--recipe-on-surface-variant);
 }
 

@@ -15,6 +15,10 @@ defineProps({
     type: Object,
     required: true,
   },
+  accentColor: {
+    type: String,
+    default: null,
+  },
 })
 </script>
 
@@ -22,7 +26,7 @@ defineProps({
   <div class="layout-default">
     <div v-if="recipe.image" class="layout-default__top">
       <div class="layout-default__top-text">
-        <RecipeTitle :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" />
+        <RecipeTitle :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" :accent-color="accentColor" />
         <RecipeNotes v-if="recipe.notes" :notes="recipe.notes" />
       </div>
       <RecipeImage
@@ -33,7 +37,7 @@ defineProps({
       />
     </div>
     <template v-else>
-      <RecipeTitle :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" />
+      <RecipeTitle :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" :accent-color="accentColor" />
       <RecipeNotes v-if="recipe.notes" :notes="recipe.notes" />
     </template>
 

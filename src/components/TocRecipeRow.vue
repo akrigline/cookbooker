@@ -24,16 +24,16 @@ const props = defineProps({
 
 const displayTitle = computed(() =>
   props.favorite && props.favoriteSettings.prefix
-    ? `${props.favoriteSettings.prefix}: ${props.title}`
+    ? `${props.favoriteSettings.prefix} ${props.title}`
     : props.title,
 )
 </script>
 
 <template>
   <li class="toc-recipe-row">
-    <span class="toc-title">
-      <FavoriteBadge v-if="favorite" :icon="favoriteSettings.icon" />
+    <span class="toc-title" :class="{ 'toc-title--favorite': favorite }">
       {{ displayTitle }}
+      <FavoriteBadge v-if="favorite" :icon="favoriteSettings.icon" />
     </span>
     <span v-if="pageNumber !== null" class="toc-leader" aria-hidden="true"></span>
     <span v-if="pageNumber !== null" class="toc-page-number">{{ pageNumber }}</span>
@@ -52,6 +52,14 @@ const displayTitle = computed(() =>
 .toc-title {
   flex: 0 1 auto;
   min-width: 0;
+}
+
+.toc-title--favorite {
+  font-weight: 700;
+}
+
+.toc-title :deep(.favorite-badge) {
+  margin-left: 0.3em;
 }
 
 .toc-leader {

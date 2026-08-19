@@ -1,6 +1,7 @@
 <script setup>
 import TocChapterRow from './TocChapterRow.vue'
 import TocRecipeRow from './TocRecipeRow.vue'
+import FavoriteBadge from './FavoriteBadge.vue'
 import { DEFAULT_ACCENT_COLOR } from '../js/templates'
 
 defineProps({
@@ -47,6 +48,15 @@ defineProps({
     type: Object,
     default: () => ({ icon: 'heart', prefix: '' }),
   },
+  // Whether any recipe in the whole book is favorited - not derivable from
+  // `rows` alone, since that's only this physical page's slice. Gates the
+  // heading-row legend explaining the favorite icon; must be passed
+  // identically at measurement (tocLayout.js) and render (ProjectPrint.vue)
+  // time since it changes the heading row's height.
+  hasFavorites: {
+    type: Boolean,
+    default: false,
+  },
 })
 </script>
 
@@ -55,7 +65,13 @@ defineProps({
     class="toc-page"
     :style="{ '--toc-accent': accentColor, '--toc-number-width': `${numberDigits}ch` }"
   >
-    <h2 v-if="showHeading">Table of Contents</h2>
+    <h2 v-if="showHeading" class="toc-heading">
+      <span>Table of Contents</span>
+      <span v-if="hasFavorites" class="toc-legend">
+        <FavoriteBadge :icon="favoriteSettings.icon" :color="accentColor" />
+        means {{ favoriteSettings.prefix || 'favorite' }}
+      </span>
+    </h2>
     <ul class="toc-rows">
       <component
         :is="row.type === 'chapter' ? TocChapterRow : TocRecipeRow"
@@ -101,6 +117,24 @@ defineProps({
   color: var(--toc-accent);
   border-bottom: 3px solid var(--toc-accent);
   padding-bottom: var(--space-sm);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.toc-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--recipe-on-surface, currentColor);
+  white-space: nowrap;
+}
+
+.toc-legend :deep(.favorite-badge) {
+  font-size: 1.1em;
 }
 
 /* Pinned to row 2 so continuation pages (no <h2>) still get the 1fr track

@@ -47,6 +47,9 @@ const chapterPlan = computed(() =>
   }),
 )
 
+const hasFavorites = computed(() =>
+  chapterPlan.value.some((entry) => entry.recipes.some((recipe) => recipe.favorite)),
+)
 const showToc = computed(() => Boolean(project.value?.pageNumbersEnabled))
 const doubleSided = computed(() => Boolean(project.value?.doubleSidedEnabled))
 const chaptersById = computed(() => new Map(chapterPlan.value.map((e) => [e.chapter.id, e.chapter])))
@@ -171,6 +174,7 @@ onBeforeUnmount(clearPageSizeOverride)
             :accent-color="project.accentColor"
             :number-digits="tocNumberDigits"
             :favorite-settings="favoriteSettings"
+            :has-favorites="hasFavorites"
           />
         </PagePreview>
 

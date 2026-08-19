@@ -174,13 +174,23 @@ function convertSingleQuantity(qty, symbol, ingredient) {
   if (US_WEIGHT_SYMBOLS.has(symbol)) {
     const unit = WEIGHT_UNITS[symbol]
     const grams = weightToGrams(qty, symbol)
-    return { usPart: { qty: formatQuantity(qty), unit: unit.label }, metricPart: formatMetricWeight(grams) }
+    const density = findDensity(ingredient)
+    const usPart = { qty: formatQuantity(qty), unit: unit.label }
+    if (density) {
+      return { usPart, metricPart: metricVolumeFromMl((grams / density) * ML_PER_CUP), bypassedWeight: false }
+    }
+    return { usPart, metricPart: formatMetricWeight(grams) }
   }
 
   if (METRIC_WEIGHT_SYMBOLS.has(symbol)) {
     const unit = WEIGHT_UNITS[symbol]
     const grams = weightToGrams(qty, symbol)
-    return { usPart: usWeightFromGrams(grams), metricPart: { qty: formatQuantity(qty), unit: unit.label } }
+    const density = findDensity(ingredient)
+    const metricPart = { qty: formatQuantity(qty), unit: unit.label }
+    if (density) {
+      return { usPart: usVolumeFromMl((grams / density) * ML_PER_CUP), metricPart, bypassedWeight: false }
+    }
+    return { usPart: usWeightFromGrams(grams), metricPart }
   }
 
   return null

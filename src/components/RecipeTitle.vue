@@ -16,11 +16,18 @@ const props = defineProps({
     type: Object,
     default: () => ({ icon: 'heart', prefix: '' }),
   },
+  // The cookbook's accent color (project.accentColor). Colors the favorite
+  // badge instead of its default; null lets FavoriteBadge fall back to its
+  // own default (e.g. outside any cookbook context).
+  accentColor: {
+    type: String,
+    default: null,
+  },
 })
 
 const displayTitle = computed(() =>
   props.favorite && props.favoriteSettings.prefix
-    ? `${props.favoriteSettings.prefix}: ${props.title}`
+    ? `${props.favoriteSettings.prefix} ${props.title}`
     : props.title,
 )
 </script>
@@ -28,8 +35,8 @@ const displayTitle = computed(() =>
 <template>
   <header class="recipe-title-container">
     <h2 class="text-recipe-title">
-      <FavoriteBadge v-if="favorite" :icon="favoriteSettings.icon" />
-      {{ displayTitle }}
+      <FavoriteBadge v-if="favorite" :icon="favoriteSettings.icon" :color="accentColor" />
+      <span class="recipe-title-text">{{ displayTitle }}</span>
     </h2>
   </header>
 </template>
@@ -38,9 +45,12 @@ const displayTitle = computed(() =>
 .text-recipe-title {
   margin: 0;
   color: var(--recipe-primary); /* Overrides global text-recipe-title if needed, or just sets margin */
+  display: flex;
+  align-items: center;
 }
 
 .text-recipe-title :deep(.favorite-badge) {
-  margin-right: 0.3em;
+  order: 1;
+  margin-left: auto;
 }
 </style>

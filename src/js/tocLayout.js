@@ -88,7 +88,11 @@ function placeholderPageNumbers(rows) {
 // in JS. Returns one column index per row (0-based, monotonic non-decreasing
 // since column-fill fills sequentially): 0-1 is "page one" of this batch,
 // 2-3 the next, and so on.
-async function measureColumnIndexes(rows, showHeading, { doubleSided, numberDigits, pageSize, favoriteSettings }) {
+async function measureColumnIndexes(
+  rows,
+  showHeading,
+  { doubleSided, numberDigits, pageSize, favoriteSettings, hasFavorites },
+) {
   const container = createMeasureContainer({ doubleSided, pageSize })
   let app = null
   try {
@@ -100,6 +104,7 @@ async function measureColumnIndexes(rows, showHeading, { doubleSided, numberDigi
           numberDigits,
           pageNumbers: placeholderPageNumbers(rows),
           favoriteSettings,
+          hasFavorites,
         }),
     })
     app.mount(container)
@@ -153,8 +158,9 @@ export async function measureTocLayout(
   const numberDigits = maxPageNumberDigits(chapterPlan)
   const rows = buildTocRows(chapterPlan)
   if (rows.length === 0) return { pages: [{ rows: [] }], numberDigits }
+  const hasFavorites = chapterPlan.some((entry) => entry.recipes.some((recipe) => recipe.favorite))
 
-  const options = { doubleSided, numberDigits, pageSize, favoriteSettings }
+  const options = { doubleSided, numberDigits, pageSize, favoriteSettings, hasFavorites }
 
   const firstPageIndexes = await measureColumnIndexes(rows, true, options)
   const splitAt = firstPageIndexes.findIndex((columnIndex) => columnIndex > 1)

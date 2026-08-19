@@ -13,12 +13,16 @@ defineProps({
     type: Object,
     required: true,
   },
+  accentColor: {
+    type: String,
+    default: null,
+  },
 })
 </script>
 
 <template>
   <div class="layout-text-only">
-    <RecipeTitle :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" />
+    <RecipeTitle :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" :accent-color="accentColor" />
     <div class="layout-text-only__split">
       <RecipeIngredients
         class="layout-text-only__col"

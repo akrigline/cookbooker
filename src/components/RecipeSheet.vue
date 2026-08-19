@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { DEFAULT_LAYOUT_TEMPLATE } from '../js/templates'
+import { DEFAULT_LAYOUT_TEMPLATE, DEFAULT_ACCENT_COLOR } from '../js/templates'
 import { getFavoriteSettings } from '../js/favorites'
 import { useSettingsStore } from '../stores/settings'
 import RecipeLayoutDefault from './RecipeLayoutDefault.vue'
@@ -54,6 +54,7 @@ const activeLayout = computed(
 )
 const resolvedQtyAlign = computed(() => props.qtyAlign ?? settingsStore.ingredientQtyAlign)
 const favoriteSettings = computed(() => getFavoriteSettings(props.project))
+const accentColor = computed(() => props.project?.accentColor || DEFAULT_ACCENT_COLOR)
 </script>
 
 <template>
@@ -62,7 +63,7 @@ const favoriteSettings = computed(() => getFavoriteSettings(props.project))
     :data-qty-align="resolvedQtyAlign"
     :style="{ '--recipe-qty-align': resolvedQtyAlign }"
   >
-    <component :is="activeLayout" :recipe="recipe" :favorite-settings="favoriteSettings" />
+    <component :is="activeLayout" :recipe="recipe" :favorite-settings="favoriteSettings" :accent-color="accentColor" />
   </article>
 </template>
 

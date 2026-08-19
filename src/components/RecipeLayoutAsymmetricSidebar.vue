@@ -14,13 +14,17 @@ defineProps({
     type: Object,
     required: true,
   },
+  accentColor: {
+    type: String,
+    default: null,
+  },
 })
 </script>
 
 <template>
   <div class="layout-asymmetric-sidebar">
     <div class="layout-asymmetric-sidebar__aside">
-      <RecipeTitle :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" />
+      <RecipeTitle :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" :accent-color="accentColor" />
       <RecipeImage :image="recipe.image" :aspect-ratio="recipe.imageAspectRatio" :title="recipe.title" />
       <RecipeNotes v-if="recipe.notes" :notes="recipe.notes" />
     </div>

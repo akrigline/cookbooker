@@ -14,13 +14,17 @@ defineProps({
     type: Object,
     required: true,
   },
+  accentColor: {
+    type: String,
+    default: null,
+  },
 })
 </script>
 
 <template>
   <div class="layout-balanced-header">
     <div class="layout-balanced-header__row">
-      <RecipeTitle class="layout-balanced-header__title" :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" />
+      <RecipeTitle class="layout-balanced-header__title" :title="recipe.title" :favorite="recipe.favorite" :favorite-settings="favoriteSettings" :accent-color="accentColor" />
       <RecipeImage
         class="layout-balanced-header__image"
         :image="recipe.image"
