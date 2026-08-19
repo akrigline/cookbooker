@@ -34,6 +34,7 @@ const SINGLE_RECIPE = wrapDocument(`
     <meta class="cm-layout" content="text-only">
     <meta class="cm-image-placement" content="left">
     <meta class="cm-notes-placement" content="right">
+    <meta class="cm-favorite" content="true">
   </article>
 `)
 
@@ -71,7 +72,13 @@ describe('parseRecipeImportHtml', () => {
     expect(recipe.imageAspectRatio).toBe('auto')
     expect(recipe.imagePlacement).toBe('left')
     expect(recipe.notesPlacement).toBe('right')
+    expect(recipe.favorite).toBe(true)
     expect(recipe.ingredientQtyAlign).toBeUndefined()
+  })
+
+  it('defaults favorite to false when the meta element is omitted, as a file exported before favorites existed would be', () => {
+    const { recipes } = parseRecipeImportHtml(BATCH_RECIPES)
+    expect(recipes[0].favorite).toBe(false)
   })
 
   it('parses a well-formed batch file with multiple recipes', () => {

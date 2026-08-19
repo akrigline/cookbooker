@@ -11,6 +11,16 @@ const recipesStore = useRecipesStore()
 const query = ref('')
 const deletingId = ref(null)
 const deleteTarget = ref(null)
+const favoriteError = ref('')
+
+async function toggleFavorite(recipe) {
+  favoriteError.value = ''
+  try {
+    await recipesStore.toggleFavorite(recipe.id)
+  } catch (err) {
+    favoriteError.value = `Could not update this favorite: ${err.message}`
+  }
+}
 
 onMounted(() => {
   if (!recipesStore.loaded) recipesStore.load()
@@ -75,6 +85,7 @@ async function confirmDelete() {
 
 <template>
   <main id="cm-main" class="cm-page-main">
+    <p v-if="favoriteError" role="alert" style="color:var(--color-danger); font-weight:600; margin:0 0 16px;">{{ favoriteError }}</p>
     <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:28px; flex-wrap:wrap;">
       <div>
         <h1 class="text-page-title">Recipe Library</h1>
@@ -125,7 +136,7 @@ async function confirmDelete() {
         </div>
 
         <div style="display:flex; gap:8px; flex-shrink:0; align-self:center; align-items:center;" @click.stop>
-          <FavoriteToggle :favorite="!!recipe.favorite" @toggle="recipesStore.toggleFavorite(recipe.id)" />
+          <FavoriteToggle :favorite="!!recipe.favorite" @toggle="toggleFavorite(recipe)" />
           <router-link :to="`/library/${recipe.id}`" class="btn-open">
             Open recipe
           </router-link>

@@ -9,6 +9,8 @@ const project = {
   coverTemplate: 'modern',
   pageNumbersEnabled: true,
   doubleSidedEnabled: false,
+  favoriteIcon: 'sock',
+  favoriteTerminology: 'Sacred',
 }
 
 describe('exportCookbookToHtml', () => {
@@ -26,6 +28,8 @@ describe('exportCookbookToHtml', () => {
     expect(cookbook.coverTemplate).toBe(project.coverTemplate)
     expect(cookbook.pageNumbersEnabled).toBe(true)
     expect(cookbook.doubleSidedEnabled).toBe(false)
+    expect(cookbook.favoriteIcon).toBe('sock')
+    expect(cookbook.favoriteTerminology).toBe('Sacred')
   })
 
   it('emits chapters in sequence order regardless of input order', async () => {
@@ -83,6 +87,7 @@ describe('exportCookbookToHtml', () => {
       ingredientColumns: 2,
       imageAspectRatio: '1:1',
       image: imageBlob,
+      favorite: true,
     }
     const chapters = [{ id: 1, name: 'Desserts', sequence: 0 }]
     const recipesByChapter = new Map([[1, [recipe]]])
@@ -97,6 +102,7 @@ describe('exportCookbookToHtml', () => {
     expect(parsed.imageAspectRatio).toBe(recipe.imageAspectRatio)
     expect(parsed.image).not.toBeNull()
     expect(await parsed.image.text()).toBe('fake-image-bytes')
+    expect(parsed.favorite).toBe(true)
   })
 })
 

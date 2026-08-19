@@ -361,6 +361,24 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   layouts needs the same wrapper treatment (or adding an `'auto'` entry to `ASPECT_RATIO_CSS` and
   proving that doesn't regress the object-fit: cover framing those templates rely on).
 
+- `src/js/recipeFitMeasure.js`'s off-screen `measureRecipeFit` mounts `RecipeSheet` with no
+  `project` prop, so a favorited recipe is always measured with `getFavoriteSettings(null)` (heart
+  icon, no title prefix) - never the actual cookbook-configured icon/prefix (`favorites` feature,
+  `openspec/changes/recipe-favorites/`) it will really render with. This is a real instance of the
+  "measured markup must equal rendered markup" invariant (see the Table of Contents entry above)
+  being violated, not just theoretically: a long per-cookbook terminology prefix (e.g.
+  `"Sacred: "`) can push a borderline title onto a second line and overflow a page that
+  `fitsOnPage` reports as fitting. Deliberately left unfixed rather than papered over with a
+  half-measure: `fitsOnPage` is one global boolean per recipe, but favorites display is
+  per-cookbook, so the same recipe can legitimately fit in one cookbook and overflow in another
+  once a prefix is involved - there is no single correct answer to thread through, only a choice of
+  which cookbook's settings to measure against (or measuring every cookbook the recipe belongs to
+  and treating any overflow as `false`, which `recipeFitMeasure.js`/`triggerFitMeasurement` aren't
+  currently structured to do - they take one recipe, not a recipe plus its set of memberships).
+  `toggleFavorite` (`src/stores/recipes.js`) does at least re-trigger measurement so the icon-only
+  case (no prefix) is reflected, which is the common case and was itself a gap before this note was
+  written.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.

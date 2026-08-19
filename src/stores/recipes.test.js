@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import 'fake-indexeddb/auto'
 import { createPinia, setActivePinia } from 'pinia'
 import { useRecipesStore } from './recipes.js'
@@ -71,6 +71,16 @@ describe('recipes store', () => {
 
     expect(store.recipes.find((r) => r.id === id).favorite).toBe(false)
     expect((await getRecipe(id)).favorite).toBe(false)
+  })
+
+  it('toggleFavorite re-triggers fit measurement, since the badge/prefix changes the rendered title', async () => {
+    const store = useRecipesStore()
+    const id = await store.createRecipe(makeRecipe({ title: 'Needs remeasure' }))
+    const spy = vi.spyOn(store, 'triggerFitMeasurement')
+
+    await store.toggleFavorite(id)
+
+    expect(spy).toHaveBeenCalledWith(id, store.recipes.find((r) => r.id === id))
   })
 
   it('removeRecipe deletes from the DB and removes from state', async () => {

@@ -52,6 +52,8 @@ export function parseCookbookImportHtml(text) {
   const coverTemplate = metaContent(root, '.cm-cookbook-cover-template') || 'classic'
   const pageNumbersEnabled = metaBool(root, '.cm-cookbook-page-numbers', true)
   const doubleSidedEnabled = metaBool(root, '.cm-cookbook-double-sided', false)
+  const favoriteIcon = metaContent(root, '.cm-cookbook-favorite-icon')
+  const favoriteTerminology = metaContent(root, '.cm-cookbook-favorite-terminology')
 
   const chapterEls = [...root.children].filter((el) => el.matches('.cm-chapter'))
   const failures = []
@@ -84,6 +86,8 @@ export function parseCookbookImportHtml(text) {
       coverTemplate,
       pageNumbersEnabled,
       doubleSidedEnabled,
+      favoriteIcon,
+      favoriteTerminology,
       chapters,
     },
     failures,

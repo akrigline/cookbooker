@@ -94,6 +94,10 @@ function extractNotesPlacement(root) {
   return KNOWN_PLACEMENTS.has(content) ? content : DEFAULT_PLACEMENT
 }
 
+function extractFavorite(root) {
+  return root.querySelector('.cm-favorite')?.getAttribute('content') === 'true'
+}
+
 /**
  * Parses one `data-cm-format="recipe"` root element into either a candidate
  * recipe or a failure reason - mirrors the required-field validation
@@ -119,6 +123,7 @@ export function parseRecipeElement(root, index) {
   const imageAspectRatio = extractImageAspectRatio(root)
   const imagePlacement = extractImagePlacement(root)
   const notesPlacement = extractNotesPlacement(root)
+  const favorite = extractFavorite(root)
 
   if (!title) {
     return { failure: { label, reason: 'Missing or empty title (.cm-title)' } }
@@ -139,6 +144,7 @@ export function parseRecipeElement(root, index) {
       imageAspectRatio,
       imagePlacement,
       notesPlacement,
+      favorite,
     },
   }
 }

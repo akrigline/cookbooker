@@ -38,8 +38,9 @@ const displayTitle = computed(() =>
 .text-recipe-title {
   margin: 0;
   color: var(--recipe-primary); /* Overrides global text-recipe-title if needed, or just sets margin */
-  display: flex;
-  align-items: baseline;
-  gap: 0.3em;
+}
+
+.text-recipe-title :deep(.favorite-badge) {
+  margin-right: 0.3em;
 }
 </style>

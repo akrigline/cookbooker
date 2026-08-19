@@ -956,7 +956,8 @@ const chapterCardHandlers = {
   onMoveRecipeToChapter: moveRecipeToChapter,
   onOpenRemoveRecipe: openRemoveRecipe,
   onToggleCollapse: toggleChapterCollapsed,
-  onToggleFavorite: (recipeId) => recipesStore.toggleFavorite(recipeId),
+  onToggleFavorite: (recipeId) =>
+    persist('update this favorite', () => recipesStore.toggleFavorite(recipeId)),
 }
 
 const librarySidebarHandlers = {

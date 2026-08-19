@@ -44,6 +44,7 @@ export async function buildRecipeArticleHtml(recipe) {
   const aspect = escapeHtml(recipe.imageAspectRatio || 'auto');
   const imagePlacement = escapeHtml(recipe.imagePlacement || DEFAULT_PLACEMENT);
   const notesPlacement = escapeHtml(recipe.notesPlacement || DEFAULT_PLACEMENT);
+  const favorite = recipe.favorite ? 'true' : 'false';
 
   let imageHtml = '';
   if (recipe.image) {
@@ -57,7 +58,8 @@ export async function buildRecipeArticleHtml(recipe) {
     <meta class="cm-layout" content="${layout}">
     <meta class="cm-ingredient-columns" content="${cols}">
     <meta class="cm-image-placement" content="${imagePlacement}">
-    <meta class="cm-notes-placement" content="${notesPlacement}">${imageHtml}
+    <meta class="cm-notes-placement" content="${notesPlacement}">
+    <meta class="cm-favorite" content="${favorite}">${imageHtml}
 
     <h2>Ingredients</h2>
     <ul class="cm-ingredients">

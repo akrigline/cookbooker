@@ -45,6 +45,8 @@ ${articlesHtml}
     <meta class="cm-cookbook-cover-template" content="${escapeAttr(project.coverTemplate)}">
     <meta class="cm-cookbook-page-numbers" content="${boolContent(project.pageNumbersEnabled)}">
     <meta class="cm-cookbook-double-sided" content="${boolContent(project.doubleSidedEnabled)}">
+    <meta class="cm-cookbook-favorite-icon" content="${escapeAttr(project.favoriteIcon || '')}">
+    <meta class="cm-cookbook-favorite-terminology" content="${escapeAttr(project.favoriteTerminology || '')}">
 ${chapterSections.join('\n')}
   </section>
 </body>

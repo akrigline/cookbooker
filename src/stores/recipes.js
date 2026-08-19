@@ -32,6 +32,7 @@ export const useRecipesStore = defineStore('recipes', {
       const favorite = !recipe?.favorite
       await db.updateRecipe(id, { favorite })
       if (recipe) recipe.favorite = favorite
+      this.triggerFitMeasurement(id, recipe)
     },
     async bulkEditRecipes(ids, changes) {
       await db.bulkUpdateRecipes(ids, changes)
