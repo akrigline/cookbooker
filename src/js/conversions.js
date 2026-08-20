@@ -84,6 +84,7 @@ const DENSITY_TABLE = [
   ['baking soda', 288],
   ['baking powder', 192],
   ['salt', 288],
+  ['pepper', 130],
   ['yeast', 144],
 ]
 
