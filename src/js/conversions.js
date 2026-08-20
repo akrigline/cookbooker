@@ -95,12 +95,15 @@ export function findDensity(ingredientName) {
 }
 
 /**
- * Snaps a decimal quantity to the nearest 1/8 (standard kitchen-measurement
- * precision) and renders it as a mixed-number fraction string, e.g. 1.5 -> "1 1/2".
+ * Snaps a decimal quantity to the nearest 1/24 (the smallest denominator
+ * that lands exactly on both eighths - standard kitchen-measurement
+ * precision - and thirds, since "1/3 cup"/"2/3 cup" are as common in recipes
+ * as eighths and a coarser 1/8 snap rounds 1/3 up to 3/8) and renders it as
+ * a mixed-number fraction string, e.g. 1.5 -> "1 1/2", 0.333 -> "1/3".
  */
 export function formatQuantity(value) {
   if (value == null || Number.isNaN(value)) return ''
-  const snapped = Math.round(value * 8) / 8
+  const snapped = Math.round(value * 24) / 24
   if (snapped === 0) return '0'
   return new Fraction(snapped).toFraction(true)
 }

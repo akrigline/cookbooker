@@ -58,7 +58,7 @@ describe('convertIngredient - dual unit display (spec scenarios)', () => {
   it('never converts water to weight, rendering liters at quart scale ("4 qt water")', () => {
     const result = convertIngredient({ quantity: '4', symbol: 'qt', ingredient: 'water' })
     expect(result.us).toBe('4 qt')
-    expect(result.metric).toBe('3 7/8 L')
+    expect(result.metric).toBe('3 5/6 L')
   })
 
   it('matches density keyword substrings, e.g. "organic cake flour" -> flour rules', () => {
