@@ -14,8 +14,8 @@
   "dependencies": {
     "@dailykit/food-units-converter": "^1.0.2",
     "@magrinj/parse-ingredients": "^1.0.0",
-    "dexie": "^4.4.6",
-    "dexie-export-import": "^4.4.1",
+    "dexie": "^4.4.7",
+    "dexie-export-import": "^4.4.2",
     "fraction.js": "^5.3.4",
     "lz-string": "^1.5.0",
     "pinia": "^4.1.0",
@@ -25,11 +25,11 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.10",
-    "fake-indexeddb": "^6.2.5",
+    "fake-indexeddb": "^6.2.6",
     "happy-dom": "^20.14.5",
     "husky": "^9.1.7",
     "patch-package": "^8.0.1",
-    "vite": "^8.3.4",
+    "vite": "^8.3.5",
     "vitest": "^4.1.11"
   }
 }
