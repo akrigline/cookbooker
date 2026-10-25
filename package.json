@@ -26,7 +26,7 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.10",
     "fake-indexeddb": "^6.2.6",
-    "happy-dom": "^20.14.5",
+    "happy-dom": "^21.0.4",
     "husky": "^9.1.7",
     "patch-package": "^8.0.1",
     "vite": "^8.3.5",
